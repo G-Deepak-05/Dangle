@@ -31,6 +31,17 @@ mod imp {
     extern "C" {
         fn CGMainDisplayID() -> u32;
         fn CGDisplayBounds(display: u32) -> CGRect;
+        fn CGEventSourceSecondsSinceLastEventType(state: i32, event_type: u32) -> f64;
+    }
+
+    /// Seconds since the user last touched the mouse, trackpad, or keyboard.
+    pub fn seconds_since_input() -> Option<f64> {
+        const COMBINED_SESSION_STATE: i32 = 0;
+        const ANY_INPUT_EVENT: u32 = !0;
+        let secs = unsafe {
+            CGEventSourceSecondsSinceLastEventType(COMBINED_SESSION_STATE, ANY_INPUT_EVENT)
+        };
+        secs.is_finite().then_some(secs)
     }
 
     /// Cursor in global logical points with a top-left origin, matching Tauri's
@@ -87,6 +98,9 @@ mod imp {
     use tauri::WebviewWindow;
 
     pub fn cursor_position() -> Option<(f64, f64)> {
+        None
+    }
+    pub fn seconds_since_input() -> Option<f64> {
         None
     }
     pub fn apply_window_behavior(window: &WebviewWindow, all_spaces: bool, _over_fullscreen: bool) {

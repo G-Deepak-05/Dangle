@@ -46,7 +46,6 @@ export class CharmSimulation {
   asleep = false;
 
   private anchor: Vec2;
-  private ropeLength: number;
   private segmentLength: number;
   private params: PhysicsParams;
   private bounds: Bounds;
@@ -59,7 +58,6 @@ export class CharmSimulation {
 
   constructor(anchor: Vec2, ropeLength: number, params: PhysicsParams, bounds: Bounds) {
     this.anchor = { ...anchor };
-    this.ropeLength = ropeLength;
     this.segmentLength = ropeLength / SEGMENTS;
     this.params = params;
     this.bounds = bounds;
@@ -132,7 +130,6 @@ export class CharmSimulation {
   }
 
   setRopeLength(length: number): void {
-    this.ropeLength = length;
     this.segmentLength = length / SEGMENTS;
     this.wake();
   }

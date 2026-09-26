@@ -63,7 +63,9 @@ pub fn validate_png(bytes: &[u8]) -> Result<(), String> {
         return Err("Image is too large.".into());
     }
     let (w, h) = png_dimensions(bytes)?;
-    if !(MIN_DIMENSION..=MAX_DIMENSION).contains(&w) || !(MIN_DIMENSION..=MAX_DIMENSION).contains(&h) {
+    if !(MIN_DIMENSION..=MAX_DIMENSION).contains(&w)
+        || !(MIN_DIMENSION..=MAX_DIMENSION).contains(&h)
+    {
         return Err("Image dimensions are out of range.".into());
     }
     Ok(())

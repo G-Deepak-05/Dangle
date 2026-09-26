@@ -16,8 +16,13 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
     let create = MenuItem::with_id(app, "create", "Create Charm…", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
     let pause = MenuItem::with_id(app, "pause", "Pause", true, None::<&str>)?;
-    let visibility =
-        MenuItem::with_id(app, "visibility", "Hide Charm", true, Some("CmdOrCtrl+Alt+D"))?;
+    let visibility = MenuItem::with_id(
+        app,
+        "visibility",
+        "Hide Charm",
+        true,
+        Some("CmdOrCtrl+Alt+D"),
+    )?;
     let quit = MenuItem::with_id(app, "quit", "Quit Dangle", true, Some("CmdOrCtrl+Q"))?;
 
     let menu = Menu::with_items(

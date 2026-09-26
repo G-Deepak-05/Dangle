@@ -39,7 +39,8 @@ pub fn overlay_geometry(state: State<AppState>) -> Option<OverlayGeometry> {
 
 #[tauri::command]
 pub fn overlay_hitbox(state: State<AppState>, hitbox: Option<Hitbox>) {
-    let valid = hitbox.filter(|h| h.x.is_finite() && h.y.is_finite() && h.r.is_finite() && h.r > 0.0);
+    let valid =
+        hitbox.filter(|h| h.x.is_finite() && h.y.is_finite() && h.r.is_finite() && h.r > 0.0);
     state.pointer.lock().unwrap().hitbox = valid;
 }
 
@@ -81,7 +82,11 @@ pub fn save_custom_charm(
 }
 
 #[tauri::command]
-pub fn delete_custom_charm(app: AppHandle, state: State<AppState>, id: String) -> Result<(), String> {
+pub fn delete_custom_charm(
+    app: AppHandle,
+    state: State<AppState>,
+    id: String,
+) -> Result<(), String> {
     custom_charms::delete(&state.custom_dir, &id)?;
     let (active, mut favorites) = {
         let s = state.settings.lock().unwrap();

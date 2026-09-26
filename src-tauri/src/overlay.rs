@@ -12,6 +12,7 @@ const WIDTH: f64 = 640.0;
 const HEIGHT: f64 = 480.0;
 const EDGE_MARGIN: f64 = 24.0;
 const HIT_PADDING: f64 = 6.0;
+const IDLE_AFTER_SECS: f64 = 60.0;
 
 pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
     let window = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("overlay.html".into()))
@@ -59,7 +60,8 @@ fn layout_now(app: &AppHandle) {
 
     let width = WIDTH.min(ww);
     let height = HEIGHT.min(wh);
-    let global_anchor = (wx + settings.anchor_x * ww).clamp(wx + EDGE_MARGIN, wx + ww - EDGE_MARGIN);
+    let global_anchor =
+        (wx + settings.anchor_x * ww).clamp(wx + EDGE_MARGIN, wx + ww - EDGE_MARGIN);
     let left = (global_anchor - width / 2.0).clamp(wx, wx + ww - width);
 
     let _ = window.set_size(LogicalSize::new(width, height));
@@ -101,50 +103,63 @@ fn set_over(app: &AppHandle, over: bool) {
 pub fn spawn_pointer_watch(app: AppHandle) {
     std::thread::Builder::new()
         .name("dangle-pointer".into())
-        .spawn(move || loop {
-            let state = app.state::<AppState>();
-            let interactive = {
-                let s = state.settings.lock().unwrap();
-                s.onboarding_complete && !s.hidden && !s.paused
-            };
-            let cursor = platform::cursor_position();
-            let mut near = false;
-            let change = {
-                let mut p = state.pointer.lock().unwrap();
-                let over = match (interactive, p.hitbox, cursor) {
-                    _ if p.dragging => true,
-                    (true, Some(hb), Some((cx, cy))) => {
-                        let dx = cx - (p.origin.0 + hb.x);
-                        let dy = cy - (p.origin.1 + hb.y);
-                        let dist = (dx * dx + dy * dy).sqrt();
-                        near = dist < hb.r + 240.0;
-                        dist <= hb.r + HIT_PADDING
+        .spawn(move || {
+            let mut idle = false;
+            let mut last_idle_check = std::time::Instant::now();
+            loop {
+                let state = app.state::<AppState>();
+                if last_idle_check.elapsed() >= Duration::from_secs(1) {
+                    last_idle_check = std::time::Instant::now();
+                    let now_idle =
+                        platform::seconds_since_input().is_some_and(|s| s > IDLE_AFTER_SECS);
+                    if now_idle != idle {
+                        idle = now_idle;
+                        let _ = app.emit_to(LABEL, "system-idle", idle);
                     }
-                    _ => false,
-                };
-                if over != p.over {
-                    p.over = over;
-                    if over {
-                        p.previous_app = platform::frontmost_app_pid()
-                            .filter(|pid| *pid != platform::own_pid());
-                    }
-                    Some(over)
-                } else {
-                    None
                 }
-            };
-            if let Some(over) = change {
-                set_over(&app, over);
+                let interactive = {
+                    let s = state.settings.lock().unwrap();
+                    s.onboarding_complete && !s.hidden && !s.paused
+                };
+                let cursor = platform::cursor_position();
+                let mut near = false;
+                let change = {
+                    let mut p = state.pointer.lock().unwrap();
+                    let over = match (interactive, p.hitbox, cursor) {
+                        _ if p.dragging => true,
+                        (true, Some(hb), Some((cx, cy))) => {
+                            let dx = cx - (p.origin.0 + hb.x);
+                            let dy = cy - (p.origin.1 + hb.y);
+                            let dist = (dx * dx + dy * dy).sqrt();
+                            near = dist < hb.r + 240.0;
+                            dist <= hb.r + HIT_PADDING
+                        }
+                        _ => false,
+                    };
+                    if over != p.over {
+                        p.over = over;
+                        if over {
+                            p.previous_app = platform::frontmost_app_pid()
+                                .filter(|pid| *pid != platform::own_pid());
+                        }
+                        Some(over)
+                    } else {
+                        None
+                    }
+                };
+                if let Some(over) = change {
+                    set_over(&app, over);
+                }
+                let dragging = state.pointer.lock().unwrap().dragging;
+                let interval = if dragging || near {
+                    12
+                } else if interactive {
+                    50
+                } else {
+                    250
+                };
+                std::thread::sleep(Duration::from_millis(interval));
             }
-            let dragging = state.pointer.lock().unwrap().dragging;
-            let interval = if dragging || near {
-                12
-            } else if interactive {
-                50
-            } else {
-                250
-            };
-            std::thread::sleep(Duration::from_millis(interval));
         })
         .expect("spawn pointer watch");
 }
