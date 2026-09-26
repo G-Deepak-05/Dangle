@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF6EC"/>
+      <stop offset="1" stop-color="#EFE5D3"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F1CB78"/>
+      <stop offset="1" stop-color="#B8862F"/>
+    </linearGradient>
+    <radialGradient id="enamel" cx="0.38" cy="0.32" r="0.8">
+      <stop offset="0" stop-color="#34466A"/>
+      <stop offset="1" stop-color="#1C2740"/>
+    </radialGradient>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#3A2A14" flood-opacity="0.22"/>
+    </filter>
+    <filter id="tile" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#bg)" filter="url(#tile)"/>
+  <rect x="100.5" y="100.5" width="823" height="823" rx="185.5" fill="none" stroke="#000" stroke-opacity="0.06"/>
+  <!-- thread -->
+  <path d="M540 100 C 536 220, 520 300, 512 388" fill="none" stroke="#C8412B" stroke-width="12" stroke-linecap="round"/>
+  <!-- jump ring -->
+  <circle cx="512" cy="410" r="26" fill="none" stroke="url(#gold)" stroke-width="12"/>
+  <!-- crescent charm -->
+  <g filter="url(#drop)" transform="rotate(-8 512 610)">
+    <path d="M512 432 A 190 190 0 1 0 700 650 A 150 150 0 1 1 512 432 Z" fill="url(#enamel)" stroke="url(#gold)" stroke-width="18" stroke-linejoin="round"/>
+    <path d="M420 500 C 380 540, 360 600, 372 660" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="610" cy="560" r="10" fill="#F1CB78"/>
+    <circle cx="650" cy="500" r="6" fill="#F1CB78" fill-opacity="0.8"/>
+  </g>
+</svg>

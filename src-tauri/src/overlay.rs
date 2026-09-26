@@ -1,0 +1,180 @@
+use crate::displays;
+use crate::platform;
+use crate::state::{AppState, OverlayGeometry};
+use std::time::Duration;
+use tauri::{
+    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, WebviewUrl, WebviewWindow,
+    WebviewWindowBuilder,
+};
+
+pub const LABEL: &str = "overlay";
+const WIDTH: f64 = 640.0;
+const HEIGHT: f64 = 480.0;
+const EDGE_MARGIN: f64 = 24.0;
+const HIT_PADDING: f64 = 6.0;
+
+pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
+    let window = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("overlay.html".into()))
+        .title("Dangle Charm")
+        .inner_size(WIDTH, HEIGHT)
+        .transparent(true)
+        .decorations(false)
+        .shadow(false)
+        .resizable(false)
+        .maximizable(false)
+        .minimizable(false)
+        .skip_taskbar(true)
+        .always_on_top(true)
+        .focused(false)
+        .focusable(false)
+        .accept_first_mouse(true)
+        .visible(false)
+        .build()?;
+    let _ = window.set_ignore_cursor_events(true);
+    Ok(window)
+}
+
+pub fn window(app: &AppHandle) -> Option<WebviewWindow> {
+    app.get_webview_window(LABEL)
+}
+
+/// Positions the overlay band on the chosen display and tells the charm where its anchor is.
+/// Monitor queries touch AppKit, so the work always runs on the main thread.
+pub fn layout(app: &AppHandle) {
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || layout_now(&handle));
+}
+
+fn layout_now(app: &AppHandle) {
+    let Some(window) = window(app) else { return };
+    let state = app.state::<AppState>();
+    let settings = state.settings.lock().unwrap().clone();
+    let Some(monitor) = displays::target(app, settings.display_id.as_deref()) else {
+        return;
+    };
+    let scale = monitor.scale_factor();
+    let wa = monitor.work_area();
+    let (wx, wy) = (wa.position.x as f64 / scale, wa.position.y as f64 / scale);
+    let (ww, wh) = (wa.size.width as f64 / scale, wa.size.height as f64 / scale);
+
+    let width = WIDTH.min(ww);
+    let height = HEIGHT.min(wh);
+    let global_anchor = (wx + settings.anchor_x * ww).clamp(wx + EDGE_MARGIN, wx + ww - EDGE_MARGIN);
+    let left = (global_anchor - width / 2.0).clamp(wx, wx + ww - width);
+
+    let _ = window.set_size(LogicalSize::new(width, height));
+    let _ = window.set_position(LogicalPosition::new(left, wy));
+    state.pointer.lock().unwrap().origin = (left, wy);
+
+    let geometry = OverlayGeometry {
+        width,
+        height,
+        anchor_x: global_anchor - left,
+        global_anchor_x: global_anchor,
+        global_top: wy,
+        display_id: displays::monitor_id(&monitor),
+    };
+    *state.geometry.lock().unwrap() = Some(geometry.clone());
+    let _ = app.emit_to(LABEL, "overlay-geometry", geometry);
+}
+
+pub fn sync_visibility(app: &AppHandle) {
+    let Some(window) = window(app) else { return };
+    let settings = app.state::<AppState>().settings.lock().unwrap().clone();
+    if settings.onboarding_complete && !settings.hidden {
+        let _ = window.show();
+    } else {
+        let _ = window.hide();
+    }
+}
+
+fn set_over(app: &AppHandle, over: bool) {
+    if let Some(window) = window(app) {
+        let _ = window.set_ignore_cursor_events(!over);
+    }
+    let _ = app.emit_to(LABEL, "overlay-hover", over);
+}
+
+/// The overlay ignores the mouse except while the cursor is over the charm, so the
+/// rest of the band never blocks clicks. The webview cannot see the cursor while it
+/// ignores events, so the check runs here against the hitbox the charm reports.
+pub fn spawn_pointer_watch(app: AppHandle) {
+    std::thread::Builder::new()
+        .name("dangle-pointer".into())
+        .spawn(move || loop {
+            let state = app.state::<AppState>();
+            let interactive = {
+                let s = state.settings.lock().unwrap();
+                s.onboarding_complete && !s.hidden && !s.paused
+            };
+            let cursor = platform::cursor_position();
+            let mut near = false;
+            let change = {
+                let mut p = state.pointer.lock().unwrap();
+                let over = match (interactive, p.hitbox, cursor) {
+                    _ if p.dragging => true,
+                    (true, Some(hb), Some((cx, cy))) => {
+                        let dx = cx - (p.origin.0 + hb.x);
+                        let dy = cy - (p.origin.1 + hb.y);
+                        let dist = (dx * dx + dy * dy).sqrt();
+                        near = dist < hb.r + 240.0;
+                        dist <= hb.r + HIT_PADDING
+                    }
+                    _ => false,
+                };
+                if over != p.over {
+                    p.over = over;
+                    if over {
+                        p.previous_app = platform::frontmost_app_pid()
+                            .filter(|pid| *pid != platform::own_pid());
+                    }
+                    Some(over)
+                } else {
+                    None
+                }
+            };
+            if let Some(over) = change {
+                set_over(&app, over);
+            }
+            let dragging = state.pointer.lock().unwrap().dragging;
+            let interval = if dragging || near {
+                12
+            } else if interactive {
+                50
+            } else {
+                250
+            };
+            std::thread::sleep(Duration::from_millis(interval));
+        })
+        .expect("spawn pointer watch");
+}
+
+/// Re-lays out the overlay when displays are added, removed, or rearranged.
+pub fn spawn_display_watch(app: AppHandle) {
+    std::thread::Builder::new()
+        .name("dangle-displays".into())
+        .spawn(move || {
+            let fingerprint = |app: &AppHandle| {
+                let (tx, rx) = std::sync::mpsc::channel();
+                let handle = app.clone();
+                let _ = app.run_on_main_thread(move || {
+                    let _ = tx.send(displays::fingerprint(&handle));
+                });
+                rx.recv_timeout(Duration::from_secs(2)).ok()
+            };
+            let mut last = fingerprint(&app);
+            loop {
+                std::thread::sleep(Duration::from_secs(2));
+                let now = fingerprint(&app);
+                if now.is_some() && now != last {
+                    last = now;
+                    layout(&app);
+                    let handle = app.clone();
+                    let _ = app.run_on_main_thread(move || {
+                        let _ = handle.emit("displays-changed", displays::list(&handle));
+                    });
+                }
+            }
+        })
+        .expect("spawn display watch");
+}
