@@ -1,0 +1,19 @@
+{
+  "id": "cloud",
+  "name": "Cloud",
+  "category": "nature",
+  "tags": [
+    "minimal",
+    "cute"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.56,
+    "y": 0.23
+  },
+  "metadata": {
+    "description": "Soft weather, indoors.",
+    "author": "Dangle"
+  }
+}

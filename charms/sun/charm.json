@@ -1,0 +1,19 @@
+{
+  "id": "sun",
+  "name": "Smiling Sun",
+  "category": "cute",
+  "tags": [
+    "seasonal",
+    "nature"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Brings its own good weather.",
+    "author": "Dangle"
+  }
+}

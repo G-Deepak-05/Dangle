@@ -1,0 +1,18 @@
+{
+  "id": "crystal",
+  "name": "Crystal",
+  "category": "minimal",
+  "tags": [
+    "nature"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.07
+  },
+  "metadata": {
+    "description": "Catches light that isn't there.",
+    "author": "Dangle"
+  }
+}

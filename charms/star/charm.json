@@ -1,0 +1,18 @@
+{
+  "id": "star",
+  "name": "Star",
+  "category": "space",
+  "tags": [
+    "cute"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.07
+  },
+  "metadata": {
+    "description": "Wish on it whenever you like.",
+    "author": "Dangle"
+  }
+}

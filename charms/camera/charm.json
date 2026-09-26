@@ -1,0 +1,16 @@
+{
+  "id": "camera",
+  "name": "Camera",
+  "category": "retro",
+  "tags": [],
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "metadata": {
+    "description": "Every day is worth one frame.",
+    "author": "Dangle"
+  }
+}

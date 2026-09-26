@@ -1,0 +1,18 @@
+{
+  "id": "coin",
+  "name": "Lucky Coin",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Keeps a little luck on hand.",
+    "author": "Dangle"
+  }
+}

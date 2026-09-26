@@ -1,0 +1,19 @@
+{
+  "id": "leaf",
+  "name": "Leaf",
+  "category": "nature",
+  "tags": [
+    "seasonal",
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "The first one of autumn.",
+    "author": "Dangle"
+  }
+}

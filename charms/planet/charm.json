@@ -1,0 +1,18 @@
+{
+  "id": "planet",
+  "name": "Planet",
+  "category": "space",
+  "tags": [
+    "retro"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "metadata": {
+    "description": "A small world with a nice ring.",
+    "author": "Dangle"
+  }
+}

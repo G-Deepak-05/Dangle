@@ -1,0 +1,16 @@
+{
+  "id": "sword",
+  "name": "Pixel Sword",
+  "category": "retro",
+  "tags": [],
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Level one. Still counts.",
+    "author": "Dangle"
+  }
+}

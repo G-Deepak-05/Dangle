@@ -1,0 +1,19 @@
+{
+  "id": "mushroom",
+  "name": "Mushroom",
+  "category": "nature",
+  "tags": [
+    "cute",
+    "seasonal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.1
+  },
+  "metadata": {
+    "description": "Grown in a very tidy forest.",
+    "author": "Dangle"
+  }
+}

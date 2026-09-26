@@ -1,0 +1,16 @@
+{
+  "id": "cat",
+  "name": "Cat",
+  "category": "cute",
+  "tags": [],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.23
+  },
+  "metadata": {
+    "description": "Aloof, but hangs around anyway.",
+    "author": "Dangle"
+  }
+}

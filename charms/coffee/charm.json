@@ -1,0 +1,18 @@
+{
+  "id": "coffee",
+  "name": "Coffee Cup",
+  "category": "minimal",
+  "tags": [
+    "cute"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.26
+  },
+  "metadata": {
+    "description": "Always warm, never spills.",
+    "author": "Dangle"
+  }
+}

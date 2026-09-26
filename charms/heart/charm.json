@@ -1,0 +1,19 @@
+{
+  "id": "heart",
+  "name": "Tiny Heart",
+  "category": "cute",
+  "tags": [
+    "minimal",
+    "seasonal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.3
+  },
+  "metadata": {
+    "description": "Small, but it counts.",
+    "author": "Dangle"
+  }
+}
