@@ -62,6 +62,7 @@ export const backend = {
   openControl: (route?: Route) => invoke<void>("open_control", { route }),
   hideControl: () => invoke<void>("hide_control"),
   quit: () => invoke<void>("quit_app"),
+  pickImage: () => invoke<{ name: string; base64: string } | null>("pick_image"),
 };
 
 type Handler<T> = (payload: T) => void;

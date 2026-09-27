@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type DragEvent, type MouseEvent } from "react";
+import { useEffect, useMemo, useState, type DragEvent, type MouseEvent } from "react";
 import type { Charm, RopeStyle } from "../../charms/types";
 import {
   dataUrlToBase64,
@@ -35,7 +35,6 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
   const [rope, setRope] = useState<RopeStyle>("thread");
   const [anchor, setAnchor] = useState({ x: 0.5, y: 0.05 });
   const [dragOver, setDragOver] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => () => source?.bitmap.close(), [source]);
 
@@ -87,6 +86,18 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
       },
     [prepared, name, scale, rope, anchor],
   );
+
+  const choose = async () => {
+    setError(null);
+    try {
+      const picked = await backend.pickImage();
+      if (!picked) return;
+      const bytes = Uint8Array.from(atob(picked.base64), (c) => c.charCodeAt(0));
+      await load(new File([bytes], picked.name));
+    } catch (err) {
+      setError(typeof err === "string" ? err : "That file couldn't be opened.");
+    }
+  };
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
@@ -140,26 +151,6 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
     }
   };
 
-  const reset = () => {
-    setSource(null);
-    setPrepared(null);
-    setError(null);
-    setPhase("empty");
-  };
-
-  const fileInput = (
-    <input
-      ref={fileRef}
-      type="file"
-      accept="image/png,image/webp,image/jpeg"
-      hidden
-      onChange={(e) => {
-        void load(e.target.files?.[0]);
-        e.target.value = "";
-      }}
-    />
-  );
-
   const errorBox = error && (
     <div className="notice notice-error" role="alert">
       <AlertIcon />
@@ -184,10 +175,9 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
           {phase === "loading" ? <div className="spinner" aria-label="Preparing image" /> : <UploadIcon size={26} />}
           <p className="dropzone-title">{phase === "loading" ? "Preparing your image…" : "Drop an image here"}</p>
           <p>A PNG or WebP with a transparent background works best. JPEG is fine too.</p>
-          <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()} disabled={phase === "loading"}>
+          <button type="button" className="btn btn-primary" onClick={() => void choose()} disabled={phase === "loading"}>
             Choose a file
           </button>
-          {fileInput}
         </div>
         {errorBox}
         <div className="notice">
@@ -321,7 +311,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
       </div>
 
       <div className="row" style={{ marginTop: 24 }}>
-        <button type="button" className="btn btn-ghost" onClick={reset}>
+        <button type="button" className="btn btn-ghost" onClick={() => void choose()}>
           Choose another
         </button>
         <div style={{ flex: 1 }} />
@@ -329,7 +319,6 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
           {phase === "saving" ? "Saving…" : "Save & hang"}
         </button>
       </div>
-      {fileInput}
     </div>
   );
 }

@@ -3,8 +3,20 @@ use crate::displays::{self, DisplayInfo};
 use crate::settings::{self, Settings};
 use crate::state::{AppState, Hitbox, OverlayGeometry};
 use crate::{apply_patch, control, overlay, platform, tray};
+use base64::Engine;
+use serde::Serialize;
 use serde_json::{json, Value};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
+use tauri_plugin_dialog::DialogExt;
+
+const MAX_PICKED_BYTES: u64 = 15 * 1024 * 1024;
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PickedImage {
+    name: String,
+    base64: String,
+}
 
 #[tauri::command]
 pub fn get_settings(state: State<AppState>) -> Settings {
@@ -133,4 +145,43 @@ pub fn quit_app(app: AppHandle) {
 #[tauri::command]
 pub fn relayout_overlay(app: AppHandle) {
     overlay::layout(&app);
+}
+
+/// Native picker shown as a sheet on the control window, so it opens on the same Space
+/// and never blocks the app. Only the file the user picked is read.
+#[tauri::command]
+pub async fn pick_image(app: AppHandle) -> Result<Option<PickedImage>, String> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let mut dialog = app
+        .dialog()
+        .file()
+        .set_title("Choose an image for your charm")
+        .add_filter("Images", &["png", "webp", "jpg", "jpeg"]);
+    if let Some(window) = app.get_webview_window(control::LABEL) {
+        dialog = dialog.set_parent(&window);
+    }
+    dialog.pick_file(move |path| {
+        let _ = tx.send(path);
+    });
+    let picked = tauri::async_runtime::spawn_blocking(move || rx.recv().ok().flatten())
+        .await
+        .map_err(|e| e.to_string())?;
+    let Some(path) = picked.and_then(|p| p.into_path().ok()) else {
+        return Ok(None);
+    };
+    let size = std::fs::metadata(&path)
+        .map_err(|_| "That file couldn't be opened.".to_string())?
+        .len();
+    if size > MAX_PICKED_BYTES {
+        return Err("That image is over 15 MB. Try a smaller one.".into());
+    }
+    let bytes = std::fs::read(&path).map_err(|_| "That file couldn't be read.".to_string())?;
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().chars().take(120).collect())
+        .unwrap_or_else(|| "image".into());
+    Ok(Some(PickedImage {
+        name,
+        base64: base64::engine::general_purpose::STANDARD.encode(bytes),
+    }))
 }

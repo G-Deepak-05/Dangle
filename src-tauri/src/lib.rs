@@ -77,7 +77,14 @@ fn apply_side_effects(app: &AppHandle, old: Option<&Settings>, new: &Settings) {
     }
 }
 
-const ROUTES: [&str; 6] = ["home", "library", "customize", "create", "settings", "privacy"];
+const ROUTES: [&str; 6] = [
+    "home",
+    "library",
+    "customize",
+    "create",
+    "settings",
+    "privacy",
+];
 
 /// `dangle --open library` jumps straight to a screen; unknown values are ignored.
 fn route_from_args(args: &[String]) -> Option<&'static str> {
@@ -95,6 +102,7 @@ pub fn run() {
             MacosLauncher::LaunchAgent,
             Some(vec!["--autostart"]),
         ))
+        .plugin(tauri_plugin_dialog::init())
         .plugin(shortcuts::plugin())
         .invoke_handler(tauri::generate_handler![
             commands::get_settings,
@@ -113,6 +121,7 @@ pub fn run() {
             commands::hide_control,
             commands::quit_app,
             commands::relayout_overlay,
+            commands::pick_image,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
