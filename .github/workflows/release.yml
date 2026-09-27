@@ -1,0 +1,60 @@
+name: Release
+
+# Push a tag like v0.1.0 to build a universal (Apple Silicon + Intel) DMG and attach it
+# to a draft GitHub Release. Review the draft, then press Publish.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: npm ci
+
+      - name: Test
+        run: |
+          npm test
+          npm run typecheck
+          npx vite build
+          cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: Build and upload DMG
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: --target universal-apple-darwin
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
+          releaseName: Dangle ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
+          releaseDraft: true
+          prerelease: false
+          releaseBody: |
+            A tiny thing for your desktop.
+
+            ## Install
+            1. Download **Dangle_…_universal.dmg** below. It works on Apple Silicon and Intel Macs running macOS 11 or later.
+            2. Open it and drag **Dangle** into **Applications**.
+            3. The first time only: right-click Dangle in Applications, choose **Open**, then **Open** again.
+               On macOS 15 or later, you may need System Settings › Privacy & Security › **Open Anyway** instead.
+
+            Dangle isn't notarized by Apple yet, so macOS asks you to confirm once. It needs no account and makes no network requests.

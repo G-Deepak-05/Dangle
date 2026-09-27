@@ -16,6 +16,24 @@ This first milestone targets **macOS** (Apple Silicon and Intel). The architectu
 - Multiple monitors. The charm remembers its display and falls back to the primary display if that one is disconnected.
 - A short onboarding and a privacy page. No account, no analytics, no network.
 
+## Install
+
+Download the latest `.dmg` from [Releases](https://github.com/G-Deepak-05/Dangle/releases). It works on Apple Silicon and Intel Macs running macOS 11 or later.
+
+1. Open the DMG and drag **Dangle** into **Applications**.
+2. The first time only: right-click Dangle in Applications, choose **Open**, then **Open** again. On macOS 15 or later, you may need System Settings › Privacy & Security › **Open Anyway** instead.
+
+Dangle is ad-hoc signed but not notarized by Apple, so macOS asks you to confirm once.
+
+## Release a new version
+
+1. Bump the version in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`.
+2. Commit, then tag and push:
+   ```bash
+   git tag v0.1.1 && git push origin main --tags
+   ```
+3. GitHub Actions tests the app, builds a universal DMG, and attaches it to a **draft** release. Open the Releases page, check it, and press **Publish**.
+
 ## Run it
 
 Requirements: macOS 11+, Node 20+, Rust (stable), and the Xcode command line tools.
