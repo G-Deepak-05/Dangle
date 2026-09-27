@@ -35,6 +35,8 @@ pub struct PointerState {
     pub reeling: bool,
     pub over: bool,
     pub origin: (f64, f64),
+    /// Scale factor of the overlay's display, for platforms that report physical cursors.
+    pub scale: f64,
     /// App that was frontmost before the charm was touched, so focus can be returned.
     pub previous_app: Option<i32>,
 }

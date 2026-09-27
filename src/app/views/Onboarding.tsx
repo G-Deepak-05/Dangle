@@ -1,3 +1,4 @@
+import { KEYS } from "../platform";
 import { useState } from "react";
 import { backend } from "../../ipc/backend";
 import { stageConfigFor, updateSettings } from "../../state/stores";
@@ -66,7 +67,7 @@ export function Onboarding() {
             <p className="stage-hint">{swung ? "Just like that." : "Try it here"}</p>
           </CharmPreview>
           <h1 id="ob-2">Grab it. Swing it. Let go.</h1>
-          <p className="lede">Hold ⌥ Option while you drag to let out more string.</p>
+          <p className="lede">{KEYS.reelHint} while you drag to let out more string.</p>
         </section>
       )}
 

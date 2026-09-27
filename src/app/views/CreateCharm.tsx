@@ -1,3 +1,4 @@
+import { THIS_DEVICE } from "../platform";
 import { useEffect, useMemo, useState, type DragEvent, type MouseEvent } from "react";
 import type { Charm, RopeStyle } from "../../charms/types";
 import {
@@ -182,7 +183,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
         {errorBox}
         <div className="notice">
           <CheckIcon />
-          <span>Your image is processed on this Mac and stored only here. Nothing is uploaded.</span>
+          <span>Your image is processed on {THIS_DEVICE} and stored only here. Nothing is uploaded.</span>
         </div>
       </div>
     );

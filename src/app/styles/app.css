@@ -131,6 +131,11 @@ select {
   flex: none;
 }
 
+/* Only macOS draws traffic lights over the content; elsewhere the OS title bar sits above it. */
+.platform-other .titlebar {
+  height: 14px;
+}
+
 .view {
   flex: 1;
   overflow-y: auto;

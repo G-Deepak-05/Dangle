@@ -19,10 +19,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "app",
-      "dmg"
-    ],
+    "targets": "all",
     "category": "public.app-category.entertainment",
     "shortDescription": "A tiny thing for your desktop.",
     "longDescription": "Dangle hangs a small physical charm from the top of your screen. Grab it, swing it, let go.",
@@ -51,6 +48,11 @@
           "x": 480,
           "y": 215
         }
+      }
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
       }
     }
   }

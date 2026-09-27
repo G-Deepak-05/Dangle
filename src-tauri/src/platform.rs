@@ -46,7 +46,7 @@ mod imp {
 
     /// Cursor in global logical points with a top-left origin, matching Tauri's
     /// logical window positions on every display regardless of scale factor.
-    pub fn cursor_position() -> Option<(f64, f64)> {
+    pub fn cursor_position(_scale: f64) -> Option<(f64, f64)> {
         let point = NSEvent::mouseLocation();
         let main_height = unsafe { CGDisplayBounds(CGMainDisplayID()) }.size.height;
         Some((point.x, main_height - point.y))
@@ -104,11 +104,64 @@ mod imp {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
+mod imp {
+    use tauri::WebviewWindow;
+    use windows_sys::Win32::Foundation::POINT;
+    use windows_sys::Win32::System::SystemInformation::GetTickCount;
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
+    use windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos;
+
+    /// Cursor in logical pixels. Windows reports physical pixels, so divide by the
+    /// overlay display's scale to match the logical window origin.
+    pub fn cursor_position(scale: f64) -> Option<(f64, f64)> {
+        let mut p = POINT { x: 0, y: 0 };
+        if unsafe { GetCursorPos(&mut p) } == 0 {
+            return None;
+        }
+        let scale = if scale > 0.0 { scale } else { 1.0 };
+        Some((p.x as f64 / scale, p.y as f64 / scale))
+    }
+
+    pub fn seconds_since_input() -> Option<f64> {
+        let mut info = LASTINPUTINFO {
+            cbSize: std::mem::size_of::<LASTINPUTINFO>() as u32,
+            dwTime: 0,
+        };
+        if unsafe { GetLastInputInfo(&mut info) } == 0 {
+            return None;
+        }
+        let now = unsafe { GetTickCount() };
+        Some(now.wrapping_sub(info.dwTime) as f64 / 1000.0)
+    }
+
+    pub fn apply_window_behavior(
+        _window: &WebviewWindow,
+        _all_spaces: bool,
+        _over_fullscreen: bool,
+    ) {
+    }
+
+    pub fn set_overlay_level(window: &WebviewWindow, on_top: bool) {
+        let _ = window.set_always_on_top(on_top);
+    }
+
+    // The overlay is created non-focusable (WS_EX_NOACTIVATE), so it never steals focus
+    // and there is nothing to give back.
+    pub fn frontmost_app_pid() -> Option<i32> {
+        None
+    }
+    pub fn own_pid() -> i32 {
+        std::process::id() as i32
+    }
+    pub fn activate_pid(_pid: i32) {}
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 mod imp {
     use tauri::WebviewWindow;
 
-    pub fn cursor_position() -> Option<(f64, f64)> {
+    pub fn cursor_position(_scale: f64) -> Option<(f64, f64)> {
         None
     }
     pub fn seconds_since_input() -> Option<f64> {

@@ -1,3 +1,4 @@
+import { KEYS } from "../platform";
 import { backend, type Route } from "../../ipc/backend";
 import { updateSettings } from "../../state/stores";
 import type { Settings as SettingsShape } from "../../state/settings";
@@ -83,13 +84,13 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
       <h2 className="eyebrow group-title">Keyboard</h2>
       <div className="group">
         <SettingRow id="kb-toggle" label="Show or hide charm">
-          <kbd>⌘ ⌥ D</kbd>
+          <kbd>{KEYS.toggle}</kbd>
         </SettingRow>
         <SettingRow id="kb-settings" label="Open settings">
-          <kbd>⌘ ⌥ ,</kbd>
+          <kbd>{KEYS.settings}</kbd>
         </SettingRow>
         <SettingRow id="kb-reel" label="Lengthen or shorten the string">
-          <kbd>⌥ drag</kbd>
+          <kbd>{KEYS.reel}</kbd>
         </SettingRow>
       </div>
 

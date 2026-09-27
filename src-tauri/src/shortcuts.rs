@@ -3,12 +3,21 @@ use tauri::plugin::TauriPlugin;
 use tauri::{AppHandle, Wry};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
+/// ⌘⌥ on macOS; Ctrl+Alt elsewhere (Win+Alt+D is taken by Windows itself).
+fn primary() -> Modifiers {
+    if cfg!(target_os = "macos") {
+        Modifiers::SUPER | Modifiers::ALT
+    } else {
+        Modifiers::CONTROL | Modifiers::ALT
+    }
+}
+
 fn toggle_charm() -> Shortcut {
-    Shortcut::new(Some(Modifiers::SUPER | Modifiers::ALT), Code::KeyD)
+    Shortcut::new(Some(primary()), Code::KeyD)
 }
 
 fn open_settings() -> Shortcut {
-    Shortcut::new(Some(Modifiers::SUPER | Modifiers::ALT), Code::Comma)
+    Shortcut::new(Some(primary()), Code::Comma)
 }
 
 pub fn plugin() -> TauriPlugin<Wry> {

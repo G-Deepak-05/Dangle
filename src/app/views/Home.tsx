@@ -1,3 +1,4 @@
+import { THIS_DEVICE } from "../platform";
 import type { Route } from "../../ipc/backend";
 import { stageConfigFor, toggleFavorite, updateSettings } from "../../state/stores";
 import { CharmPreview } from "../components/CharmPreview";
@@ -109,7 +110,7 @@ export function Home({ go }: { go: (r: Route) => void }) {
           </span>
           <span className="grow">
             <span className="custom-title">Create your own charm</span>
-            <span className="custom-sub">Use any photo or drawing. It never leaves this Mac.</span>
+            <span className="custom-sub">Use any photo or drawing. It never leaves {THIS_DEVICE}.</span>
           </span>
           <ChevronIcon />
         </button>

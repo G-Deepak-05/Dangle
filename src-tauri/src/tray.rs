@@ -7,7 +7,11 @@ use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager};
 
+// macOS menu bar icons are monochrome templates; the Windows tray shows the colour icon.
+#[cfg(target_os = "macos")]
 const TRAY_ICON: &[u8] = include_bytes!("../icons/tray-template@2x.png");
+#[cfg(not(target_os = "macos"))]
+const TRAY_ICON: &[u8] = include_bytes!("../icons/32x32.png");
 
 pub fn create(app: &AppHandle) -> tauri::Result<()> {
     let title = MenuItem::with_id(app, "title", "Dangle", false, None::<&str>)?;
@@ -45,7 +49,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
 
     TrayIconBuilder::with_id("dangle-tray")
         .icon(Image::from_bytes(TRAY_ICON)?)
-        .icon_as_template(true)
+        .icon_as_template(cfg!(target_os = "macos"))
         .tooltip("Dangle")
         .menu(&menu)
         .show_menu_on_left_click(true)

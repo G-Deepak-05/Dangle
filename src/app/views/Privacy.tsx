@@ -1,3 +1,4 @@
+import { THIS_DEVICE } from "../platform";
 import type { Route } from "../../ipc/backend";
 import { BackBar } from "../components/Controls";
 
@@ -6,15 +7,15 @@ export function Privacy({ go }: { go: (r: Route) => void }) {
     <div className="view">
       <BackBar title="Privacy" onBack={() => go("settings")} />
       <div className="prose">
-        <p>Dangle is a small thing that lives on your Mac. It keeps everything here, too.</p>
+        <p>Dangle is a small thing that lives on your computer. It keeps everything here, too.</p>
 
         <h2>No account, no tracking</h2>
         <p>There’s nothing to sign up for. Dangle has no analytics and sends no telemetry. It doesn’t need an internet connection at all.</p>
 
         <h2>Your images stay yours</h2>
         <p>
-          When you make a custom charm, the image is resized and cleaned up on this Mac. Only that result is saved in
-          Dangle’s folder in your Library. Nothing is uploaded anywhere.
+          When you make a custom charm, the image is resized and cleaned up on {THIS_DEVICE}. Only that result is saved in
+          Dangle’s own app data folder. Nothing is uploaded anywhere.
         </p>
 
         <h2>What Dangle stores</h2>

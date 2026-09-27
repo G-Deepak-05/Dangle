@@ -80,7 +80,11 @@ fn layout_now(app: &AppHandle) {
 
     let _ = window.set_size(LogicalSize::new(width, height));
     let _ = window.set_position(LogicalPosition::new(left, wy));
-    state.pointer.lock().unwrap().origin = (left, wy);
+    {
+        let mut p = state.pointer.lock().unwrap();
+        p.origin = (left, wy);
+        p.scale = scale;
+    }
 
     let geometry = OverlayGeometry {
         width,
@@ -135,7 +139,8 @@ pub fn spawn_pointer_watch(app: AppHandle) {
                     let s = state.settings.lock().unwrap();
                     s.onboarding_complete && !s.hidden && !s.paused
                 };
-                let cursor = platform::cursor_position();
+                let scale = state.pointer.lock().unwrap().scale;
+                let cursor = platform::cursor_position(scale);
                 let mut near = false;
                 let change = {
                     let mut p = state.pointer.lock().unwrap();

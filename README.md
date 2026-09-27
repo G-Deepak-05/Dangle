@@ -2,7 +2,7 @@
 
 A tiny thing for your desktop. Dangle hangs a small charm on a string from the top of your screen. Grab it, swing it, let go.
 
-This first milestone targets **macOS** (Apple Silicon and Intel). The architecture is ready for Windows; see [Platform notes](#platform-notes).
+Runs on **macOS** (Apple Silicon and Intel) and **Windows** 10/11 (x64).
 
 ## Features
 
@@ -18,13 +18,17 @@ This first milestone targets **macOS** (Apple Silicon and Intel). The architectu
 
 ## Install
 
-Download the latest `.dmg` from [Releases](https://github.com/G-Deepak-05/Dangle/releases). It works on Apple Silicon and Intel Macs running macOS 11 or later.
+Download from [Releases](https://github.com/G-Deepak-05/Dangle/releases).
+
+**macOS** (Apple Silicon and Intel, macOS 11+): download the `.dmg`.
 
 1. Open the DMG and drag **Dangle** into **Applications**.
 2. The first time only, macOS says it can't verify Dangle. Click **Done**, open **System Settings › Privacy & Security**, scroll to **Security**, and click **Open Anyway** next to "Dangle was blocked". Confirm with your password. After that it opens normally.
    Prefer Terminal? Run `xattr -dr com.apple.quarantine /Applications/Dangle.app` instead.
 
-Dangle is ad-hoc signed but not notarized by Apple, so macOS asks you to confirm once.
+**Windows** (10 and 11, 64-bit): download `Dangle_…_x64-setup.exe` and run it. No admin rights are needed. If you see "Windows protected your PC", click **More info**, then **Run anyway**. Dangle lives in the system tray.
+
+Dangle isn't signed by Apple or Microsoft yet, so your system asks you to confirm once.
 
 ## Release a new version
 
@@ -33,7 +37,7 @@ Dangle is ad-hoc signed but not notarized by Apple, so macOS asks you to confirm
    ```bash
    git tag v0.1.1 && git push origin main --tags
    ```
-3. GitHub Actions tests the app, builds a universal DMG, and attaches it to a **draft** release. Open the Releases page, check it, and press **Publish**.
+3. GitHub Actions tests the app on macOS and Windows, builds a universal DMG and a Windows installer, and attaches both to one **draft** release. Open the Releases page, check it, and press **Publish**.
 
 ## Run it
 
@@ -73,9 +77,9 @@ npm run typecheck
 
 | Shortcut | Action |
 | --- | --- |
-| ⌘ ⌥ D | Show or hide the charm (global) |
-| ⌘ ⌥ , | Open settings (global) |
-| ⌥ + drag | Lengthen or shorten the string |
+| ⌘ ⌥ D (Windows: Ctrl Alt D) | Show or hide the charm (global) |
+| ⌘ ⌥ , (Windows: Ctrl Alt ,) | Open settings (global) |
+| ⌥ + drag (Windows: Alt + drag) | Lengthen or shorten the string |
 | ⌘ F | Search charms (in the library) |
 | ⌘ + / ⌘ − / ⌘ 0 | Scale the interface |
 | Esc | Go back |
@@ -135,11 +139,7 @@ Dangle makes no network requests.
 
 ## Platform notes
 
-Windows support mostly means filling in `src-tauri/src/platform.rs`:
+Platform-specific code lives in `src-tauri/src/platform.rs`:
 
-- Cursor position: `GetCursorPos`.
-- Idle time: `GetLastInputInfo`.
-- Focus return: `SetForegroundWindow`.
-- Tray: Tauri already maps the menu bar icon to the system tray.
-
-Everything else is shared.
+- **macOS:** cursor via `NSEvent`, idle time via CoreGraphics, Spaces and full-screen behaviour via `NSWindow` collection behaviour, and a window level above the menu bar.
+- **Windows:** cursor via `GetCursorPos`, idle time via `GetLastInputInfo`. The overlay is non-activating, so it never steals focus. "Show on all desktops" and "Hide when full screen" are macOS-only for now.

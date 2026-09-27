@@ -1,3 +1,4 @@
+import { KEYS } from "../platform";
 import { useEffect, useState } from "react";
 import {
   BEADS,
@@ -63,7 +64,7 @@ export function Customize({ go }: { go: (r: Route) => void }) {
         nudgeKey={nudge}
         onThreadLengthCommit={(threadLength) => void updateSettings({ threadLength })}
       >
-        <p className="stage-hint">Hold ⌥ Option and drag to pull out more string</p>
+        <p className="stage-hint">{KEYS.reelHint} and drag to pull out more string</p>
       </CharmPreview>
 
       <div className="field">
