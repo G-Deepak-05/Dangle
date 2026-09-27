@@ -54,7 +54,7 @@ jobs:
             ## Install
             1. Download **Dangle_…_universal.dmg** below. It works on Apple Silicon and Intel Macs running macOS 11 or later.
             2. Open it and drag **Dangle** into **Applications**.
-            3. The first time only: right-click Dangle in Applications, choose **Open**, then **Open** again.
-               On macOS 15 or later, you may need System Settings › Privacy & Security › **Open Anyway** instead.
+            3. The first time only, macOS says it can't verify Dangle. Click **Done**, open **System Settings › Privacy & Security**, scroll to **Security**, and click **Open Anyway** next to "Dangle was blocked". Confirm with your password. After that it opens normally.
+               Prefer Terminal? Run `xattr -dr com.apple.quarantine /Applications/Dangle.app` instead.
 
             Dangle isn't notarized by Apple yet, so macOS asks you to confirm once. It needs no account and makes no network requests.

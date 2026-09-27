@@ -21,7 +21,8 @@ This first milestone targets **macOS** (Apple Silicon and Intel). The architectu
 Download the latest `.dmg` from [Releases](https://github.com/G-Deepak-05/Dangle/releases). It works on Apple Silicon and Intel Macs running macOS 11 or later.
 
 1. Open the DMG and drag **Dangle** into **Applications**.
-2. The first time only: right-click Dangle in Applications, choose **Open**, then **Open** again. On macOS 15 or later, you may need System Settings › Privacy & Security › **Open Anyway** instead.
+2. The first time only, macOS says it can't verify Dangle. Click **Done**, open **System Settings › Privacy & Security**, scroll to **Security**, and click **Open Anyway** next to "Dangle was blocked". Confirm with your password. After that it opens normally.
+   Prefer Terminal? Run `xattr -dr com.apple.quarantine /Applications/Dangle.app` instead.
 
 Dangle is ad-hoc signed but not notarized by Apple, so macOS asks you to confirm once.
 

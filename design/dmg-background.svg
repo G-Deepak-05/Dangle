@@ -14,6 +14,6 @@
   <path d="M262 216 C 300 196, 360 196, 398 216" fill="none" stroke="#C8412B" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9"/>
   <path d="M388 204 L 400 217 L 383 222" fill="none" stroke="#C8412B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <rect x="44" y="336" width="572" height="52" rx="12" fill="#FFFDF9" stroke="#1F1B17" stroke-opacity="0.1"/>
-  <text x="64" y="358" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="13" font-weight="600" fill="#1F1B17">Opening it the first time?</text>
-  <text x="64" y="377" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="12.5" fill="#5F564D">Right-click Dangle in Applications and choose Open. After that it opens normally.</text>
+  <text x="64" y="358" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="13" font-weight="600" fill="#1F1B17">macOS says “Dangle Not Opened”?</text>
+  <text x="64" y="377" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="12.5" fill="#5F564D">Click Done, then System Settings › Privacy &amp; Security › Open Anyway. Only once.</text>
 </svg>
