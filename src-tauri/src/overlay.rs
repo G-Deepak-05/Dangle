@@ -55,9 +55,11 @@ fn layout_now(app: &AppHandle) {
         return;
     };
     let scale = monitor.scale_factor();
-    let wa = monitor.work_area();
-    let (wx, wy) = (wa.position.x as f64 / scale, wa.position.y as f64 / scale);
-    let (ww, wh) = (wa.size.width as f64 / scale, wa.size.height as f64 / scale);
+    // Use the full display, not the work area, so the string starts at the very top
+    // edge of the screen; the overlay sits above the menu bar layer (see platform.rs).
+    let (pos, size) = (monitor.position(), monitor.size());
+    let (wx, wy) = (pos.x as f64 / scale, pos.y as f64 / scale);
+    let (ww, wh) = (size.width as f64 / scale, size.height as f64 / scale);
 
     let (charm, rope) = match settings.size {
         CharmSize::Small => (58.0, 96.0),

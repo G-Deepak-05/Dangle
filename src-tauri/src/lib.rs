@@ -54,7 +54,7 @@ fn apply_side_effects(app: &AppHandle, old: Option<&Settings>, new: &Settings) {
 
     if let Some(window) = overlay::window(app) {
         if changed(|s| s.always_on_top.to_string()) {
-            let _ = window.set_always_on_top(new.always_on_top);
+            platform::set_overlay_level(&window, new.always_on_top);
         }
         if changed(|s| format!("{}{}", s.all_spaces, s.hide_when_fullscreen)) {
             platform::apply_window_behavior(&window, new.all_spaces, !new.hide_when_fullscreen);

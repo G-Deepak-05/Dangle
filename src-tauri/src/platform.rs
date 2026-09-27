@@ -74,6 +74,17 @@ mod imp {
         });
     }
 
+    /// Above the menu bar when on top, so the string can hang from the screen's top edge.
+    pub fn set_overlay_level(window: &WebviewWindow, on_top: bool) {
+        const STATUS_WINDOW_LEVEL: isize = 25;
+        let target = window.clone();
+        let _ = window.run_on_main_thread(move || {
+            let Ok(ptr) = target.ns_window() else { return };
+            let ns_window: &NSWindow = unsafe { &*(ptr as *const NSWindow) };
+            ns_window.setLevel(if on_top { STATUS_WINDOW_LEVEL } else { 0 });
+        });
+    }
+
     pub fn frontmost_app_pid() -> Option<i32> {
         let workspace = NSWorkspace::sharedWorkspace();
         let app = workspace.frontmostApplication()?;
@@ -105,6 +116,9 @@ mod imp {
     }
     pub fn apply_window_behavior(window: &WebviewWindow, all_spaces: bool, _over_fullscreen: bool) {
         let _ = window.set_visible_on_all_workspaces(all_spaces);
+    }
+    pub fn set_overlay_level(window: &WebviewWindow, on_top: bool) {
+        let _ = window.set_always_on_top(on_top);
     }
     pub fn frontmost_app_pid() -> Option<i32> {
         None
