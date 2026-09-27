@@ -1,0 +1,16 @@
+{
+  "id": "cassette",
+  "name": "Mixtape",
+  "category": "retro",
+  "tags": [],
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "metadata": {
+    "description": "Side A: good days.",
+    "author": "Dangle"
+  }
+}

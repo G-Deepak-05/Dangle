@@ -1,0 +1,19 @@
+{
+  "id": "clover",
+  "name": "Four-Leaf Clover",
+  "category": "nature",
+  "tags": [
+    "seasonal",
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Found it on the first try.",
+    "author": "Dangle"
+  }
+}

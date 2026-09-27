@@ -1,0 +1,19 @@
+{
+  "id": "cherry",
+  "name": "Cherries",
+  "category": "nature",
+  "tags": [
+    "cute",
+    "retro"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.62,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Two is better than one.",
+    "author": "Dangle"
+  }
+}

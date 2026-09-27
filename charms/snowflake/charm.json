@@ -1,0 +1,19 @@
+{
+  "id": "snowflake",
+  "name": "Snowflake",
+  "category": "seasonal",
+  "tags": [
+    "minimal",
+    "nature"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "No two alike. This one's yours.",
+    "author": "Dangle"
+  }
+}

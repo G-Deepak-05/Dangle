@@ -1,0 +1,19 @@
+{
+  "id": "strawberry",
+  "name": "Strawberry",
+  "category": "nature",
+  "tags": [
+    "cute",
+    "seasonal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Picked at exactly the right time.",
+    "author": "Dangle"
+  }
+}

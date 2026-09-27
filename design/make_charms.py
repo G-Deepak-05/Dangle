@@ -163,6 +163,144 @@ CHARMS = {
 ''')),
 }
 
+
+EXTRA = {
+"cherry": dict(name="Cherries", category="nature", tags=["cute", "retro"], rope="thread",
+  desc="Two is better than one.", anchor=(0.62, 0.06), svg=svg(f'''
+<path d="M124 12 C 110 50, 80 80, 64 116 M124 12 C 128 56, 134 92, 138 118" fill="none" stroke="#5B7A3A" stroke-width="7" stroke-linecap="round"/>
+<path d="M124 14 C 146 8, 170 20, 176 40 C 150 44, 132 34, 124 14 Z" fill="#8DB38B" {W}/>
+<circle cx="62" cy="142" r="38" fill="#D9503B" {W}/>
+<circle cx="140" cy="146" r="38" fill="#C8412B" {W}/>
+<path d="M42 130 C 44 120, 50 114, 58 112" {GLOSS}/>
+<path d="M120 134 C 122 124, 128 118, 136 116" {GLOSS}/>
+''')),
+"bell": dict(name="Little Bell", category="seasonal", tags=["retro", "minimal"], rope="cord",
+  desc="Rings only in your head.", anchor=(0.5, 0.1), svg=svg(f'''
+<path d="M100 20 C 60 20, 50 60, 48 100 C 46 130, 30 140, 26 152 L174 152 C 170 140, 154 130, 152 100 C 150 60, 140 20, 100 20 Z" fill="#E6B450" {W}/>
+<rect x="22" y="148" width="156" height="16" rx="8" fill="#B9852E" {W}/>
+<circle cx="100" cy="176" r="13" fill="#B9852E" {W}/>
+<path d="M68 60 C 64 76, 62 96, 62 116" {GLOSS}/>
+<path d="M74 136 L126 136" stroke="#B9852E" stroke-width="5" stroke-linecap="round"/>
+''')),
+"key": dict(name="Old Key", category="retro", tags=["minimal"], rope="chain",
+  desc="Opens something, somewhere.", anchor=(0.5, 0.05), svg=svg(f'''
+<path d="M100 10 a 34 34 0 1 1 -0.1 0 Z M100 30 a 14 14 0 1 0 0.1 0 Z" fill="#D8B25C" fill-rule="evenodd" {W}/>
+<path d="M90 76 L110 76 L110 184 L90 184 Z" fill="#D8B25C" {W}/>
+<path d="M110 146 L136 146 L136 160 L110 160 M110 168 L128 168 L128 182 L110 182" fill="#D8B25C" {W}/>
+<path d="M76 30 C 72 38, 70 46, 72 54" {GLOSS}/>
+''')),
+"snowflake": dict(name="Snowflake", category="seasonal", tags=["minimal", "nature"], rope="minimal",
+  desc="No two alike. This one's yours.", anchor=(0.5, 0.06), svg=svg(f'''
+<g stroke="{INK}" stroke-width="16" stroke-linecap="round">
+<path d="M100 14 V186 M26 57 L174 143 M26 143 L174 57"/>
+</g>
+<g stroke="#A8D8E8" stroke-width="8" stroke-linecap="round" fill="none">
+<path d="M100 14 V186 M26 57 L174 143 M26 143 L174 57"/>
+<path d="M84 34 L100 50 L116 34 M84 166 L100 150 L116 166 M40 80 L62 70 L58 46 M160 120 L138 130 L142 154 M40 120 L62 130 L58 154 M160 80 L138 70 L142 46"/>
+</g>
+<circle cx="100" cy="100" r="14" fill="#FFFFFF" {W}/>
+''')),
+"pumpkin": dict(name="Pumpkin", category="seasonal", tags=["nature", "cute"], rope="cord",
+  desc="Harvest-ready, no carving needed.", anchor=(0.52, 0.08), svg=svg(f'''
+<path d="M100 44 C 104 30, 108 20, 116 14" fill="none" stroke="#5B7A3A" stroke-width="10" stroke-linecap="round"/>
+<path d="M100 48 C 56 36, 14 70, 18 118 C 22 166, 70 184, 100 172 C 130 184, 178 166, 182 118 C 186 70, 144 36, 100 48 Z" fill="#EE9B45" {W}/>
+<path d="M100 50 C 84 80, 84 150, 100 172 M100 50 C 116 80, 116 150, 100 172 M60 52 C 44 90, 50 150, 70 178 M140 52 C 156 90, 150 150, 130 178" fill="none" stroke="#C8692A" stroke-width="5"/>
+<path d="M36 96 C 38 82, 46 70, 56 64" {GLOSS}/>
+<path d="M118 20 C 136 14, 152 22, 156 36" fill="none" stroke="#5B7A3A" stroke-width="5" stroke-linecap="round"/>
+''')),
+"rainbow": dict(name="Rainbow", category="cute", tags=["nature", "retro"], rope="thread",
+  desc="After every little storm.", anchor=(0.5, 0.22), svg=svg(f'''
+<path d="M38 150 A 62 62 0 0 1 162 150" fill="none" stroke="{INK}" stroke-width="60"/>
+<path d="M22 150 A 78 78 0 0 1 178 150" fill="none" stroke="#E35D6A" stroke-width="16"/>
+<path d="M38 150 A 62 62 0 0 1 162 150" fill="none" stroke="#F6D365" stroke-width="16"/>
+<path d="M54 150 A 46 46 0 0 1 146 150" fill="none" stroke="#8EC5E8" stroke-width="16"/>
+<path d="M14 170 C 6 150, 30 138, 44 150 C 58 136, 80 150, 70 170 Z" fill="#FFFFFF" {W}/>
+<path d="M130 170 C 120 150, 144 136, 156 150 C 170 138, 194 150, 186 170 Z" fill="#FFFFFF" {W}/>
+''')),
+"rocket": dict(name="Rocket", category="space", tags=["retro"], rope="minimal",
+  desc="Destination: somewhere nice.", anchor=(0.5, 0.05), svg=svg(f'''
+<path d="M66 118 L40 156 L70 150 Z M134 118 L160 156 L130 150 Z" fill="#D9503B" {W}/>
+<path d="M100 10 C 138 40, 144 100, 132 150 L68 150 C 56 100, 62 40, 100 10 Z" fill="#FFF6E4" {W}/>
+<circle cx="100" cy="82" r="18" fill="#8EC5E8" {W}/>
+<path d="M84 150 L116 150 L108 176 L92 176 Z" fill="#8A5A3B" {W}/>
+<path d="M92 176 Q 100 196 108 176" fill="#F6D365" stroke="#EE9B45" stroke-width="4"/>
+<path d="M78 58 C 76 70, 76 86, 78 104" {GLOSS}/>
+<path d="M76 34 Q 100 46 124 34" fill="none" stroke="#D9503B" stroke-width="7"/>
+''')),
+"balloon": dict(name="Balloon", category="cute", tags=["minimal"], rope="thread",
+  desc="Floats, but stays put.", anchor=(0.5, 0.06), svg=svg(f'''
+<path d="M100 12 C 146 12, 170 50, 166 88 C 162 126, 124 150, 104 156 L108 170 L92 170 L96 156 C 76 150, 38 126, 34 88 C 30 50, 54 12, 100 12 Z" fill="#E35D6A" {W}/>
+<path d="M100 170 C 94 178, 108 184, 100 192" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>
+<path d="M62 50 C 68 38, 78 32, 90 30" {GLOSS}/>
+<ellipse cx="66" cy="72" rx="5" ry="9" fill="#FFFFFF" opacity="0.5"/>
+''')),
+"strawberry": dict(name="Strawberry", category="nature", tags=["cute", "seasonal"], rope="thread",
+  desc="Picked at exactly the right time.", anchor=(0.5, 0.08), svg=svg(f'''
+<path d="M100 44 C 150 30, 186 60, 176 100 C 164 146, 124 184, 100 188 C 76 184, 36 146, 24 100 C 14 60, 50 30, 100 44 Z" fill="#E35D6A" {W}/>
+<path d="M100 16 L100 40 M58 44 L86 34 L100 50 L114 34 L142 44 L120 58 L100 52 L80 58 Z" fill="#8DB38B" {W}/>
+<g fill="#FFF1C9"><ellipse cx="64" cy="90" rx="3.5" ry="5"/><ellipse cx="100" cy="84" rx="3.5" ry="5"/><ellipse cx="136" cy="90" rx="3.5" ry="5"/><ellipse cx="80" cy="120" rx="3.5" ry="5"/><ellipse cx="120" cy="120" rx="3.5" ry="5"/><ellipse cx="100" cy="150" rx="3.5" ry="5"/><ellipse cx="60" cy="126" rx="3.5" ry="5"/><ellipse cx="140" cy="126" rx="3.5" ry="5"/></g>
+<path d="M44 84 C 44 72, 50 62, 60 56" {GLOSS}/>
+''')),
+"note": dict(name="Music Note", category="retro", tags=["minimal"], rope="chain",
+  desc="Hums your favourite song.", anchor=(0.62, 0.07), svg=svg(f'''
+<path d="M118 16 L172 30 L172 58 L132 48 L132 146" fill="none" stroke="{INK}" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M118 16 L172 30 L172 58 L132 48 L132 146" fill="none" stroke="#B7A6E0" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="96" cy="152" rx="40" ry="30" transform="rotate(-18 96 152)" fill="#B7A6E0" {W}/>
+<path d="M72 146 C 74 138, 80 132, 88 130" {GLOSS}/>
+''')),
+"cassette": dict(name="Mixtape", category="retro", tags=[], rope="cord",
+  desc="Side A: good days.", anchor=(0.5, 0.2), svg=svg(f'''
+<rect x="14" y="42" width="172" height="116" rx="12" fill="#2C3B5E" {W}/>
+<rect x="34" y="60" width="132" height="50" rx="6" fill="#FFF6E4" stroke="{INK}" stroke-width="4"/>
+<rect x="34" y="60" width="132" height="14" fill="#E35D6A"/>
+<circle cx="72" cy="92" r="11" fill="#FFFFFF" {W}/><circle cx="128" cy="92" r="11" fill="#FFFFFF" {W}/>
+<path d="M50 158 L60 128 L140 128 L150 158" fill="#3A4A70" {W}/>
+<circle cx="80" cy="144" r="4" fill="{INK}"/><circle cx="120" cy="144" r="4" fill="{INK}"/>
+''')),
+"dice": dict(name="Lucky Die", category="retro", tags=["minimal"], rope="chain",
+  desc="Always rolls a six. Probably.", anchor=(0.5, 0.08), svg=svg(f'''
+<path d="M100 16 L176 58 L176 144 L100 186 L24 144 L24 58 Z" fill="#FFF6E4" {W}/>
+<path d="M24 58 L100 100 L176 58 M100 100 L100 186" fill="none" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<path d="M100 100 L176 58 L176 144 L100 186 Z" fill="#EFE2C8"/>
+<path d="M24 58 L100 100 L176 58 M100 100 L100 186 M100 16 L176 58 L176 144 L100 186 L24 144 L24 58 Z" fill="none" {W}/>
+<ellipse cx="100" cy="58" rx="10" ry="6" fill="#D9503B"/>
+<circle cx="44" cy="96" r="6" fill="{INK}"/><circle cx="62" cy="120" r="6" fill="{INK}"/><circle cx="80" cy="146" r="6" fill="{INK}"/>
+<circle cx="124" cy="116" r="6" fill="{INK}"/><circle cx="152" cy="100" r="6" fill="{INK}"/><circle cx="124" cy="156" r="6" fill="{INK}"/><circle cx="152" cy="140" r="6" fill="{INK}"/>
+''')),
+"clover": dict(name="Four-Leaf Clover", category="nature", tags=["seasonal", "minimal"], rope="thread",
+  desc="Found it on the first try.", anchor=(0.5, 0.08), svg=svg(f'''
+<path d="M100 104 C 120 140, 124 170, 140 190" fill="none" stroke="#4F7A55" stroke-width="9" stroke-linecap="round"/>
+<g fill="#8DB38B" stroke="{INK}" stroke-width="6" stroke-linejoin="round">
+<path d="M100 100 C 70 90, 60 60, 76 42 C 88 30, 100 40, 100 52 C 100 40, 112 30, 124 42 C 140 60, 130 90, 100 100 Z"/>
+<path d="M100 100 C 70 110, 60 140, 76 158 C 88 170, 100 160, 100 148 C 100 160, 112 170, 124 158 C 140 140, 130 110, 100 100 Z"/>
+<path d="M100 100 C 90 70, 60 60, 42 76 C 30 88, 40 100, 52 100 C 40 100, 30 112, 42 124 C 60 140, 90 130, 100 100 Z"/>
+<path d="M100 100 C 110 70, 140 60, 158 76 C 170 88, 160 100, 148 100 C 160 100, 170 112, 158 124 C 140 140, 110 130, 100 100 Z"/>
+</g>
+<path d="M78 56 C 80 50, 84 46, 90 44" {GLOSS}/>
+''')),
+"donut": dict(name="Donut", category="cute", tags=["retro"], rope="cord",
+  desc="Sprinkles are non-negotiable.", anchor=(0.5, 0.08), svg=svg(f'''
+<path d="M100 16 a 84 84 0 1 1 -0.1 0 Z M100 74 a 26 26 0 1 0 0.1 0 Z" fill="#E6B87A" fill-rule="evenodd" {W}/>
+<path d="M100 26 C 150 26, 180 60, 176 100 C 172 116, 160 110, 156 124 C 150 140, 136 128, 124 140 C 112 150, 104 138, 94 146 C 80 156, 72 140, 60 140 C 44 140, 40 124, 30 116 C 20 104, 24 60, 60 36 C 72 28, 86 26, 100 26 Z M100 74 a 26 26 0 1 0 0.1 0 Z" fill="#F2A7B5" fill-rule="evenodd" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<g stroke-width="6" stroke-linecap="round">
+<path d="M60 60 l10 -4" stroke="#8EC5E8"/><path d="M130 48 l8 8" stroke="#F6D365"/><path d="M150 90 l2 10" stroke="#FFFFFF"/>
+<path d="M48 100 l4 10" stroke="#F6D365"/><path d="M96 50 l10 2" stroke="#FFFFFF"/><path d="M140 124 l-8 6" stroke="#8EC5E8"/>
+<path d="M72 126 l-10 -4" stroke="#8DB38B"/>
+</g>
+''')),
+"cactus": dict(name="Cactus", category="nature", tags=["cute", "minimal"], rope="minimal",
+  desc="Low maintenance, high charm.", anchor=(0.5, 0.06), svg=svg(f'''
+<path d="M58 150 L142 150 L132 188 L68 188 Z" fill="#D9824A" {W}/>
+<rect x="50" y="140" width="100" height="18" rx="4" fill="#C8692A" {W}/>
+<path d="M76 140 L76 44 C 76 8, 124 8, 124 44 L124 140 Z" fill="#8DB38B" {W}/>
+<path d="M76 98 L56 98 C 40 98, 36 86, 36 72 L36 58 C 36 46, 54 46, 54 58 L54 76 L76 76 M124 86 L146 86 C 160 86, 164 74, 164 62 L164 50 C 164 38, 146 38, 146 50 L146 66 L124 66" fill="#8DB38B" {W}/>
+<path d="M100 30 V130" stroke="#6F9A6C" stroke-width="5" stroke-linecap="round"/>
+{eyes(84, dx=10, r=4)}
+<path d="M94 96 q 6 5 12 0" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>
+''')),
+}
+CHARMS.update(EXTRA)
+
 root = os.path.join(os.path.dirname(__file__), "..", "charms")
 for cid, c in CHARMS.items():
     d = os.path.join(root, cid)

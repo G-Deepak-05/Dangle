@@ -1,0 +1,19 @@
+{
+  "id": "bell",
+  "name": "Little Bell",
+  "category": "seasonal",
+  "tags": [
+    "retro",
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.1
+  },
+  "metadata": {
+    "description": "Rings only in your head.",
+    "author": "Dangle"
+  }
+}

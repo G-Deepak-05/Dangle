@@ -9,7 +9,7 @@ const images = import.meta.glob("../../charms/*/charm.svg", {
   import: "default",
 }) as Record<string, string>;
 
-const ORDER = ["moon", "star", "planet", "cat", "ghost", "mushroom", "leaf", "cloud", "crystal", "heart", "sun", "coin", "camera", "coffee", "sword"];
+const ORDER = ["moon", "star", "planet", "rocket", "cat", "ghost", "mushroom", "leaf", "clover", "cloud", "rainbow", "crystal", "heart", "balloon", "sun", "cherry", "strawberry", "donut", "coffee", "cactus", "pumpkin", "snowflake", "bell", "coin", "key", "dice", "note", "cassette", "camera", "sword"];
 
 function load(): Charm[] {
   const charms: Charm[] = [];

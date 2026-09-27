@@ -1,0 +1,18 @@
+{
+  "id": "key",
+  "name": "Old Key",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Opens something, somewhere.",
+    "author": "Dangle"
+  }
+}

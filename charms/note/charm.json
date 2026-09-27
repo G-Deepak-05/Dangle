@@ -1,0 +1,18 @@
+{
+  "id": "note",
+  "name": "Music Note",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.62,
+    "y": 0.07
+  },
+  "metadata": {
+    "description": "Hums your favourite song.",
+    "author": "Dangle"
+  }
+}

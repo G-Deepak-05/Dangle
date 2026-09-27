@@ -1,0 +1,19 @@
+{
+  "id": "cactus",
+  "name": "Cactus",
+  "category": "nature",
+  "tags": [
+    "cute",
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Low maintenance, high charm.",
+    "author": "Dangle"
+  }
+}

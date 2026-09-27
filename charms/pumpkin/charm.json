@@ -1,0 +1,19 @@
+{
+  "id": "pumpkin",
+  "name": "Pumpkin",
+  "category": "seasonal",
+  "tags": [
+    "nature",
+    "cute"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.52,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Harvest-ready, no carving needed.",
+    "author": "Dangle"
+  }
+}

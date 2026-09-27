@@ -1,0 +1,18 @@
+{
+  "id": "donut",
+  "name": "Donut",
+  "category": "cute",
+  "tags": [
+    "retro"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Sprinkles are non-negotiable.",
+    "author": "Dangle"
+  }
+}

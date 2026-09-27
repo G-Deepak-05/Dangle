@@ -1,0 +1,18 @@
+{
+  "id": "rocket",
+  "name": "Rocket",
+  "category": "space",
+  "tags": [
+    "retro"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Destination: somewhere nice.",
+    "author": "Dangle"
+  }
+}

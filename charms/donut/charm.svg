@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+<path d="M100 16 a 84 84 0 1 1 -0.1 0 Z M100 74 a 26 26 0 1 0 0.1 0 Z" fill="#E6B87A" fill-rule="evenodd" stroke="#2B2320" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M100 26 C 150 26, 180 60, 176 100 C 172 116, 160 110, 156 124 C 150 140, 136 128, 124 140 C 112 150, 104 138, 94 146 C 80 156, 72 140, 60 140 C 44 140, 40 124, 30 116 C 20 104, 24 60, 60 36 C 72 28, 86 26, 100 26 Z M100 74 a 26 26 0 1 0 0.1 0 Z" fill="#F2A7B5" fill-rule="evenodd" stroke="#2B2320" stroke-width="5" stroke-linejoin="round"/>
+<g stroke-width="6" stroke-linecap="round">
+<path d="M60 60 l10 -4" stroke="#8EC5E8"/><path d="M130 48 l8 8" stroke="#F6D365"/><path d="M150 90 l2 10" stroke="#FFFFFF"/>
+<path d="M48 100 l4 10" stroke="#F6D365"/><path d="M96 50 l10 2" stroke="#FFFFFF"/><path d="M140 124 l-8 6" stroke="#8EC5E8"/>
+<path d="M72 126 l-10 -4" stroke="#8DB38B"/>
+</g>
+</svg>

@@ -1,0 +1,18 @@
+{
+  "id": "balloon",
+  "name": "Balloon",
+  "category": "cute",
+  "tags": [
+    "minimal"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Floats, but stays put.",
+    "author": "Dangle"
+  }
+}

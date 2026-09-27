@@ -1,0 +1,19 @@
+{
+  "id": "rainbow",
+  "name": "Rainbow",
+  "category": "cute",
+  "tags": [
+    "nature",
+    "retro"
+  ],
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.22
+  },
+  "metadata": {
+    "description": "After every little storm.",
+    "author": "Dangle"
+  }
+}
