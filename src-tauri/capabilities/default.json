@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Core event and window access for Dangle's two windows.",
   "windows": ["control", "overlay"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "core:window:allow-start-dragging"]
 }

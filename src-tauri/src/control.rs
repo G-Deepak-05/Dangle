@@ -9,6 +9,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
         .min_inner_size(400.0, 560.0)
         .resizable(true)
         .maximizable(false)
+        .disable_drag_drop_handler()
         .visible(false);
     #[cfg(target_os = "macos")]
     let builder = builder

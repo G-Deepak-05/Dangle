@@ -77,10 +77,19 @@ fn apply_side_effects(app: &AppHandle, old: Option<&Settings>, new: &Settings) {
     }
 }
 
+const ROUTES: [&str; 6] = ["home", "library", "customize", "create", "settings", "privacy"];
+
+/// `dangle --open library` jumps straight to a screen; unknown values are ignored.
+fn route_from_args(args: &[String]) -> Option<&'static str> {
+    let i = args.iter().position(|a| a == "--open")?;
+    let wanted = args.get(i + 1)?;
+    ROUTES.iter().copied().find(|r| r == wanted)
+}
+
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            control::show(app, None);
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            control::show(app, route_from_args(&args));
         }))
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,

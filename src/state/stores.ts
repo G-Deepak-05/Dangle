@@ -40,7 +40,7 @@ export function customToCharm(c: CustomCharmRecord): Charm {
   };
 }
 
-async function refreshCustomCharms() {
+export async function refreshCustomCharms() {
   try {
     const custom = await backend.listCustomCharms();
     charmsStore.set([...BUILTIN_CHARMS, ...custom.map(customToCharm)]);

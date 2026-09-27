@@ -1,0 +1,335 @@
+import { useEffect, useMemo, useRef, useState, type DragEvent, type MouseEvent } from "react";
+import type { Charm, RopeStyle } from "../../charms/types";
+import {
+  dataUrlToBase64,
+  ImageImportError,
+  prepareImage,
+  readImageFile,
+  type PreparedImage,
+  type SourceImage,
+} from "../../imaging/process";
+import { backend, type Route } from "../../ipc/backend";
+import { refreshCustomCharms, stageConfigFor, updateSettings } from "../../state/stores";
+import { CharmPreview } from "../components/CharmPreview";
+import { BackBar, Segmented, ToggleRow } from "../components/Controls";
+import { AlertIcon, CheckIcon, RopeSwatch, UploadIcon } from "../components/Icons";
+import { useSettings } from "../hooks";
+
+type Phase = "empty" | "loading" | "ready" | "saving";
+
+function nameFromFile(file: File) {
+  const base = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+  const cleaned = base.slice(0, 40);
+  return cleaned ? cleaned[0].toUpperCase() + cleaned.slice(1) : "My charm";
+}
+
+export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: (msg: string) => void }) {
+  const settings = useSettings();
+  const [phase, setPhase] = useState<Phase>("empty");
+  const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<SourceImage | null>(null);
+  const [prepared, setPrepared] = useState<PreparedImage | null>(null);
+  const [cutBackground, setCutBackground] = useState(true);
+  const [name, setName] = useState("");
+  const [scale, setScale] = useState(1);
+  const [rope, setRope] = useState<RopeStyle>("thread");
+  const [anchor, setAnchor] = useState({ x: 0.5, y: 0.05 });
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => () => source?.bitmap.close(), [source]);
+
+  useEffect(() => {
+    if (!source) return;
+    const next = prepareImage(source, cutBackground);
+    setPrepared(next);
+    setAnchor(next.suggestedAnchor);
+  }, [source, cutBackground]);
+
+  const load = async (file: File | undefined) => {
+    if (!file) return;
+    setError(null);
+    setPhase("loading");
+    try {
+      const img = await readImageFile(file);
+      setSource(img);
+      setCutBackground(img.backgroundRemovable);
+      setName(nameFromFile(file));
+      setPhase("ready");
+    } catch (err) {
+      setError(err instanceof ImageImportError ? err.message : "Something went wrong reading that image.");
+      setPhase(source ? "ready" : "empty");
+    }
+  };
+
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/"));
+      if (file) void load(file);
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  });
+
+  const previewCharm: Charm | null = useMemo(
+    () =>
+      prepared && {
+        id: "custom-preview",
+        name: name || "My charm",
+        category: "custom",
+        tags: [],
+        image: prepared.dataUrl,
+        thumbnail: prepared.dataUrl,
+        defaultScale: scale,
+        ropeStyle: rope,
+        anchorOffset: anchor,
+        metadata: { source: "custom" },
+      },
+    [prepared, name, scale, rope, anchor],
+  );
+
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    void load(e.dataTransfer.files[0]);
+  };
+
+  const pickAnchor = (e: MouseEvent<HTMLDivElement>) => {
+    if (!prepared) return;
+    const box = e.currentTarget.getBoundingClientRect();
+    const aspect = prepared.canvas.width / prepared.canvas.height;
+    const w = aspect >= 1 ? box.width : box.height * aspect;
+    const h = aspect >= 1 ? box.width / aspect : box.height;
+    const left = (box.width - w) / 2;
+    const top = (box.height - h) / 2;
+    const x = Math.min(1, Math.max(0, (e.clientX - box.left - left) / w));
+    const y = Math.min(1, Math.max(0, (e.clientY - box.top - top) / h));
+    setAnchor({ x, y });
+  };
+
+  const dotStyle = () => {
+    if (!prepared) return {};
+    const aspect = prepared.canvas.width / prepared.canvas.height;
+    const w = aspect >= 1 ? 100 : 100 * aspect;
+    const h = aspect >= 1 ? 100 / aspect : 100;
+    return {
+      left: `${(100 - w) / 2 + anchor.x * w}%`,
+      top: `${(100 - h) / 2 + anchor.y * h}%`,
+    };
+  };
+
+  const save = async () => {
+    if (!prepared) return;
+    setPhase("saving");
+    setError(null);
+    try {
+      const saved = await backend.saveCustomCharm({
+        name: name.trim() || "My charm",
+        ropeStyle: rope,
+        anchorOffset: anchor,
+        defaultScale: scale,
+        pngBase64: dataUrlToBase64(prepared.dataUrl),
+      });
+      await refreshCustomCharms();
+      await updateSettings({ activeCharmId: saved.id });
+      onToast(`${saved.name} is hanging now`);
+      go("home");
+    } catch (err) {
+      setError(typeof err === "string" ? err : "Dangle couldn't save that charm. Please try again.");
+      setPhase("ready");
+    }
+  };
+
+  const reset = () => {
+    setSource(null);
+    setPrepared(null);
+    setError(null);
+    setPhase("empty");
+  };
+
+  const fileInput = (
+    <input
+      ref={fileRef}
+      type="file"
+      accept="image/png,image/webp,image/jpeg"
+      hidden
+      onChange={(e) => {
+        void load(e.target.files?.[0]);
+        e.target.value = "";
+      }}
+    />
+  );
+
+  const errorBox = error && (
+    <div className="notice notice-error" role="alert">
+      <AlertIcon />
+      <span>{error}</span>
+    </div>
+  );
+
+  if (!previewCharm || !prepared) {
+    return (
+      <div className="view">
+        <BackBar title="Create a charm" onBack={() => go("home")} />
+        <div
+          className="dropzone"
+          data-over={dragOver}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+        >
+          {phase === "loading" ? <div className="spinner" aria-label="Preparing image" /> : <UploadIcon size={26} />}
+          <p className="dropzone-title">{phase === "loading" ? "Preparing your image…" : "Drop an image here"}</p>
+          <p>A PNG or WebP with a transparent background works best. JPEG is fine too.</p>
+          <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()} disabled={phase === "loading"}>
+            Choose a file
+          </button>
+          {fileInput}
+        </div>
+        {errorBox}
+        <div className="notice">
+          <CheckIcon />
+          <span>Your image is processed on this Mac and stored only here. Nothing is uploaded.</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="view">
+      <BackBar title="Create a charm" onBack={() => go("home")} />
+
+      <CharmPreview
+        config={{ ...stageConfigFor(settings, previewCharm), rope, scale }}
+        height={280}
+        label={`Preview of ${previewCharm.name}`}
+      >
+        <p className="stage-hint">Give it a swing</p>
+      </CharmPreview>
+      {errorBox}
+
+      <div className="field">
+        <label className="field-label" htmlFor="charm-name">
+          Name
+        </label>
+        <input
+          id="charm-name"
+          className="input"
+          value={name}
+          maxLength={40}
+          onChange={(e) => setName(e.target.value)}
+          spellCheck={false}
+        />
+      </div>
+
+      <div className="field">
+        <div className="group">
+          {source?.hasAlpha ? (
+            <div className="setting">
+              <span className="setting-label">Transparent background</span>
+              <span className="field-note" style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
+                <CheckIcon size={14} /> Detected
+              </span>
+            </div>
+          ) : (
+            <ToggleRow
+              id="cut-bg"
+              label="Remove background"
+              description={
+                source?.backgroundRemovable
+                  ? "Cuts away the plain backdrop around your image."
+                  : "The background is too busy to remove automatically."
+              }
+              checked={cutBackground && !!source?.backgroundRemovable}
+              onChange={(v) => source?.backgroundRemovable && setCutBackground(v)}
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="field">
+        <label className="field-label" htmlFor="charm-scale">
+          Size <span className="field-note">{Math.round(scale * 100)}%</span>
+        </label>
+        <input
+          id="charm-scale"
+          className="slider"
+          type="range"
+          min={0.6}
+          max={1.5}
+          step={0.05}
+          value={scale}
+          onChange={(e) => setScale(Number(e.target.value))}
+        />
+      </div>
+
+      <div className="field">
+        <div className="field-label">String</div>
+        <Segmented<RopeStyle>
+          label="String style"
+          value={rope}
+          onChange={setRope}
+          options={(["minimal", "thread", "cord", "chain"] as RopeStyle[]).map((r) => ({
+            value: r,
+            label: r[0].toUpperCase() + r.slice(1),
+            icon: <RopeSwatch style={r} />,
+          }))}
+        />
+      </div>
+
+      <div className="field">
+        <div className="field-label">Hang point</div>
+        <div className="row" style={{ alignItems: "center", gap: 14 }}>
+          <div
+            className="hangpoint"
+            onClick={pickAnchor}
+            role="button"
+            tabIndex={0}
+            aria-label="Click where the string should attach"
+            onKeyDown={(e) => {
+              const step = 0.02;
+              const moves: Record<string, [number, number]> = {
+                ArrowLeft: [-step, 0],
+                ArrowRight: [step, 0],
+                ArrowUp: [0, -step],
+                ArrowDown: [0, step],
+              };
+              const m = moves[e.key];
+              if (!m) return;
+              e.preventDefault();
+              setAnchor((a) => ({
+                x: Math.min(1, Math.max(0, a.x + m[0])),
+                y: Math.min(1, Math.max(0, a.y + m[1])),
+              }));
+            }}
+          >
+            <img src={prepared.dataUrl} alt="" />
+            <span className="hangpoint-dot" style={dotStyle()} />
+          </div>
+          <div>
+            <p className="help" style={{ marginTop: 0 }}>
+              Click the spot where the string should attach. Arrow keys nudge it.
+            </p>
+            <button type="button" className="btn btn-ghost" onClick={() => setAnchor(prepared.suggestedAnchor)}>
+              Auto
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="row" style={{ marginTop: 24 }}>
+        <button type="button" className="btn btn-ghost" onClick={reset}>
+          Choose another
+        </button>
+        <div style={{ flex: 1 }} />
+        <button type="button" className="btn btn-primary" onClick={() => void save()} disabled={phase === "saving"}>
+          {phase === "saving" ? "Saving…" : "Save & hang"}
+        </button>
+      </div>
+      {fileInput}
+    </div>
+  );
+}
