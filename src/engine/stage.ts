@@ -8,7 +8,7 @@ import {
 } from "../charms/types";
 import { resolveParams, SIZES, type CharmSize, type PhysicsProfileName } from "../physics/profiles";
 import { CharmSimulation, type Vec2 } from "../physics/simulation";
-import { drawScene, hitCircle, type SceneState } from "../render/scene";
+import { drawScene, hitCircle, type DebugInfo, type SceneState } from "../render/scene";
 import { buildSprite, loadImage, type Sprite } from "../render/sprite";
 
 export interface StageConfig {
@@ -306,7 +306,7 @@ export class CharmStage {
       detailScale: Math.max(0.8, size.charm / SIZES.medium.charm),
       charmScale: this.charmScale,
       opacity: this.opacity,
-      debug: this.debug ? this.debugLines() : undefined,
+      debug: this.debug ? this.debugInfo() : undefined,
     };
   }
 
@@ -314,7 +314,7 @@ export class CharmStage {
     drawScene(this.ctx, this.width, this.height, this.sceneState());
   }
 
-  private debugLines(): string[] {
+  private debugInfo(): DebugInfo {
     const tip = this.sim.tip;
     const v = this.sim.tipVelocity;
     const p = this.sim.currentParams;
@@ -323,20 +323,22 @@ export class CharmStage {
       : this.reeling
         ? "reeling"
         : this.sim.isDragging
-        ? "dragging"
-        : this.sim.asleep
-          ? "sleeping"
-          : "swinging";
-    return [
-      `fps       ${this.sim.asleep ? "–" : this.fps.toFixed(0)}`,
-      `position  ${tip.x.toFixed(1)}, ${tip.y.toFixed(1)}`,
-      `velocity  ${v.x.toFixed(0)}, ${v.y.toFixed(0)} px/s`,
-      `angle     ${((this.sim.angle * 180) / Math.PI).toFixed(1)}°`,
-      `ang.vel   ${this.sim.angularVelocity.toFixed(2)} rad/s`,
-      `damping   ${p.retention.toFixed(3)} kept/s`,
-      `string    ${(this.baseRope * this.threadLength).toFixed(0)} px (${this.threadLength.toFixed(2)}×)`,
-      `state     ${state}`,
-    ];
+          ? "dragging"
+          : this.sim.asleep
+            ? "sleeping"
+            : "swinging";
+    return {
+      state,
+      fps: this.sim.asleep || this.paused ? null : Math.round(this.fps),
+      rows: [
+        ["Position", `${tip.x.toFixed(0)}, ${tip.y.toFixed(0)}`],
+        ["Velocity", `${Math.hypot(v.x, v.y).toFixed(0)} px/s`],
+        ["Angle", `${((this.sim.angle * 180) / Math.PI).toFixed(1)}°`],
+        ["Spin", `${this.sim.angularVelocity.toFixed(2)} rad/s`],
+        ["Damping", `${Math.round((1 - p.retention) * 100)}%/s`],
+        ["String", `${(this.baseRope * this.threadLength).toFixed(0)} px · ${this.threadLength.toFixed(2)}×`],
+      ],
+    };
   }
 
   private reportHitbox(now: number, moving: boolean, force = false) {

@@ -3,6 +3,12 @@ import type { CharmSimulation } from "../physics/simulation";
 import { drawAnchor, drawBeads, drawJumpRing, drawRope } from "./rope";
 import type { Sprite } from "./sprite";
 
+export interface DebugInfo {
+  state: "paused" | "reeling" | "dragging" | "sleeping" | "swinging";
+  fps: number | null;
+  rows: [string, string][];
+}
+
 export interface SceneState {
   sim: CharmSimulation;
   sprite: Sprite | null;
@@ -14,7 +20,7 @@ export interface SceneState {
   /** Animated charm scale for hover, press, and swap transitions. */
   charmScale: number;
   opacity: number;
-  debug?: string[];
+  debug?: DebugInfo;
 }
 
 export const RING_RADIUS = 4;
@@ -75,17 +81,74 @@ export function drawScene(ctx: CanvasRenderingContext2D, width: number, height: 
   }
   ctx.globalAlpha = 1;
 
-  if (state.debug) {
-    ctx.save();
-    ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, monospace";
-    const lineH = 14;
-    const boxW = 210;
-    ctx.fillStyle = "rgba(20,16,12,0.78)";
-    ctx.beginPath();
-    ctx.roundRect(8, height - state.debug.length * lineH - 18, boxW, state.debug.length * lineH + 10, 6);
-    ctx.fill();
-    ctx.fillStyle = "#F5EBDD";
-    state.debug.forEach((line, i) => ctx.fillText(line, 16, height - (state.debug!.length - i) * lineH - 4));
-    ctx.restore();
-  }
+  if (state.debug) drawDebugCard(ctx, width, sim.x[0], state.debug);
+}
+
+const STATE_COLORS: Record<DebugInfo["state"], string> = {
+  swinging: "#7BC47F",
+  dragging: "#E0654C",
+  reeling: "#E6B450",
+  sleeping: "#8C8173",
+  paused: "#8C8173",
+};
+
+/** A small frosted card that sits beside the string's anchor, clear of the swing. */
+function drawDebugCard(ctx: CanvasRenderingContext2D, width: number, anchorX: number, info: DebugInfo) {
+  const w = 176;
+  const rowH = 17;
+  const headH = 30;
+  const h = headH + (info.rows.length + 1) * rowH + 10;
+  const gap = 22;
+  const x = anchorX + gap + w <= width - 8 ? anchorX + gap : Math.max(8, anchorX - gap - w);
+  const y = 10;
+  const ui = "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+  const mono = "ui-monospace, 'SF Mono', Menlo, monospace";
+
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.25)";
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 4;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 12);
+  ctx.fillStyle = "rgba(24,21,17,0.86)";
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.strokeStyle = "rgba(255,240,220,0.12)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.textBaseline = "middle";
+  ctx.font = `600 10px ${ui}`;
+  ctx.fillStyle = "rgba(243,236,226,0.55)";
+  ctx.fillText("PHYSICS", x + 12, y + 16);
+
+  ctx.font = `500 10.5px ${ui}`;
+  const label = info.state[0].toUpperCase() + info.state.slice(1);
+  const pillW = ctx.measureText(label).width + 22;
+  const px = x + w - 10 - pillW;
+  ctx.beginPath();
+  ctx.roundRect(px, y + 8, pillW, 16, 8);
+  ctx.fillStyle = "rgba(255,240,220,0.08)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(px + 8, y + 16, 3, 0, Math.PI * 2);
+  ctx.fillStyle = STATE_COLORS[info.state];
+  ctx.fill();
+  ctx.fillStyle = "#F3ECE2";
+  ctx.fillText(label, px + 15, y + 16.5);
+
+  ctx.fillStyle = "rgba(255,240,220,0.08)";
+  ctx.fillRect(x + 12, y + headH - 1, w - 24, 1);
+
+  const rows: [string, string][] = [["Frame rate", info.fps === null ? "idle" : `${info.fps} fps`], ...info.rows];
+  rows.forEach(([k, v], i) => {
+    const ry = y + headH + 8 + i * rowH;
+    ctx.font = `11px ${ui}`;
+    ctx.fillStyle = "rgba(243,236,226,0.5)";
+    ctx.fillText(k, x + 12, ry);
+    ctx.font = `11px ${mono}`;
+    ctx.fillStyle = "#F3ECE2";
+    ctx.fillText(v, x + w - 12 - ctx.measureText(v).width, ry);
+  });
+  ctx.restore();
 }
