@@ -13,7 +13,10 @@
   <text x="44" y="88" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="14" fill="#5F564D">Drag Dangle into Applications to install.</text>
   <path d="M262 216 C 300 196, 360 196, 398 216" fill="none" stroke="#C8412B" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9"/>
   <path d="M388 204 L 400 217 L 383 222" fill="none" stroke="#C8412B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="44" y="336" width="572" height="52" rx="12" fill="#FFFDF9" stroke="#1F1B17" stroke-opacity="0.1"/>
-  <text x="64" y="358" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="13" font-weight="600" fill="#1F1B17">macOS says “Dangle Not Opened”?</text>
-  <text x="64" y="377" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="12.5" fill="#5F564D">Click Done, then System Settings › Privacy &amp; Security › Open Anyway. Only once.</text>
+  <rect x="44" y="314" width="572" height="86" rx="12" fill="#FFFDF9" stroke="#1F1B17" stroke-opacity="0.1"/>
+  <text x="64" y="338" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="13" font-weight="600" fill="#1F1B17">macOS says “Dangle Not Opened”?</text>
+  <text x="64" y="358" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="12.5" fill="#5F564D">Click Done, then System Settings › Privacy &amp; Security › Open Anyway. Only once.</text>
+  <text x="64" y="382" font-family="-apple-system, Helvetica Neue, sans-serif" font-size="12" fill="#8F857A">Or in Terminal:</text>
+  <rect x="150" y="369" width="446" height="20" rx="5" fill="#F1E8D8"/>
+  <text x="158" y="383" font-family="Menlo, SF Mono, monospace" font-size="11.5" fill="#1F1B17">xattr -dr com.apple.quarantine /Applications/Dangle.app</text>
 </svg>

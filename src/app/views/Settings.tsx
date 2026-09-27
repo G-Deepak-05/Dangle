@@ -142,7 +142,7 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
       </div>
 
       <div className="footer">
-        <span>Dangle 0.1.0</span>
+        <span>Dangle 0.1.1</span>
         <button type="button" className="btn btn-danger" onClick={() => void backend.quit()}>
           Quit Dangle
         </button>
