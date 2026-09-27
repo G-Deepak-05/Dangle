@@ -3,7 +3,7 @@ import type { PhysicsParams } from "./profiles";
 export const FIXED_DT = 1 / 120;
 const MAX_STEPS_PER_FRAME = 10;
 const CONSTRAINT_ITERATIONS = 18;
-const SEGMENTS = 10;
+const SEGMENTS = 14;
 const SLEEP_SPEED = 3;
 const SLEEP_ANGULAR = 0.03;
 const SLEEP_DELAY = 0.6;

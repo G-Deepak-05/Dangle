@@ -61,7 +61,12 @@ fn apply_side_effects(app: &AppHandle, old: Option<&Settings>, new: &Settings) {
         }
     }
 
-    if changed(|s| format!("{}{:?}", s.anchor_x, s.display_id)) {
+    if changed(|s| {
+        format!(
+            "{}{:?}{:?}{}",
+            s.anchor_x, s.display_id, s.size, s.thread_length
+        )
+    }) {
         overlay::layout(app);
     }
     if changed(|s| format!("{}{}", s.hidden, s.onboarding_complete)) {
@@ -90,6 +95,7 @@ pub fn run() {
             commands::overlay_geometry,
             commands::overlay_hitbox,
             commands::overlay_drag,
+            commands::overlay_reel,
             commands::set_tray_charm,
             commands::list_custom_charms,
             commands::save_custom_charm,

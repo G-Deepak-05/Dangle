@@ -1,4 +1,4 @@
-import type { RopeStyle } from "../charms/types";
+import type { Beads, RopeStyle, ThreadColor } from "../charms/types";
 import type { CharmSize, PhysicsProfileName } from "../physics/profiles";
 
 /** Mirrors the Rust `Settings` struct; Rust owns validation and persistence. */
@@ -9,6 +9,10 @@ export interface Settings {
   size: CharmSize;
   physics: PhysicsProfileName;
   ropeByCharm: Record<string, RopeStyle>;
+  /** String length as a multiple of the size preset's default, 0.5–3. */
+  threadLength: number;
+  threadColor: ThreadColor;
+  beads: Beads;
   anchorX: number;
   displayId: string | null;
   favorites: string[];
@@ -31,6 +35,9 @@ export const DEFAULT_SETTINGS: Settings = {
   size: "medium",
   physics: "normal",
   ropeByCharm: {},
+  threadLength: 1,
+  threadColor: "classic",
+  beads: "none",
   anchorX: 0.78,
   displayId: null,
   favorites: [],

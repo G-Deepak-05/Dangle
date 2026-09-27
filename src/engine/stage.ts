@@ -1,4 +1,11 @@
-import type { Charm, RopeStyle } from "../charms/types";
+import {
+  MAX_THREAD_LENGTH,
+  MIN_THREAD_LENGTH,
+  type Beads,
+  type Charm,
+  type RopeStyle,
+  type ThreadColor,
+} from "../charms/types";
 import { resolveParams, SIZES, type CharmSize, type PhysicsProfileName } from "../physics/profiles";
 import { CharmSimulation, type Vec2 } from "../physics/simulation";
 import { drawScene, hitCircle, type SceneState } from "../render/scene";
@@ -8,6 +15,10 @@ export interface StageConfig {
   charm: Charm;
   size: CharmSize;
   rope: RopeStyle;
+  threadColor: ThreadColor;
+  beads: Beads;
+  /** String length multiplier, 0.5–3. */
+  threadLength: number;
   physics: PhysicsProfileName;
   reduceMotion: boolean;
   /** Extra multiplier on top of the size preset, used by the create-charm preview. */
@@ -18,6 +29,10 @@ export interface StageOptions {
   /** Notified (throttled) with the charm's hit circle, or null when it cannot be touched. */
   onHitbox?: (hitbox: { x: number; y: number; r: number } | null) => void;
   onDragChange?: (dragging: boolean) => void;
+  /** ⌥-drag reels string in or out. Called when reeling starts and stops. */
+  onReelChange?: (reeling: boolean) => void;
+  /** Called on release after reeling with the new length multiplier. */
+  onThreadLengthCommit?: (threadLength: number) => void;
   /** Called once when a charm image fails to load, so the host can fall back. */
   onCharmError?: (charm: Charm) => void;
   /** When true the stage decides hover itself from pointer events. */
@@ -66,6 +81,9 @@ export class CharmStage {
   private fps = 0;
   private debug: boolean;
   private loadToken = 0;
+  private reeling = false;
+  private baseRope = SIZES.medium.rope;
+  private threadLength = 1;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -140,7 +158,11 @@ export class CharmStage {
       typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     const reduce = config.reduceMotion || prefersReduced;
     this.sim.setParams(resolveParams(config.physics, reduce, config.charm.physicsProfile));
-    this.sim.setRopeLength(size.rope * Math.min(1.25, Math.max(0.8, scale)));
+    this.baseRope = size.rope * Math.min(1.25, Math.max(0.8, scale));
+    if (!this.reeling) {
+      this.threadLength = config.threadLength;
+      this.sim.setRopeLength(this.baseRope * this.threadLength);
+    }
     this.sim.setTipInset(charmSide * 0.55);
     this.breezeEnabled = (this.options.breeze ?? true) && !reduce;
 
@@ -279,6 +301,8 @@ export class CharmStage {
       sim: this.sim,
       sprite: this.sprite,
       rope: this.config?.rope ?? "thread",
+      color: this.config?.threadColor ?? "classic",
+      beads: this.config?.beads ?? "none",
       detailScale: Math.max(0.8, size.charm / SIZES.medium.charm),
       charmScale: this.charmScale,
       opacity: this.opacity,
@@ -296,7 +320,9 @@ export class CharmStage {
     const p = this.sim.currentParams;
     const state = this.paused
       ? "paused"
-      : this.sim.isDragging
+      : this.reeling
+        ? "reeling"
+        : this.sim.isDragging
         ? "dragging"
         : this.sim.asleep
           ? "sleeping"
@@ -308,6 +334,7 @@ export class CharmStage {
       `angle     ${((this.sim.angle * 180) / Math.PI).toFixed(1)}°`,
       `ang.vel   ${this.sim.angularVelocity.toFixed(2)} rad/s`,
       `damping   ${p.retention.toFixed(3)} kept/s`,
+      `string    ${(this.baseRope * this.threadLength).toFixed(0)} px (${this.threadLength.toFixed(2)}×)`,
       `state     ${state}`,
     ];
   }
@@ -363,6 +390,10 @@ export class CharmStage {
     this.hovered = true;
     this.sim.startDrag(p);
     this.options.onDragChange?.(true);
+    if (e.altKey) {
+      this.reeling = true;
+      this.options.onReelChange?.(true);
+    }
     this.updateCursor();
     this.requestFrame();
   };
@@ -371,6 +402,7 @@ export class CharmStage {
     const p = this.localPoint(e);
     if (this.pointerId === e.pointerId) {
       if (this.pressed && Math.hypot(e.movementX, e.movementY) > 0.5) this.pressed = false;
+      if (this.reeling) this.reelTo(p);
       this.sim.moveDrag(p);
       this.requestFrame();
     } else if (this.options.selfHover && !this.paused) {
@@ -388,6 +420,16 @@ export class CharmStage {
     if (this.pointerId === null && this.options.selfHover) this.setHover(false);
   };
 
+  /** Sets the string length from the anchor-to-pointer distance, like pulling thread off a spool. */
+  private reelTo(p: Vec2) {
+    const charmReach = this.sprite ? this.sprite.height * 0.5 : 20;
+    const dist = Math.hypot(p.x - this.anchor.x, p.y - this.anchor.y) - charmReach;
+    const next = Math.min(MAX_THREAD_LENGTH, Math.max(MIN_THREAD_LENGTH, dist / this.baseRope));
+    if (Math.abs(next - this.threadLength) < 0.005) return;
+    this.threadLength = next;
+    this.sim.setRopeLength(this.baseRope * next);
+  }
+
   private endDrag() {
     if (this.pointerId === null) return;
     try {
@@ -397,6 +439,11 @@ export class CharmStage {
     }
     this.pointerId = null;
     this.pressed = false;
+    if (this.reeling) {
+      this.reeling = false;
+      this.options.onReelChange?.(false);
+      this.options.onThreadLengthCommit?.(Math.round(this.threadLength * 100) / 100);
+    }
     this.sim.endDrag();
     this.options.onDragChange?.(false);
     this.updateCursor();

@@ -1,4 +1,5 @@
 import { BUILTIN_CHARMS, FALLBACK_CHARM_ID } from "../charms/builtin";
+import type { StageConfig } from "../engine/stage";
 import type { Charm, RopeStyle } from "../charms/types";
 import { backend, events, type CustomCharmRecord } from "../ipc/backend";
 import { DEFAULT_SETTINGS, type Settings } from "./settings";
@@ -90,4 +91,18 @@ export function toggleFavorite(id: string) {
   const favorites = settingsStore.get().favorites;
   const next = favorites.includes(id) ? favorites.filter((f) => f !== id) : [...favorites, id];
   return updateSettings({ favorites: next });
+}
+
+/** Everything a CharmStage needs to show `charm` the way the user has set it up. */
+export function stageConfigFor(settings: Settings, charm: Charm): StageConfig {
+  return {
+    charm,
+    size: settings.size,
+    rope: ropeFor(settings, charm),
+    threadColor: settings.threadColor,
+    beads: settings.beads,
+    threadLength: settings.threadLength,
+    physics: settings.physics,
+    reduceMotion: settings.reduceMotion,
+  };
 }

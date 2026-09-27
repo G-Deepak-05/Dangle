@@ -1,13 +1,22 @@
 import { FALLBACK_CHARM_ID } from "../charms/builtin";
 import { CharmStage } from "../engine/stage";
 import { backend, events, type OverlayGeometry } from "../ipc/backend";
-import { charmsStore, findCharm, ropeFor, settingsStore, startStores, updateSettings } from "../state/stores";
+import {
+  charmsStore,
+  findCharm,
+  settingsStore,
+  stageConfigFor,
+  startStores,
+  updateSettings,
+} from "../state/stores";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 
 const stage = new CharmStage(canvas, {
   onHitbox: (hitbox) => void backend.overlayHitbox(hitbox),
   onDragChange: (dragging) => void backend.overlayDrag(dragging),
+  onReelChange: (reeling) => void backend.overlayReel(reeling),
+  onThreadLengthCommit: (threadLength) => void updateSettings({ threadLength }),
   onCharmError: (charm) => {
     if (charm.id !== FALLBACK_CHARM_ID) void updateSettings({ activeCharmId: FALLBACK_CHARM_ID });
   },
@@ -34,13 +43,7 @@ function applySettings() {
   const settings = settingsStore.get();
   const charm = findCharm(charmsStore.get(), settings.activeCharmId);
   if (!charm) return;
-  void stage.configure({
-    charm,
-    size: settings.size,
-    rope: ropeFor(settings, charm),
-    physics: settings.physics,
-    reduceMotion: settings.reduceMotion,
-  });
+  void stage.configure(stageConfigFor(settings, charm));
   stage.setPaused(settings.paused);
   stage.setBreeze(!(settings.pauseWhenInactive && systemIdle));
   stage.setDebug(import.meta.env.DEV && settings.debugOverlay);

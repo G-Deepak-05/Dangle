@@ -1,12 +1,14 @@
-import type { RopeStyle } from "../charms/types";
+import type { Beads, RopeStyle, ThreadColor } from "../charms/types";
 import type { CharmSimulation } from "../physics/simulation";
-import { drawAnchor, drawJumpRing, drawRope } from "./rope";
+import { drawAnchor, drawBeads, drawJumpRing, drawRope } from "./rope";
 import type { Sprite } from "./sprite";
 
 export interface SceneState {
   sim: CharmSimulation;
   sprite: Sprite | null;
   rope: RopeStyle;
+  color: ThreadColor;
+  beads: Beads;
   /** Visual size multiplier for rope details (1 = medium). */
   detailScale: number;
   /** Animated charm scale for hover, press, and swap transitions. */
@@ -45,8 +47,9 @@ export function drawScene(ctx: CanvasRenderingContext2D, width: number, height: 
   ctx.clearRect(0, 0, width, height);
   ctx.globalAlpha = state.opacity;
 
-  drawRope(ctx, sim.x, sim.y, sim.segments + 1, state.rope, state.detailScale);
-  drawAnchor(ctx, sim.x[0], sim.y[0], state.rope, state.detailScale);
+  drawRope(ctx, sim.x, sim.y, sim.segments + 1, state.rope, state.color, state.detailScale);
+  drawBeads(ctx, sim.x, sim.y, sim.segments + 1, state.beads, state.detailScale);
+  drawAnchor(ctx, sim.x[0], sim.y[0], state.rope, state.color, state.detailScale);
 
   const tip = sim.tip;
   const ringR = RING_RADIUS * state.detailScale;

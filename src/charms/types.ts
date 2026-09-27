@@ -4,6 +4,17 @@ export type RopeStyle = "minimal" | "thread" | "cord" | "chain";
 
 export const ROPE_STYLES: RopeStyle[] = ["minimal", "thread", "cord", "chain"];
 
+export type ThreadColor = "classic" | "ink" | "cream" | "rose" | "sky" | "sage" | "gold" | "silver";
+
+export const THREAD_COLORS: ThreadColor[] = ["classic", "ink", "cream", "rose", "sky", "sage", "gold", "silver"];
+
+export type Beads = "none" | "pearl" | "wood" | "glass" | "star";
+
+export const BEADS: Beads[] = ["none", "pearl", "wood", "glass", "star"];
+
+export const MIN_THREAD_LENGTH = 0.5;
+export const MAX_THREAD_LENGTH = 3;
+
 export type CharmCategory = "cute" | "nature" | "space" | "retro" | "minimal" | "seasonal" | "custom";
 
 export const CATEGORIES: CharmCategory[] = [

@@ -1,5 +1,6 @@
 use crate::displays;
 use crate::platform;
+use crate::settings::CharmSize;
 use crate::state::{AppState, OverlayGeometry};
 use std::time::Duration;
 use tauri::{
@@ -8,8 +9,8 @@ use tauri::{
 };
 
 pub const LABEL: &str = "overlay";
-const WIDTH: f64 = 640.0;
-const HEIGHT: f64 = 480.0;
+const MIN_WIDTH: f64 = 640.0;
+const MIN_HEIGHT: f64 = 380.0;
 const EDGE_MARGIN: f64 = 24.0;
 const HIT_PADDING: f64 = 6.0;
 const IDLE_AFTER_SECS: f64 = 60.0;
@@ -17,7 +18,7 @@ const IDLE_AFTER_SECS: f64 = 60.0;
 pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
     let window = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("overlay.html".into()))
         .title("Dangle Charm")
-        .inner_size(WIDTH, HEIGHT)
+        .inner_size(MIN_WIDTH, MIN_HEIGHT)
         .transparent(true)
         .decorations(false)
         .shadow(false)
@@ -58,8 +59,19 @@ fn layout_now(app: &AppHandle) {
     let (wx, wy) = (wa.position.x as f64 / scale, wa.position.y as f64 / scale);
     let (ww, wh) = (wa.size.width as f64 / scale, wa.size.height as f64 / scale);
 
-    let width = WIDTH.min(ww);
-    let height = HEIGHT.min(wh);
+    let (charm, rope) = match settings.size {
+        CharmSize::Small => (58.0, 96.0),
+        CharmSize::Medium => (78.0, 124.0),
+        CharmSize::Large => (104.0, 150.0),
+    };
+    let rope = rope * settings.thread_length;
+    let reeling = state.pointer.lock().unwrap().reeling;
+    let width = (2.0 * (rope * 1.15 + charm) + 80.0).max(MIN_WIDTH).min(ww);
+    let height = if reeling {
+        wh
+    } else {
+        (rope * 1.3 + charm * 2.4 + 90.0).max(MIN_HEIGHT).min(wh)
+    };
     let global_anchor =
         (wx + settings.anchor_x * ww).clamp(wx + EDGE_MARGIN, wx + ww - EDGE_MARGIN);
     let left = (global_anchor - width / 2.0).clamp(wx, wx + ww - width);

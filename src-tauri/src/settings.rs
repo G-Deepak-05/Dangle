@@ -7,6 +7,8 @@ use std::path::{Path, PathBuf};
 pub const SETTINGS_VERSION: u32 = 1;
 pub const DEFAULT_ANCHOR_X: f64 = 0.78;
 pub const DEFAULT_CHARM_ID: &str = "moon";
+pub const MIN_THREAD_LENGTH: f64 = 0.5;
+pub const MAX_THREAD_LENGTH: f64 = 3.0;
 const MAX_FAVORITES: usize = 500;
 const MAX_ID_LEN: usize = 64;
 
@@ -29,6 +31,29 @@ pub enum RopeStyle {
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
+pub enum ThreadColor {
+    Classic,
+    Ink,
+    Cream,
+    Rose,
+    Sky,
+    Sage,
+    Gold,
+    Silver,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum Beads {
+    None,
+    Pearl,
+    Wood,
+    Glass,
+    Star,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
 pub enum PhysicsProfile {
     Calm,
     Normal,
@@ -44,6 +69,10 @@ pub struct Settings {
     pub size: CharmSize,
     pub physics: PhysicsProfile,
     pub rope_by_charm: BTreeMap<String, RopeStyle>,
+    /// String length as a multiple of the size preset's default.
+    pub thread_length: f64,
+    pub thread_color: ThreadColor,
+    pub beads: Beads,
     pub anchor_x: f64,
     pub display_id: Option<String>,
     pub favorites: Vec<String>,
@@ -68,6 +97,9 @@ impl Default for Settings {
             size: CharmSize::Medium,
             physics: PhysicsProfile::Normal,
             rope_by_charm: BTreeMap::new(),
+            thread_length: 1.0,
+            thread_color: ThreadColor::Classic,
+            beads: Beads::None,
             anchor_x: DEFAULT_ANCHOR_X,
             display_id: None,
             favorites: Vec::new(),
@@ -120,6 +152,12 @@ impl Settings {
             self.anchor_x = DEFAULT_ANCHOR_X;
         }
         self.anchor_x = self.anchor_x.clamp(0.0, 1.0);
+        if !self.thread_length.is_finite() {
+            self.thread_length = 1.0;
+        }
+        self.thread_length = self
+            .thread_length
+            .clamp(MIN_THREAD_LENGTH, MAX_THREAD_LENGTH);
         if !valid_id(&self.active_charm_id) {
             self.active_charm_id = DEFAULT_CHARM_ID.into();
         }
@@ -188,11 +226,13 @@ mod tests {
 
     #[test]
     fn bad_field_does_not_discard_good_fields() {
-        let patch = json!({ "size": "gigantic", "physics": "bouncy", "anchorX": 0.2 });
+        let patch = json!({ "size": "gigantic", "physics": "bouncy", "anchorX": 0.2, "beads": "rubies", "threadLength": 9 });
         let s = Settings::merged_lenient(&Settings::default(), &patch);
         assert_eq!(s.size, CharmSize::Medium);
         assert_eq!(s.physics, PhysicsProfile::Bouncy);
         assert_eq!(s.anchor_x, 0.2);
+        assert_eq!(s.beads, Beads::None);
+        assert_eq!(s.thread_length, MAX_THREAD_LENGTH);
     }
 
     #[test]

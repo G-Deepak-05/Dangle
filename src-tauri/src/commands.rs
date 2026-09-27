@@ -61,6 +61,19 @@ pub fn overlay_drag(app: AppHandle, state: State<AppState>, active: bool) {
 }
 
 #[tauri::command]
+pub fn overlay_reel(app: AppHandle, state: State<AppState>, active: bool) {
+    let changed = {
+        let mut p = state.pointer.lock().unwrap();
+        let changed = p.reeling != active;
+        p.reeling = active;
+        changed
+    };
+    if changed {
+        overlay::layout(&app);
+    }
+}
+
+#[tauri::command]
 pub fn set_tray_charm(app: AppHandle, name: String) {
     tray::set_current_charm_name(&app, &name);
 }

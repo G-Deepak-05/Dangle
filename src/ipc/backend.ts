@@ -54,6 +54,7 @@ export const backend = {
   overlayGeometry: () => invoke<OverlayGeometry | null>("overlay_geometry"),
   overlayHitbox: (hitbox: Hitbox | null) => invoke<void>("overlay_hitbox", { hitbox }),
   overlayDrag: (active: boolean) => invoke<void>("overlay_drag", { active }),
+  overlayReel: (active: boolean) => invoke<void>("overlay_reel", { active }),
   setTrayCharm: (name: string) => invoke<void>("set_tray_charm", { name }),
   listCustomCharms: () => invoke<CustomCharmRecord[]>("list_custom_charms"),
   saveCustomCharm: (charm: NewCustomCharm) => invoke<CustomCharmRecord>("save_custom_charm", { charm }),
