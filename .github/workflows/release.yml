@@ -36,6 +36,8 @@ jobs:
               '2. If Windows shows "Windows protected your PC", click **More info**, then **Run anyway**.',
               '3. Dangle lives in the system tray, next to the clock.',
               '',
+              'Already have Dangle 0.1.2 or later? It updates itself. You\'ll see a "Restart to update" note in the app.',
+              '',
               'Dangle isn\'t signed by Apple or Microsoft yet, so your system asks you to confirm once. It needs no account and makes no network requests.',
             ].join('\n');
             const { data } = await github.rest.repos.createRelease({
@@ -92,6 +94,9 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Signs update bundles so installed apps can verify them before installing.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
           args: ${{ matrix.args }}

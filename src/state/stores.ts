@@ -1,7 +1,7 @@
 import { BUILTIN_CHARMS, FALLBACK_CHARM_ID } from "../charms/builtin";
 import type { StageConfig } from "../engine/stage";
 import type { Charm, RopeStyle } from "../charms/types";
-import { backend, events, type CustomCharmRecord } from "../ipc/backend";
+import { backend, events, type AppInfo, type CustomCharmRecord, type UpdateInfo } from "../ipc/backend";
 import { DEFAULT_SETTINGS, type Settings } from "./settings";
 
 type Listener = () => void;
@@ -24,6 +24,8 @@ class Store<T> {
 export const settingsStore = new Store<Settings>(DEFAULT_SETTINGS);
 export const settingsReady = new Store<boolean>(false);
 export const charmsStore = new Store<Charm[]>(BUILTIN_CHARMS);
+export const appInfoStore = new Store<AppInfo | null>(null);
+export const updateStore = new Store<UpdateInfo | null>(null);
 
 export function customToCharm(c: CustomCharmRecord): Charm {
   return {
@@ -56,6 +58,8 @@ export function startStores(): Promise<void> {
   started ??= (async () => {
     await events.settings((s) => settingsStore.set(s));
     await events.customCharmsChanged(() => void refreshCustomCharms());
+    await events.updateAvailable((u) => updateStore.set(u));
+    backend.appInfo().then((i) => appInfoStore.set(i), () => undefined);
     try {
       settingsStore.set(await backend.getSettings());
     } catch (err) {

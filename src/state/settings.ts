@@ -26,6 +26,7 @@ export interface Settings {
   paused: boolean;
   hidden: boolean;
   debugOverlay: boolean;
+  checkForUpdates: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -51,4 +52,5 @@ export const DEFAULT_SETTINGS: Settings = {
   paused: false,
   hidden: false,
   debugOverlay: false,
+  checkForUpdates: true,
 };

@@ -10,7 +10,7 @@ export function Privacy({ go }: { go: (r: Route) => void }) {
         <p>Dangle is a small thing that lives on your computer. It keeps everything here, too.</p>
 
         <h2>No account, no tracking</h2>
-        <p>There’s nothing to sign up for. Dangle has no analytics and sends no telemetry. It doesn’t need an internet connection at all.</p>
+        <p>There’s nothing to sign up for. Dangle has no analytics and sends no telemetry. Everything works without an internet connection.</p>
 
         <h2>Your images stay yours</h2>
         <p>
@@ -25,6 +25,19 @@ export function Privacy({ go }: { go: (r: Route) => void }) {
           <li>Your favorites and the charms you’ve made</li>
         </ul>
         <p>Delete a custom charm and its files are removed. Quitting Dangle leaves no background processes behind.</p>
+
+        <h2>Updates</h2>
+        <p>
+          Every few hours Dangle downloads a small public file from its GitHub releases to see whether a newer
+          version exists. Nothing about you or your charms is sent. Updates are checked against a signature before
+          they install. You can turn this off in Settings › Updates.
+        </p>
+
+        <h2>Feedback</h2>
+        <p>
+          The Feedback screen never sends anything by itself. It opens a pre-filled GitHub issue in your browser for
+          you to review, or copies your note so you can share it however you like.
+        </p>
 
         <h2>If that ever changes</h2>
         <p>Any future analytics would be off by default and would only turn on if you choose to share them.</p>

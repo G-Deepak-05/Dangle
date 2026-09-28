@@ -3,6 +3,7 @@ import { events, type Route } from "../ipc/backend";
 import { useSettings, useSettingsReady } from "./hooks";
 import { CreateCharm } from "./views/CreateCharm";
 import { Customize } from "./views/Customize";
+import { Feedback } from "./views/Feedback";
 import { Home } from "./views/Home";
 import { Library } from "./views/Library";
 import { Onboarding } from "./views/Onboarding";
@@ -57,7 +58,7 @@ export function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
-      if (e.key === "Escape" && route !== "home") setRoute(route === "privacy" ? "settings" : "home");
+      if (e.key === "Escape" && route !== "home") setRoute(route === "privacy" || route === "feedback" ? "settings" : "home");
       if (!mod) return;
       if (e.key === ",") {
         e.preventDefault();
@@ -98,6 +99,8 @@ export function App() {
     <CreateCharm go={go} onToast={showToast} />
   ) : route === "settings" ? (
     <Settings go={go} onToast={showToast} />
+  ) : route === "feedback" ? (
+    <Feedback go={go} onToast={showToast} />
   ) : route === "privacy" ? (
     <Privacy go={go} />
   ) : (

@@ -32,7 +32,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
         .accept_first_mouse(true)
         .visible(false)
         .build()?;
-    let _ = window.set_ignore_cursor_events(true);
+    platform::set_click_through(&window, true);
     Ok(window)
 }
 
@@ -110,7 +110,7 @@ pub fn sync_visibility(app: &AppHandle) {
 
 fn set_over(app: &AppHandle, over: bool) {
     if let Some(window) = window(app) {
-        let _ = window.set_ignore_cursor_events(!over);
+        platform::set_click_through(&window, !over);
     }
     let _ = app.emit_to(LABEL, "overlay-hover", over);
 }

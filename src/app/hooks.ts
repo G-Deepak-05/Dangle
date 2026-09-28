@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { charmsStore, findCharm, settingsReady, settingsStore } from "../state/stores";
+import { appInfoStore, charmsStore, findCharm, settingsReady, settingsStore, updateStore } from "../state/stores";
 
 export function useSettings() {
   return useSyncExternalStore(settingsStore.subscribe, settingsStore.get);
@@ -17,4 +17,12 @@ export function useActiveCharm() {
   const settings = useSettings();
   const charms = useCharms();
   return findCharm(charms, settings.activeCharmId);
+}
+
+export function useAppInfo() {
+  return useSyncExternalStore(appInfoStore.subscribe, appInfoStore.get);
+}
+
+export function useUpdate() {
+  return useSyncExternalStore(updateStore.subscribe, updateStore.get);
 }

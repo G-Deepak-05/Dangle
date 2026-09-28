@@ -2,12 +2,14 @@ mod commands;
 mod control;
 mod custom_charms;
 mod displays;
+mod feedback;
 mod overlay;
 mod platform;
 mod settings;
 mod shortcuts;
 mod state;
 mod tray;
+mod updates;
 
 use serde_json::Value;
 use settings::Settings;
@@ -77,13 +79,14 @@ fn apply_side_effects(app: &AppHandle, old: Option<&Settings>, new: &Settings) {
     }
 }
 
-const ROUTES: [&str; 6] = [
+const ROUTES: [&str; 7] = [
     "home",
     "library",
     "customize",
     "create",
     "settings",
     "privacy",
+    "feedback",
 ];
 
 /// `dangle --open library` jumps straight to a screen; unknown values are ignored.
@@ -103,6 +106,8 @@ pub fn run() {
             Some(vec!["--autostart"]),
         ))
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(shortcuts::plugin())
         .invoke_handler(tauri::generate_handler![
             commands::get_settings,
@@ -122,6 +127,11 @@ pub fn run() {
             commands::quit_app,
             commands::relayout_overlay,
             commands::pick_image,
+            commands::app_info,
+            commands::open_feedback,
+            commands::open_releases,
+            commands::check_for_updates,
+            commands::install_update,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -154,6 +164,8 @@ pub fn run() {
             apply_side_effects(&handle, None, &initial);
             overlay::spawn_pointer_watch(handle.clone());
             overlay::spawn_display_watch(handle.clone());
+            app.manage(updates::UpdateState::default());
+            updates::spawn_checker(handle.clone());
 
             if !initial.onboarding_complete {
                 control::show(&handle, Some("onboarding"));

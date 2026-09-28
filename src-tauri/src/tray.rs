@@ -19,6 +19,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
     let choose = MenuItem::with_id(app, "choose", "Choose Charm…", true, None::<&str>)?;
     let create = MenuItem::with_id(app, "create", "Create Charm…", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
+    let feedback = MenuItem::with_id(app, "feedback", "Send Feedback…", true, None::<&str>)?;
     let pause = MenuItem::with_id(app, "pause", "Pause", true, None::<&str>)?;
     let visibility = MenuItem::with_id(
         app,
@@ -39,6 +40,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
             &choose,
             &create,
             &settings,
+            &feedback,
             &PredefinedMenuItem::separator(app)?,
             &pause,
             &visibility,
@@ -57,6 +59,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
             "choose" => control::show(app, Some("library")),
             "create" => control::show(app, Some("create")),
             "settings" => control::show(app, Some("settings")),
+            "feedback" => control::show(app, Some("feedback")),
             "pause" => {
                 let paused = app.state::<AppState>().settings.lock().unwrap().paused;
                 apply_patch(app, patch_from_pairs(&[("paused", json!(!paused))]));

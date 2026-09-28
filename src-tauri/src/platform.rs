@@ -85,6 +85,10 @@ mod imp {
         });
     }
 
+    pub fn set_click_through(window: &WebviewWindow, ignore: bool) {
+        let _ = window.set_ignore_cursor_events(ignore);
+    }
+
     pub fn frontmost_app_pid() -> Option<i32> {
         let workspace = NSWorkspace::sharedWorkspace();
         let app = workspace.frontmostApplication()?;
@@ -106,11 +110,41 @@ mod imp {
 
 #[cfg(target_os = "windows")]
 mod imp {
+    use std::sync::atomic::{AtomicBool, Ordering};
     use tauri::WebviewWindow;
     use windows_sys::Win32::Foundation::POINT;
     use windows_sys::Win32::System::SystemInformation::GetTickCount;
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
-    use windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        GetCursorPos, GetWindowLongPtrW, SetWindowLongPtrW, GWL_EXSTYLE, WS_EX_LAYERED,
+        WS_EX_TRANSPARENT,
+    };
+
+    static CLICK_THROUGH: AtomicBool = AtomicBool::new(true);
+
+    /// Tauri's set_ignore_cursor_events rewrites every window style and forces a frame
+    /// change, which makes Windows paint a title bar on this undecorated window. Flip only
+    /// WS_EX_TRANSPARENT instead, keeping the window layered so nothing else changes.
+    pub fn set_click_through(window: &WebviewWindow, ignore: bool) {
+        CLICK_THROUGH.store(ignore, Ordering::Relaxed);
+        let target = window.clone();
+        let _ = window.run_on_main_thread(move || {
+            let Ok(hwnd) = target.hwnd() else { return };
+            let hwnd = hwnd.0 as windows_sys::Win32::Foundation::HWND;
+            unsafe {
+                let current = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+                let mut next = current | WS_EX_LAYERED as isize;
+                if ignore {
+                    next |= WS_EX_TRANSPARENT as isize;
+                } else {
+                    next &= !(WS_EX_TRANSPARENT as isize);
+                }
+                if next != current {
+                    SetWindowLongPtrW(hwnd, GWL_EXSTYLE, next);
+                }
+            }
+        });
+    }
 
     /// Cursor in logical pixels. Windows reports physical pixels, so divide by the
     /// overlay display's scale to match the logical window origin.
@@ -144,6 +178,8 @@ mod imp {
 
     pub fn set_overlay_level(window: &WebviewWindow, on_top: bool) {
         let _ = window.set_always_on_top(on_top);
+        // Changing z-order makes Tauri rebuild the window styles, dropping our bits.
+        set_click_through(window, CLICK_THROUGH.load(Ordering::Relaxed));
     }
 
     // The overlay is created non-focusable (WS_EX_NOACTIVATE), so it never steals focus
@@ -166,6 +202,9 @@ mod imp {
     }
     pub fn seconds_since_input() -> Option<f64> {
         None
+    }
+    pub fn set_click_through(window: &WebviewWindow, ignore: bool) {
+        let _ = window.set_ignore_cursor_events(ignore);
     }
     pub fn apply_window_behavior(window: &WebviewWindow, all_spaces: bool, _over_fullscreen: bool) {
         let _ = window.set_visible_on_all_workspaces(all_spaces);

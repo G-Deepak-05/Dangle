@@ -4,6 +4,7 @@ import { stageConfigFor, toggleFavorite, updateSettings } from "../../state/stor
 import { CharmPreview } from "../components/CharmPreview";
 import { ChevronIcon, GearIcon, HeartIcon, PauseIcon, PlayIcon, PlusIcon } from "../components/Icons";
 import { useActiveCharm, useCharms, useSettings } from "../hooks";
+import { UpdateBanner } from "../components/UpdateBanner";
 
 const COLLECTION_PREVIEW = 10;
 
@@ -36,6 +37,8 @@ export function Home({ go }: { go: (r: Route) => void }) {
           <GearIcon size={18} />
         </button>
       </header>
+
+      <UpdateBanner />
 
       <section aria-labelledby="current-heading">
         <h2 className="eyebrow" id="current-heading" style={{ marginBottom: 10 }}>
@@ -136,8 +139,8 @@ export function Home({ go }: { go: (r: Route) => void }) {
           <button type="button" className="link" onClick={() => go("settings")}>
             Settings
           </button>
-          <button type="button" className="link" onClick={() => go("privacy")}>
-            Privacy
+          <button type="button" className="link" onClick={() => go("feedback")}>
+            Feedback
           </button>
         </div>
       </footer>

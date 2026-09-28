@@ -44,7 +44,20 @@ export interface NewCustomCharm {
   pngBase64: string;
 }
 
-export type Route = "home" | "library" | "customize" | "create" | "settings" | "privacy" | "onboarding";
+export type Route = "home" | "library" | "customize" | "create" | "settings" | "privacy" | "feedback" | "onboarding";
+
+export interface AppInfo {
+  version: string;
+  os: string;
+  arch: string;
+}
+
+export interface UpdateInfo {
+  version: string;
+  notes: string | null;
+}
+
+export type FeedbackKind = "bug" | "idea" | "other";
 
 export const backend = {
   getSettings: () => invoke<Settings>("get_settings"),
@@ -63,6 +76,12 @@ export const backend = {
   hideControl: () => invoke<void>("hide_control"),
   quit: () => invoke<void>("quit_app"),
   pickImage: () => invoke<{ name: string; base64: string } | null>("pick_image"),
+  appInfo: () => invoke<AppInfo>("app_info"),
+  openFeedback: (kind: FeedbackKind, message: string, includeInfo: boolean) =>
+    invoke<void>("open_feedback", { kind, message, includeInfo }),
+  openReleases: () => invoke<void>("open_releases"),
+  checkForUpdates: () => invoke<UpdateInfo | null>("check_for_updates"),
+  installUpdate: () => invoke<void>("install_update"),
 };
 
 type Handler<T> = (payload: T) => void;
@@ -79,4 +98,5 @@ export const events = {
   customCharmsChanged: on<null>("custom-charms-changed"),
   displaysChanged: on<DisplayInfo[]>("displays-changed"),
   systemIdle: on<boolean>("system-idle"),
+  updateAvailable: on<UpdateInfo>("update-available"),
 };

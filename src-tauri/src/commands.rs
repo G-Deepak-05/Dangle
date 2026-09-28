@@ -2,12 +2,13 @@ use crate::custom_charms::{self, CustomCharm, NewCustomCharm};
 use crate::displays::{self, DisplayInfo};
 use crate::settings::{self, Settings};
 use crate::state::{AppState, Hitbox, OverlayGeometry};
-use crate::{apply_patch, control, overlay, platform, tray};
+use crate::{apply_patch, control, feedback, overlay, platform, tray, updates};
 use base64::Engine;
 use serde::Serialize;
 use serde_json::{json, Value};
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_opener::OpenerExt;
 
 const MAX_PICKED_BYTES: u64 = 15 * 1024 * 1024;
 
@@ -184,4 +185,43 @@ pub async fn pick_image(app: AppHandle) -> Result<Option<PickedImage>, String> {
         name,
         base64: base64::engine::general_purpose::STANDARD.encode(bytes),
     }))
+}
+
+#[tauri::command]
+pub fn app_info(app: AppHandle) -> feedback::AppInfo {
+    feedback::app_info(&app.package_info().version.to_string())
+}
+
+#[tauri::command]
+pub fn open_feedback(
+    app: AppHandle,
+    kind: feedback::FeedbackKind,
+    message: String,
+    include_info: bool,
+) -> Result<(), String> {
+    let info = include_info.then(|| feedback::app_info(&app.package_info().version.to_string()));
+    let url = feedback::issue_url(kind, &message, info.as_ref());
+    app.opener()
+        .open_url(url, None::<&str>)
+        .map_err(|_| "Couldn't open your browser.".to_string())
+}
+
+#[tauri::command]
+pub fn open_releases(app: AppHandle) -> Result<(), String> {
+    app.opener()
+        .open_url(
+            format!("{}/releases/latest", feedback::REPO_URL),
+            None::<&str>,
+        )
+        .map_err(|_| "Couldn't open your browser.".to_string())
+}
+
+#[tauri::command]
+pub async fn check_for_updates(app: AppHandle) -> Result<Option<updates::UpdateInfo>, String> {
+    updates::check(&app).await
+}
+
+#[tauri::command]
+pub async fn install_update(app: AppHandle) -> Result<(), String> {
+    updates::install(&app).await
 }

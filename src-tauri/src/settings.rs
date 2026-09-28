@@ -86,6 +86,7 @@ pub struct Settings {
     pub paused: bool,
     pub hidden: bool,
     pub debug_overlay: bool,
+    pub check_for_updates: bool,
 }
 
 impl Default for Settings {
@@ -113,6 +114,7 @@ impl Default for Settings {
             paused: false,
             hidden: false,
             debug_overlay: false,
+            check_for_updates: true,
         }
     }
 }

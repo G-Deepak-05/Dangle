@@ -4,10 +4,29 @@ import { updateSettings } from "../../state/stores";
 import type { Settings as SettingsShape } from "../../state/settings";
 import { BackBar, SettingRow, ToggleRow } from "../components/Controls";
 import { ChevronIcon } from "../components/Icons";
-import { useSettings } from "../hooks";
+import { useAppInfo, useSettings, useUpdate } from "../hooks";
+import { useState } from "react";
+import { UpdateBanner } from "../components/UpdateBanner";
 
 export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (msg: string) => void }) {
   const s = useSettings();
+  const info = useAppInfo();
+  const update = useUpdate();
+  const [checking, setChecking] = useState(false);
+  const [checkResult, setCheckResult] = useState<string | null>(null);
+
+  const checkNow = async () => {
+    setChecking(true);
+    setCheckResult(null);
+    try {
+      const found = await backend.checkForUpdates();
+      setCheckResult(found ? null : "You're on the latest version.");
+    } catch (err) {
+      setCheckResult(typeof err === "string" ? err : "Couldn't check for updates.");
+    } finally {
+      setChecking(false);
+    }
+  };
   const set = (patch: Partial<SettingsShape>) => void updateSettings(patch);
 
   return (
@@ -94,6 +113,31 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
         </SettingRow>
       </div>
 
+      <h2 className="eyebrow group-title">Updates</h2>
+      <div className="group">
+        <ToggleRow
+          id="updates"
+          label="Check for updates automatically"
+          description="Looks for a newer version on GitHub every few hours. Nothing about you is sent."
+          checked={s.checkForUpdates}
+          onChange={(v) => set({ checkForUpdates: v })}
+        />
+        <SettingRow
+          id="version"
+          label={info ? `Version ${info.version}` : "Version"}
+          description={checkResult ?? (update ? `Dangle ${update.version} is available.` : undefined)}
+        >
+          <button type="button" className="btn" onClick={() => void checkNow()} disabled={checking}>
+            {checking ? "Checking…" : "Check now"}
+          </button>
+        </SettingRow>
+      </div>
+      {update && (
+        <div style={{ marginTop: 10 }}>
+          <UpdateBanner />
+        </div>
+      )}
+
       {import.meta.env.DEV && (
         <>
           <h2 className="eyebrow group-title">Developer</h2>
@@ -134,6 +178,15 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
           type="button"
           className="setting"
           style={{ width: "100%", border: 0, borderTop: "1px solid var(--line)", background: "none", cursor: "pointer", textAlign: "left" }}
+          onClick={() => go("feedback")}
+        >
+          <span className="setting-label">Send feedback</span>
+          <ChevronIcon />
+        </button>
+        <button
+          type="button"
+          className="setting"
+          style={{ width: "100%", border: 0, borderTop: "1px solid var(--line)", background: "none", cursor: "pointer", textAlign: "left" }}
           onClick={() => go("privacy")}
         >
           <span className="setting-label">Privacy</span>
@@ -142,7 +195,7 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
       </div>
 
       <div className="footer">
-        <span>Dangle 0.1.1</span>
+        <span>Dangle {info?.version ?? ""}</span>
         <button type="button" className="btn btn-danger" onClick={() => void backend.quit()}>
           Quit Dangle
         </button>
