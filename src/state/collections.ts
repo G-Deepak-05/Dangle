@@ -59,7 +59,7 @@ export function setSlotAnchor(slot: number, anchorX: number) {
 }
 
 /** Adds a charm in the widest free gap along the top of the screen. */
-export function addSlot() {
+export function addSlot(charmId?: string) {
   const s = settingsStore.get();
   if (s.extraSlots.length >= MAX_EXTRA_SLOTS) return Promise.resolve();
   const taken = [s.anchorX, ...s.extraSlots.map((x) => x.anchorX)].sort((a, b) => a - b);
@@ -74,11 +74,15 @@ export function addSlot() {
   }
   const used = new Set([s.activeCharmId, ...s.extraSlots.map((x) => x.charmId)]);
   const pool = charmsStore.get().filter((c) => !used.has(c.id));
-  const pick = pool[Math.floor(Math.random() * pool.length)] ?? charmsStore.get()[0];
-  return updateSettings({ extraSlots: [...s.extraSlots, { charmId: pick.id, anchorX: best }] });
+  const pick = charmId ?? (pool[Math.floor(Math.random() * pool.length)] ?? charmsStore.get()[0]).id;
+  return updateSettings({ extraSlots: [...s.extraSlots, { charmId: pick, anchorX: best }] });
 }
 
 export function removeSlot(slot: number) {
   if (slot === 0) return Promise.resolve();
   return updateSettings({ extraSlots: settingsStore.get().extraSlots.filter((_, i) => i !== slot - 1) });
+}
+
+export function canAddSlot() {
+  return settingsStore.get().extraSlots.length < MAX_EXTRA_SLOTS;
 }

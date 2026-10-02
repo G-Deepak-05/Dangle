@@ -13,7 +13,7 @@ export interface UserCollection {
   charmIds: string[];
 }
 
-export const MAX_EXTRA_SLOTS = 2;
+export const MAX_EXTRA_SLOTS = 4;
 import type { CharmSize, PhysicsProfileName } from "../physics/profiles";
 
 /** Mirrors the Rust `Settings` struct; Rust owns validation and persistence. */

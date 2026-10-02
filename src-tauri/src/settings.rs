@@ -11,7 +11,7 @@ pub const MIN_THREAD_LENGTH: f64 = 0.5;
 pub const MAX_THREAD_LENGTH: f64 = 3.0;
 const MAX_FAVORITES: usize = 500;
 const MAX_ID_LEN: usize = 64;
-pub const MAX_EXTRA_SLOTS: usize = 2;
+pub const MAX_EXTRA_SLOTS: usize = 4;
 const MAX_COLLECTIONS: usize = 50;
 const MAX_COLLECTION_CHARMS: usize = 200;
 const MAX_NAME_CHARS: usize = 40;
@@ -383,7 +383,7 @@ mod tests {
             "hook": "anchor-chain"
         });
         let s = Settings::merged_lenient(&Settings::default(), &patch);
-        assert_eq!(s.extra_slots.len(), 2);
+        assert_eq!(s.extra_slots.len(), 3);
         assert_eq!(s.extra_slots[0].anchor_x, 1.0);
         assert_eq!(s.extra_slots[1].charm_id, "cat");
         assert_eq!(s.rotate_source, "favorites");

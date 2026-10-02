@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { backend, type InstalledApp, type Route } from "../../ipc/backend";
-import { refreshCustomCharms, updateSettings } from "../../state/stores";
+import { addSlot, canAddSlot, chooseCharmForSlot } from "../../state/collections";
+import { refreshCustomCharms } from "../../state/stores";
+import { targetSlotStore } from "../../state/ui";
+import { Segmented } from "../components/Controls";
+import { useSettings, useStore } from "../hooks";
+import { MAX_EXTRA_SLOTS } from "../../state/settings";
 import { BackBar } from "../components/Controls";
 import { SearchIcon } from "../components/Icons";
 import { IS_MAC } from "../platform";
@@ -68,6 +73,10 @@ export function Apps({ go, onToast }: { go: (r: Route) => void; onToast: (msg: s
   const [apps, setApps] = useState<InstalledApp[] | null>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
+  const settings = useSettings();
+  const targetSlot = useStore(targetSlotStore);
+  const roomForMore = settings.extraSlots.length < MAX_EXTRA_SLOTS;
+  const [placement, setPlacement] = useState<"add" | "replace">(roomForMore ? "add" : "replace");
 
   useEffect(() => {
     void backend.listApps().then(setApps, () => setApps([]));
@@ -84,9 +93,15 @@ export function Apps({ go, onToast }: { go: (r: Route) => void; onToast: (msg: s
       const fallback = IS_MAC ? undefined : monogram(app.name).split(",")[1];
       const charm = await backend.createAppCharm(app.path, app.name, fallback);
       await refreshCustomCharms();
-      await updateSettings({ activeCharmId: charm.id });
+      if (targetSlot > 0) {
+        await chooseCharmForSlot(targetSlot, charm.id);
+        targetSlotStore.set(0);
+      } else if (placement === "add" && canAddSlot()) {
+        await addSlot(charm.id);
+      } else {
+        await chooseCharmForSlot(0, charm.id);
+      }
       onToast(`${app.name} is hanging. Click it to open`);
-      go("home");
     } catch (err) {
       onToast(typeof err === "string" ? err : "Couldn't make a charm for that app.");
     } finally {
@@ -100,6 +115,21 @@ export function Apps({ go, onToast }: { go: (r: Route) => void; onToast: (msg: s
       <p className="help" style={{ marginTop: 0, fontSize: "0.95rem", color: "var(--ink-2)" }}>
         Pick an app to hang its icon as a charm. Click the charm to open the app; drag it to swing as usual.
       </p>
+
+      {targetSlot === 0 && (
+        <div className="field" style={{ marginTop: 14 }}>
+          <Segmented<"add" | "replace">
+            label="Where to hang it"
+            value={roomForMore ? placement : "replace"}
+            onChange={setPlacement}
+            options={[
+              { value: "add", label: roomForMore ? "Add to desktop" : "Desktop is full (5)" },
+              { value: "replace", label: "Replace main charm" },
+            ]}
+          />
+          <p className="help">Pick as many apps as you like. Each charm opens its own app.</p>
+        </div>
+      )}
 
       <div className="search" style={{ marginTop: 14 }}>
         <SearchIcon />
