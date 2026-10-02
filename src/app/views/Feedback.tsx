@@ -43,7 +43,7 @@ export function Feedback({ go, onToast }: { go: (r: Route) => void; onToast: (ms
 
   return (
     <div className="view">
-      <BackBar title="Feedback" onBack={() => go("settings")} />
+      <BackBar title="Feedback" onBack={() => go("privacy")} />
 
       <p className="help" style={{ marginTop: 0, fontSize: "0.95rem", color: "var(--ink-2)" }}>
         Found a bug or have an idea? I read every note.

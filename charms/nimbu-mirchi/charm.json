@@ -1,0 +1,20 @@
+{
+  "id": "nimbu-mirchi",
+  "name": "Nimbu Mirchi",
+  "category": "nature",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "protection",
+  "sound": "soft",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Lemon and chillies at the door keep bad luck out.",
+    "author": "Dangle"
+  }
+}

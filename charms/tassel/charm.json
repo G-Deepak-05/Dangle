@@ -1,0 +1,20 @@
+{
+  "id": "tassel",
+  "name": "Tassel",
+  "category": "minimal",
+  "tags": [
+    "retro"
+  ],
+  "collection": "ritual-home",
+  "sound": "soft",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Swishes when it swings.",
+    "author": "Dangle"
+  }
+}

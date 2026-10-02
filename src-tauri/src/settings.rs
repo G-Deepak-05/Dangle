@@ -186,6 +186,8 @@ pub struct Settings {
     pub glow: Glow,
     pub rope_type: RopeType,
     pub mouse_mode: MouseMode,
+    /// Per-charm size multiplier, set by scrolling over a charm or the size slider.
+    pub scale_by_charm: BTreeMap<String, f64>,
 }
 
 impl Default for Settings {
@@ -230,6 +232,7 @@ impl Default for Settings {
             glow: Glow::Off,
             rope_type: RopeType::Standard,
             mouse_mode: MouseMode::Normal,
+            scale_by_charm: BTreeMap::new(),
         }
     }
 }
@@ -304,6 +307,15 @@ impl Settings {
         self.anchor_y = clamp(self.anchor_y, 0.0, 0.45, 0.0);
         self.charm_scale = clamp(self.charm_scale, 0.6, 1.8, 1.0);
         self.opacity = clamp(self.opacity, 0.25, 1.0, 1.0);
+        self.scale_by_charm
+            .retain(|id, v| valid_id(id) && v.is_finite());
+        for v in self.scale_by_charm.values_mut() {
+            *v = v.clamp(0.4, 2.5);
+        }
+        while self.scale_by_charm.len() > 300 {
+            let first = self.scale_by_charm.keys().next().cloned().unwrap();
+            self.scale_by_charm.remove(&first);
+        }
 
         self.sound_volume = if self.sound_volume.is_finite() {
             self.sound_volume.clamp(0.0, 1.0)
@@ -470,5 +482,15 @@ mod tests {
         s.rope_by_charm.insert("moon".into(), RopeStyle::Chain);
         save(&path, &s).unwrap();
         assert_eq!(load(&path), s);
+    }
+}
+
+impl Settings {
+    /// Largest per-charm size among the charms currently hanging, for sizing the overlay.
+    pub fn max_hanging_scale(&self) -> f64 {
+        std::iter::once(&self.active_charm_id)
+            .chain(self.extra_slots.iter().map(|s| &s.charm_id))
+            .map(|id| self.scale_by_charm.get(id).copied().unwrap_or(1.0))
+            .fold(1.0_f64, f64::max)
     }
 }

@@ -466,6 +466,14 @@ export class CharmStage {
     return this.pointerId !== null;
   }
 
+  /** The charm under a pointer or wheel event, if any. */
+  charmAt(e: MouseEvent): Charm | undefined {
+    if (this.paused) return undefined;
+    const rect = this.canvas.getBoundingClientRect();
+    const body = this.bodyAt({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    return body === -1 ? undefined : this.charms()[body];
+  }
+
   private get captureTarget(): HTMLElement {
     return this.options.externalInput ?? this.canvas;
   }

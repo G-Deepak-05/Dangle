@@ -65,7 +65,7 @@ fn layout_now(app: &AppHandle) {
         CharmSize::Medium => (78.0, 124.0),
         CharmSize::Large => (104.0, 150.0),
     };
-    let charm = charm * settings.charm_scale;
+    let charm = charm * settings.charm_scale * settings.max_hanging_scale();
     let rope = rope * settings.thread_length * settings.charm_scale.clamp(0.8, 1.25);
     let drop = settings.anchor_y * wh;
     let stacked_extra = if settings.hang_mode == HangMode::Stacked {

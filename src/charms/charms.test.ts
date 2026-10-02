@@ -5,7 +5,7 @@ import { soundFor } from "./types";
 
 describe("built-in charms", () => {
   it("loads every charm with art, a known collection, and a sound", () => {
-    expect(BUILTIN_CHARMS.length).toBe(55);
+    expect(BUILTIN_CHARMS.length).toBe(73);
     const collectionIds = new Set(BUILTIN_COLLECTIONS.map((c) => c.id));
     for (const charm of BUILTIN_CHARMS) {
       expect(charm.image, charm.id).toBeTruthy();

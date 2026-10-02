@@ -1,0 +1,20 @@
+{
+  "id": "wind-chime",
+  "name": "Wind Chime",
+  "category": "nature",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "ritual-home",
+  "sound": "jingle",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Turns every breeze into a song.",
+    "author": "Dangle"
+  }
+}

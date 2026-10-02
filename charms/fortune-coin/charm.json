@@ -1,0 +1,20 @@
+{
+  "id": "fortune-coin",
+  "name": "Fortune Coin",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "luck-fortune",
+  "sound": "metal",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "An old coin with a square heart.",
+    "author": "Dangle"
+  }
+}

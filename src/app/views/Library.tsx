@@ -7,7 +7,8 @@ import { toggleFavorite } from "../../state/stores";
 import { libraryFilterStore, targetSlotStore, type LibraryFilter } from "../../state/ui";
 import { CollectionMenu } from "../components/CollectionMenu";
 import { confirmDialog, promptDialog } from "../components/Dialog";
-import { BackBar } from "../components/Controls";
+import { PageHeader } from "../components/Controls";
+import { DesktopStrip } from "../components/DesktopStrip";
 import {
   DownloadIcon,
   FolderPlusIcon,
@@ -90,10 +91,6 @@ export function Library({ go, onToast }: { go: (r: Route) => void; onToast: (msg
   const choose = (c: Charm) => {
     void chooseCharmForSlot(targetSlot, c.id);
     onToast(targetSlot === 0 ? `${c.name} is hanging now` : `${c.name} is charm ${targetSlot + 1} now`);
-    if (targetSlot !== 0) {
-      targetSlotStore.set(0);
-      go("customize");
-    }
   };
 
   const remove = async (c: Charm) => {
@@ -173,22 +170,13 @@ export function Library({ go, onToast }: { go: (r: Route) => void; onToast: (msg
 
   return (
     <div className="view">
-      <BackBar title="Charms" onBack={() => go(targetSlot === 0 ? "home" : "customize")}>
+      <PageHeader title="Charms" subtitle={`${charms.length} charms in ${BUILTIN_COLLECTIONS.length + settings.userCollections.length} collections`}>
         <button type="button" className="btn" onClick={() => go("create")}>
-          <PlusIcon size={14} /> New
+          <PlusIcon size={14} /> New charm
         </button>
-      </BackBar>
+      </PageHeader>
 
-      {targetSlot > 0 && (
-        <div className="notice" role="status" style={{ marginTop: 0, marginBottom: 12 }}>
-          <span>
-            Choosing charm {targetSlot + 1}.{" "}
-            <button type="button" className="link" onClick={() => targetSlotStore.set(0)}>
-              Cancel
-            </button>
-          </span>
-        </div>
-      )}
+      <DesktopStrip go={go} />
 
       <div className="search">
         <SearchIcon />

@@ -70,6 +70,8 @@ export interface Settings {
   glow: GlowLevel;
   ropeType: RopeType;
   mouseMode: MouseMode;
+  /** Per-charm size multiplier (0.4–2.5), set by scrolling over a charm. */
+  scaleByCharm: Record<string, number>;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -112,4 +114,5 @@ export const DEFAULT_SETTINGS: Settings = {
   glow: "off",
   ropeType: "standard",
   mouseMode: "normal",
+  scaleByCharm: {},
 };

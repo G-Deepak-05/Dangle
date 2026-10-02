@@ -1,0 +1,21 @@
+{
+  "id": "lotus",
+  "name": "Lotus",
+  "category": "nature",
+  "tags": [
+    "minimal",
+    "seasonal"
+  ],
+  "collection": "ritual-home",
+  "sound": "paper",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.15
+  },
+  "metadata": {
+    "description": "Blooms clean, whatever the water.",
+    "author": "Dangle"
+  }
+}

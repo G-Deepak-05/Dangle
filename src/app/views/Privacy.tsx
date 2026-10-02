@@ -2,10 +2,8 @@ import { THIS_DEVICE } from "../platform";
 import type { Route } from "../../ipc/backend";
 import { BackBar } from "../components/Controls";
 
-export function Privacy({ go }: { go: (r: Route) => void }) {
-  return (
-    <div className="view">
-      <BackBar title="Privacy" onBack={() => go("settings")} />
+export function Privacy({ go, embedded }: { go?: (r: Route) => void; embedded?: boolean }) {
+  const body = (
       <div className="prose">
         <p>Dangle is a small thing that lives on your computer. It keeps everything here, too.</p>
 
@@ -42,6 +40,19 @@ export function Privacy({ go }: { go: (r: Route) => void }) {
         <h2>If that ever changes</h2>
         <p>Any future analytics would be off by default and would only turn on if you choose to share them.</p>
       </div>
+  );
+  if (embedded) {
+    return (
+      <section className="panel" style={{ marginTop: 18 }}>
+        <h2 className="panel-title">Privacy</h2>
+        {body}
+      </section>
+    );
+  }
+  return (
+    <div className="view">
+      <BackBar title="Privacy" onBack={() => go?.("privacy")} />
+      {body}
     </div>
   );
 }

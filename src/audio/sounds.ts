@@ -16,6 +16,7 @@ export type SoundMaterial =
   | "retro"
   | "pop"
   | "punch"
+  | "jingle"
   | "none";
 
 export const SOUND_MATERIALS: SoundMaterial[] = [
@@ -31,6 +32,7 @@ export const SOUND_MATERIALS: SoundMaterial[] = [
   "retro",
   "pop",
   "punch",
+  "jingle",
   "none",
 ];
 
@@ -47,6 +49,7 @@ export const SOUND_LABELS: Record<SoundMaterial, string> = {
   retro: "8-bit blip",
   pop: "Pop",
   punch: "Comic punch",
+  jingle: "Jingle bells",
   none: "Silent",
 };
 
@@ -215,6 +218,18 @@ const RECIPES: Record<Exclude<SoundMaterial, "none">, Recipe> = {
   pop: (e, ctx, ev, k) => {
     e.tone(ctx, ev === "grab" ? 700 : 520, { gain: 0.26 * k, decay: 0.09, to: 150 });
     e.noise(ctx, { filter: "highpass", freq: 3000, gain: 0.06 * k, decay: 0.02 });
+  },
+  jingle: (e, ctx, ev, k) => {
+    // Several tiny bells striking a moment apart, like anklet bells.
+    const count = ev === "grab" ? 3 : 7;
+    for (let i = 0; i < count; i++) {
+      const base = 2600 + Math.random() * 1400;
+      const delay = i * (0.025 + Math.random() * 0.035);
+      [1, 2.4, 3.9].forEach((r, j) =>
+        e.tone(ctx, base * r, { gain: (0.06 * k) / (j + 1), decay: 0.35 / (1 + j * 0.4), delay }),
+      );
+    }
+    e.noise(ctx, { filter: "highpass", freq: 6500, gain: 0.04 * k, decay: 0.2 });
   },
   punch: (e, ctx, ev, k) => {
     if (ev === "grab") return e.noise(ctx, { filter: "bandpass", freq: 1400, q: 1, gain: 0.15 * k, decay: 0.05 });

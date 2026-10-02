@@ -12,7 +12,7 @@ import {
 import { backend, type Route } from "../../ipc/backend";
 import { refreshCustomCharms, stageConfigFor, updateSettings } from "../../state/stores";
 import { CharmPreview } from "../components/CharmPreview";
-import { BackBar, Segmented, ToggleRow } from "../components/Controls";
+import { PageHeader, Segmented, ToggleRow } from "../components/Controls";
 import { AlertIcon, CheckIcon, RopeSwatch, UploadIcon } from "../components/Icons";
 import { useSettings } from "../hooks";
 import { SOUND_LABELS, SOUND_MATERIALS, sounds, type SoundMaterial } from "../../audio/sounds";
@@ -181,7 +181,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
       await refreshCustomCharms();
       await updateSettings({ activeCharmId: saved.id });
       onToast(`${saved.name} is hanging now`);
-      go("home");
+      go("library");
     } catch (err) {
       setError(typeof err === "string" ? err : "Dangle couldn't save that charm. Please try again.");
       setPhase("ready");
@@ -198,7 +198,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
   if (!previewCharm || !prepared) {
     return (
       <div className="view">
-        <BackBar title="Create a charm" onBack={() => go("home")} />
+        <PageHeader title="Create" subtitle="Turn your own images, or your apps, into charms." />
         <div
           className="dropzone"
           data-over={dragOver}
@@ -251,7 +251,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
 
   return (
     <div className="view">
-      <BackBar title="Create a charm" onBack={() => go("home")} />
+      <PageHeader title="Create" subtitle="Turn your own images, or your apps, into charms." />
 
       <CharmPreview
         config={{ ...stageConfigFor(settings, previewCharm), rope, scale, sound }}

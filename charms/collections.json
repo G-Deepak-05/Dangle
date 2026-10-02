@@ -28,5 +28,20 @@
     "id": "retro-arcade",
     "name": "Retro Arcade",
     "description": "Insert coin. Press start."
+  },
+  {
+    "id": "protection",
+    "name": "Protection",
+    "description": "Charms people have hung for luck and safekeeping for centuries."
+  },
+  {
+    "id": "luck-fortune",
+    "name": "Luck & Fortune",
+    "description": "Little nudges in the right direction."
+  },
+  {
+    "id": "ritual-home",
+    "name": "Ritual & Home",
+    "description": "Bells, lamps, and things that make a place feel kept."
   }
 ]

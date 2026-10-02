@@ -1,0 +1,20 @@
+{
+  "id": "diya",
+  "name": "Diya",
+  "category": "seasonal",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "ritual-home",
+  "sound": "glass",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "A small flame that keeps the dark at bay.",
+    "author": "Dangle"
+  }
+}

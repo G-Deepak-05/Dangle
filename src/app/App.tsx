@@ -4,12 +4,12 @@ import { useSettings, useSettingsReady } from "./hooks";
 import { DialogHost } from "./components/Dialog";
 import { CreateCharm } from "./views/CreateCharm";
 import { Apps } from "./views/Apps";
-import { Customize } from "./views/Customize";
+import { Appearance } from "./views/Appearance";
+import { About } from "./views/About";
+import { Sidebar, sectionFor } from "./components/Sidebar";
 import { Feedback } from "./views/Feedback";
-import { Home } from "./views/Home";
 import { Library } from "./views/Library";
 import { Onboarding } from "./views/Onboarding";
-import { Privacy } from "./views/Privacy";
 import { Settings } from "./views/Settings";
 
 const UI_SCALES = [12, 13, 14, 15, 16];
@@ -27,7 +27,7 @@ function readScale(): number {
 export function App() {
   const ready = useSettingsReady();
   const settings = useSettings();
-  const [route, setRoute] = useState<Route>("home");
+  const [route, setRoute] = useState<Route>("library");
   const [toast, setToast] = useState<string | null>(null);
   const [uiScale, setUiScale] = useState(readScale);
   const toastTimer = useRef(0);
@@ -40,7 +40,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const unlisten = events.navigate((r) => setRoute(r === "onboarding" ? "home" : r));
+    const unlisten = events.navigate((r) => setRoute(r === "onboarding" || r === "home" ? "library" : r));
     return () => void unlisten.then((u) => u());
   }, []);
 
@@ -60,7 +60,10 @@ export function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
-      if (e.key === "Escape" && route !== "home") setRoute(route === "privacy" || route === "feedback" ? "settings" : "home");
+      if (e.key === "Escape") {
+        if (route === "feedback") setRoute("privacy");
+        else if (route === "apps") setRoute("create");
+      }
       if (!mod) return;
       if (e.key === ",") {
         e.preventDefault();
@@ -91,30 +94,38 @@ export function App() {
     );
   }
 
-  const view = !settings.onboardingComplete ? (
-    <Onboarding />
-  ) : route === "library" ? (
-    <Library go={go} onToast={showToast} />
-  ) : route === "customize" ? (
-    <Customize go={go} />
-  ) : route === "create" ? (
-    <CreateCharm go={go} onToast={showToast} />
-  ) : route === "settings" ? (
-    <Settings go={go} onToast={showToast} />
-  ) : route === "apps" ? (
-    <Apps go={go} onToast={showToast} />
-  ) : route === "feedback" ? (
-    <Feedback go={go} onToast={showToast} />
-  ) : route === "privacy" ? (
-    <Privacy go={go} />
-  ) : (
-    <Home go={go} />
-  );
+  if (!settings.onboardingComplete) {
+    return (
+      <div className="app">
+        <div className="titlebar" data-tauri-drag-region />
+        <Onboarding />
+        <DialogHost />
+      </div>
+    );
+  }
+
+  const view =
+    route === "customize" ? (
+      <Appearance go={go} />
+    ) : route === "create" ? (
+      <CreateCharm go={go} onToast={showToast} />
+    ) : route === "settings" ? (
+      <Settings go={go} onToast={showToast} />
+    ) : route === "apps" ? (
+      <Apps go={go} onToast={showToast} />
+    ) : route === "feedback" ? (
+      <Feedback go={go} onToast={showToast} />
+    ) : route === "privacy" ? (
+      <About go={go} />
+    ) : (
+      <Library go={go} onToast={showToast} />
+    );
 
   return (
-    <div className="app">
-      <div className="titlebar" data-tauri-drag-region />
-      <main key={settings.onboardingComplete ? route : "onboarding"} style={{ display: "contents" }}>
+    <div className="shell">
+      <Sidebar active={sectionFor(route)} go={go} />
+      <main className="main" key={route}>
+        <div className="main-titlebar" data-tauri-drag-region />
         {view}
       </main>
       <DialogHost />

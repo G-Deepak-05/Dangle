@@ -12,9 +12,9 @@ const MAX_DIMENSION: u32 = 1024;
 const MIN_DIMENSION: u32 = 16;
 const MAX_NAME_CHARS: usize = 40;
 const MAX_CUSTOM_CHARMS: usize = 200;
-const SOUNDS: [&str; 13] = [
+const SOUNDS: [&str; 14] = [
     "metal", "bell", "glass", "wood", "soft", "paper", "plastic", "magic", "laser", "retro", "pop",
-    "punch", "none",
+    "punch", "jingle", "none",
 ];
 
 pub fn clean_sound(sound: Option<String>) -> Option<String> {

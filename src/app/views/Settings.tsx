@@ -2,7 +2,7 @@ import { KEYS } from "../platform";
 import { backend, type Route } from "../../ipc/backend";
 import { updateSettings } from "../../state/stores";
 import type { Settings as SettingsShape } from "../../state/settings";
-import { BackBar, SettingRow, ToggleRow } from "../components/Controls";
+import { PageHeader, Segmented, SettingRow, ToggleRow } from "../components/Controls";
 import { ChevronIcon } from "../components/Icons";
 import { useAppInfo, useSettings, useUpdate } from "../hooks";
 import { useState } from "react";
@@ -32,7 +32,7 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
 
   return (
     <div className="view">
-      <BackBar title="Settings" onBack={() => go("home")} />
+      <PageHeader title="Settings" subtitle="How Dangle behaves on your computer." />
 
       <h2 className="eyebrow group-title" style={{ marginTop: 4 }}>
         Desktop
@@ -46,12 +46,23 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
           onChange={(v) => set({ startAtLogin: v })}
         />
         <ToggleRow
-          id="ontop"
-          label="Always on top"
-          description="Keep the charm above other windows."
-          checked={s.alwaysOnTop}
-          onChange={(v) => set({ alwaysOnTop: v })}
+          id="show"
+          label="Show Dangle"
+          description="Hang your charms on the desktop."
+          checked={!s.hidden}
+          onChange={(v) => set({ hidden: !v })}
         />
+        <SettingRow id="layer" label="Window" description="On the desktop hangs charms over your wallpaper, behind your windows.">
+          <Segmented<"top" | "desktop">
+            label="Window"
+            value={s.alwaysOnTop ? "top" : "desktop"}
+            onChange={(v) => set({ alwaysOnTop: v === "top" })}
+            options={[
+              { value: "top", label: "Always on top" },
+              { value: "desktop", label: "On the desktop" },
+            ]}
+          />
+        </SettingRow>
         <ToggleRow
           id="spaces"
           label="Show on all desktops"
@@ -98,7 +109,6 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
           checked={s.paused}
           onChange={(v) => set({ paused: v })}
         />
-        <ToggleRow id="hidden" label="Hide charm" checked={s.hidden} onChange={(v) => set({ hidden: v })} />
       </div>
 
       <h2 className="eyebrow group-title">Sound</h2>

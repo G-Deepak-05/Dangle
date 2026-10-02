@@ -5,8 +5,8 @@ pub const LABEL: &str = "control";
 pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
     let builder = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("index.html".into()))
         .title("Dangle")
-        .inner_size(440.0, 740.0)
-        .min_inner_size(400.0, 560.0)
+        .inner_size(1020.0, 720.0)
+        .min_inner_size(760.0, 540.0)
         .resizable(true)
         .maximizable(false)
         .disable_drag_drop_handler()

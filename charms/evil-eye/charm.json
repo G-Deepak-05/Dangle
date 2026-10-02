@@ -1,0 +1,20 @@
+{
+  "id": "evil-eye",
+  "name": "Evil Eye",
+  "category": "minimal",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "protection",
+  "sound": "glass",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Looks out for you, so you don't have to.",
+    "author": "Dangle"
+  }
+}

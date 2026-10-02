@@ -1,0 +1,20 @@
+{
+  "id": "omamori",
+  "name": "Omamori",
+  "category": "minimal",
+  "tags": [
+    "cute"
+  ],
+  "collection": "protection",
+  "sound": "paper",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "A little pouch of good wishes.",
+    "author": "Dangle"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "temple-bell",
+  "name": "Temple Bell",
+  "category": "seasonal",
+  "tags": [
+    "retro",
+    "minimal"
+  ],
+  "collection": "ritual-home",
+  "sound": "bell",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "One clear ring to start the day.",
+    "author": "Dangle"
+  }
+}

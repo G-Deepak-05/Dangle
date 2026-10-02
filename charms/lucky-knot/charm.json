@@ -1,0 +1,20 @@
+{
+  "id": "lucky-knot",
+  "name": "Lucky Knot",
+  "category": "minimal",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "protection",
+  "sound": "soft",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Tied tight with every good wish.",
+    "author": "Dangle"
+  }
+}

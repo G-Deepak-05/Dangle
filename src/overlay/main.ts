@@ -6,6 +6,7 @@ import { pickForBucket, rotationBucket, rotationPool } from "../state/rotation";
 import {
   charmsStore,
   findCharm,
+  scaledCharm,
   settingsStore,
   stageConfigFor,
   startStores,
@@ -47,6 +48,34 @@ const finish = (e: PointerEvent) => {
   if (!activeSlot.stage.isDragging) activeSlot = null;
 };
 inputLayer.addEventListener("pointermove", forward);
+
+// Scroll (or pinch) over a charm to resize just that charm. Changes are batched so the
+// artwork is redrawn a few times a second rather than on every wheel tick.
+const pendingScale = new Map<string, number>();
+let scaleTimer = 0;
+inputLayer.addEventListener(
+  "wheel",
+  (e) => {
+    const target = [...slots].reverse().find((slot) => slot.stage.charmAt(e));
+    const charm = target?.stage.charmAt(e);
+    if (!charm) return;
+    e.preventDefault();
+    const s = settingsStore.get();
+    const current = pendingScale.get(charm.id) ?? s.scaleByCharm[charm.id] ?? 1;
+    const factor = Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.003));
+    pendingScale.set(charm.id, Math.min(2.5, Math.max(0.4, current * factor)));
+    if (!scaleTimer) {
+      scaleTimer = window.setTimeout(() => {
+        scaleTimer = 0;
+        const next = { ...settingsStore.get().scaleByCharm };
+        pendingScale.forEach((v, id) => (next[id] = Math.round(v * 100) / 100));
+        pendingScale.clear();
+        void updateSettings({ scaleByCharm: next });
+      }, 90);
+    }
+  },
+  { passive: false },
+);
 inputLayer.addEventListener("pointerup", finish);
 inputLayer.addEventListener("pointercancel", finish);
 inputLayer.addEventListener("lostpointercapture", finish);
@@ -60,8 +89,10 @@ function stageWidth(): number {
   const size = SIZES[s.size];
   const k = s.charmScale;
   const rope = size.rope * s.threadLength * Math.min(1.25, Math.max(0.8, k));
-  const stack = s.hangMode === "stacked" ? s.extraSlots.length * (size.charm * k * 1.25 + 20) : 0;
-  return Math.round(2 * (rope * 1.15 + size.charm * k + stack) + 80);
+  const ids = [s.activeCharmId, ...s.extraSlots.map((x) => x.charmId)];
+  const own = Math.max(1, ...ids.map((id) => s.scaleByCharm[id] ?? 1));
+  const stack = s.hangMode === "stacked" ? s.extraSlots.length * (size.charm * k * own * 1.25 + 20) : 0;
+  return Math.round(2 * (rope * 1.15 + size.charm * k * own + stack) + 80);
 }
 
 /** One entry per string. In stacked mode every charm shares the main string. */
@@ -156,7 +187,7 @@ function applySettings() {
     const charm = findCharm(charms, spec.charmId);
     if (!charm) return;
     const stage = slots[i].stage;
-    const stack = spec.stack.map((id) => findCharm(charms, id));
+    const stack = spec.stack.map((id) => scaledCharm(settings, findCharm(charms, id)));
     void stage.configure({ ...stageConfigFor(settings, charm), stack });
     stage.setPaused(settings.paused);
     stage.setBreeze(!(settings.pauseWhenInactive && systemIdle));

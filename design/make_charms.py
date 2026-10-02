@@ -583,6 +583,215 @@ SOUNDS = {
     "joystick": "plastic", "arcade": "retro", "pixel-heart": "retro", "cartridge": "plastic", "pixel-gem": "retro",
 }
 
+def outlined(shapes, fill, width=12):
+    """Draws shapes twice: a thick ink copy underneath, then the colour on top, so
+    overlapping parts share one clean outline like an enamel pin."""
+    under = "".join(shapes)
+    return (f'<g fill="{INK}" stroke="{INK}" stroke-width="{width}" stroke-linejoin="round">{under}</g>'
+            f'<g fill="{fill}">{under}</g>')
+
+TALISMANS = {
+# ---------- Protection ----------
+"evil-eye": dict(collection="protection", name="Evil Eye", category="minimal", tags=["seasonal"], rope="thread",
+  desc="Looks out for you, so you don't have to.", anchor=(0.5, 0.06), svg=svg(f"""
+<circle cx="100" cy="100" r="86" fill="#1F4E9E" {W}/>
+<circle cx="100" cy="100" r="60" fill="#FFFFFF" stroke="{INK}" stroke-width="4"/>
+<circle cx="100" cy="100" r="42" fill="#7EC8F0" stroke="{INK}" stroke-width="4"/>
+<circle cx="100" cy="100" r="22" fill="{INK}"/>
+<circle cx="92" cy="92" r="6" fill="#FFFFFF"/>
+<path d="M40 64 C 50 44, 68 30, 88 24" {GLOSS}/>
+""")),
+"hamsa": dict(collection="protection", name="Hamsa", category="minimal", tags=["seasonal"], rope="chain",
+  desc="An open hand for good fortune and protection.", anchor=(0.5, 0.15), svg=svg(f"""
+{outlined([
+ '<rect x="56" y="86" width="88" height="100" rx="42"/>',
+ '<rect x="64" y="42" width="22" height="80" rx="11"/>',
+ '<rect x="89" y="32" width="22" height="90" rx="11"/>',
+ '<rect x="114" y="42" width="22" height="80" rx="11"/>',
+ '<rect x="30" y="94" width="22" height="60" rx="11" transform="rotate(-28 41 124)"/>',
+ '<rect x="148" y="94" width="22" height="60" rx="11" transform="rotate(28 159 124)"/>',
+], "#3E7CC4")}
+<path d="M70 134 C 84 116, 116 116, 130 134 C 116 152, 84 152, 70 134 Z" fill="#FFFFFF" stroke="{INK}" stroke-width="4"/>
+<circle cx="100" cy="134" r="10" fill="#1F4E9E" stroke="{INK}" stroke-width="3"/>
+<circle cx="97" cy="131" r="3" fill="#FFFFFF"/>
+<g fill="#E6B450"><circle cx="100" cy="166" r="4"/><circle cx="84" cy="162" r="3"/><circle cx="116" cy="162" r="3"/></g>
+<path d="M72 60 V 96" {GLOSS}/>
+""")),
+"nimbu-mirchi": dict(collection="protection", name="Nimbu Mirchi", category="nature", tags=["seasonal"], rope="thread",
+  desc="Lemon and chillies at the door keep bad luck out.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M100 10 V 150" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>
+{"".join(f'<path d="M100 {y} C {100 + d * 18} {y + 6}, {100 + d * 30} {y + 26}, {100 + d * 26} {y + 44} C {100 + d * 22} {y + 30}, {100 + d * 10} {y + 16}, 100 {y + 8} Z" fill="#5FA350" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>' for y, d in [(28, -1), (38, 1), (58, -1), (68, 1), (88, -1), (98, 1)])}
+<ellipse cx="100" cy="156" rx="36" ry="30" fill="#F6D365" {W}/>
+<path d="M134 152 l 10 -4" stroke="{INK}" stroke-width="6" stroke-linecap="round"/>
+<path d="M78 142 C 82 134, 90 130, 98 130" {GLOSS}/>
+""")),
+"dreamcatcher": dict(collection="protection", name="Dreamcatcher", category="nature", tags=["minimal"], rope="cord",
+  desc="Catches the bad dreams; lets the good ones through.", anchor=(0.5, 0.1), svg=svg(f"""
+<path d="M70 120 V 150 M100 136 V 162 M130 120 V 150" stroke="{INK}" stroke-width="3"/>
+{"".join(f'<path d="M{x} {y} C {x - 12} {y + 14}, {x - 10} {y + 34}, {x} {y + 44} C {x + 10} {y + 34}, {x + 12} {y + 14}, {x} {y} Z" fill="{c}" stroke="{INK}" stroke-width="4"/><path d="M{x} {y + 4} V {y + 42}" stroke="{INK}" stroke-width="2"/>' for x, y, c in [(70, 146, "#F2E6CF"), (100, 158, "#E27A8C"), (130, 146, "#8EC5E8")])}
+<circle cx="100" cy="76" r="56" fill="none" stroke="{INK}" stroke-width="14"/>
+<circle cx="100" cy="76" r="56" fill="none" stroke="#A46E45" stroke-width="7"/>
+<path d="M100 22 L 140 96 L 54 52 L 146 52 L 60 96 Z" fill="none" stroke="#F2E6CF" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="100" cy="72" r="7" fill="#5CC8C0" stroke="{INK}" stroke-width="3"/>
+""")),
+"omamori": dict(collection="protection", name="Omamori", category="minimal", tags=["cute"], rope="cord",
+  desc="A little pouch of good wishes.", anchor=(0.5, 0.06), svg=svg(f"""
+<path d="M86 12 C 70 12, 74 34, 92 34 M114 12 C 130 12, 126 34, 108 34" fill="none" stroke="#C8412B" stroke-width="7" stroke-linecap="round"/>
+<path d="M60 40 L 100 30 L 140 40 L 146 176 C 146 184, 140 188, 132 188 L 68 188 C 60 188, 54 184, 54 176 Z" fill="#C8412B" {W}/>
+<path d="M62 60 H 138" stroke="#E6B450" stroke-width="6"/>
+<rect x="78" y="80" width="44" height="76" rx="6" fill="#E6B450" stroke="{INK}" stroke-width="4"/>
+<path d="M90 96 H 110 M100 96 V 142 M88 116 H 112 M90 132 L 100 142 L 110 132" stroke="#8A2A1E" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="M66 80 C 64 110, 64 140, 66 170" {GLOSS}/>
+""")),
+"lucky-knot": dict(collection="protection", name="Lucky Knot", category="minimal", tags=["seasonal"], rope="thread",
+  desc="Tied tight with every good wish.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M100 10 V 30" stroke="#C8412B" stroke-width="6" stroke-linecap="round"/>
+<g fill="none" stroke="{INK}" stroke-width="16"><circle cx="100" cy="36" r="8"/><circle cx="58" cy="78" r="10"/><circle cx="142" cy="78" r="10"/></g>
+<g fill="none" stroke="#D9503B" stroke-width="7"><circle cx="100" cy="36" r="8"/><circle cx="58" cy="78" r="10"/><circle cx="142" cy="78" r="10"/></g>
+<path d="M100 40 L 140 78 L 100 116 L 60 78 Z" fill="#D9503B" {W}/>
+<path d="M80 59 L 120 97 M90 49 L 130 87 M70 69 L 110 107 M120 59 L 80 97 M110 49 L 70 87 M130 69 L 90 107" stroke="#9E2A1C" stroke-width="3"/>
+<circle cx="100" cy="128" r="10" fill="#E6B450" stroke="{INK}" stroke-width="4"/>
+<path d="M86 138 L 82 190 M94 140 L 92 192 M100 140 V 194 M106 140 L 108 192 M114 138 L 118 190" stroke="#D9503B" stroke-width="5" stroke-linecap="round"/>
+<path d="M84 136 H 116" stroke="#E6B450" stroke-width="7" stroke-linecap="round"/>
+""")),
+# ---------- Luck & Fortune ----------
+"horseshoe": dict(collection="luck-fortune", name="Horseshoe", category="retro", tags=["minimal"], rope="chain",
+  desc="Hung the right way up, so the luck stays in.", anchor=(0.5, 0.09), svg=svg(f"""
+<path d="M42 18 L 158 18" stroke="#C9A04D" stroke-width="5" stroke-linecap="round"/>
+<path d="M40 30 L 40 104 A 60 60 0 0 0 160 104 L 160 30 L 132 30 L 132 104 A 32 32 0 0 1 68 104 L 68 30 Z" fill="#B8BFC8" {W}/>
+<rect x="34" y="20" width="40" height="14" rx="6" fill="#8E959E" stroke="{INK}" stroke-width="4"/>
+<rect x="126" y="20" width="40" height="14" rx="6" fill="#8E959E" stroke="{INK}" stroke-width="4"/>
+<g fill="{INK}"><circle cx="54" cy="56" r="4"/><circle cx="54" cy="88" r="4"/><circle cx="64" cy="128" r="4"/><circle cx="146" cy="56" r="4"/><circle cx="146" cy="88" r="4"/><circle cx="136" cy="128" r="4"/></g>
+<path d="M48 44 V 100" {GLOSS}/>
+""")),
+"wishbone": dict(collection="luck-fortune", name="Wishbone", category="nature", tags=["seasonal"], rope="thread",
+  desc="Pull it with a friend. Or don't, and keep the wish.", anchor=(0.5, 0.08), svg=svg(f"""
+<path d="M100 26 C 92 70, 70 120, 46 172 M100 26 C 108 70, 130 120, 154 172" fill="none" stroke="{INK}" stroke-width="24" stroke-linecap="round"/>
+<path d="M100 26 C 92 70, 70 120, 46 172 M100 26 C 108 70, 130 120, 154 172" fill="none" stroke="#F2E6CF" stroke-width="12" stroke-linecap="round"/>
+<circle cx="100" cy="24" r="12" fill="#F2E6CF" {W}/>
+<circle cx="44" cy="176" r="12" fill="#F2E6CF" {W}/><circle cx="156" cy="176" r="12" fill="#F2E6CF" {W}/>
+""")),
+"ladybug": dict(collection="luck-fortune", name="Ladybug", category="cute", tags=["nature"], rope="thread",
+  desc="Landed on you. That means something good.", anchor=(0.5, 0.12), svg=svg(f"""
+<path d="M86 34 C 80 22, 72 18, 64 18 M114 34 C 120 22, 128 18, 136 18" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>
+<circle cx="64" cy="18" r="5" fill="{INK}"/><circle cx="136" cy="18" r="5" fill="{INK}"/>
+<ellipse cx="100" cy="116" rx="70" ry="68" fill="#D9503B" {W}/>
+<path d="M60 64 C 70 46, 130 46, 140 64 C 126 70, 74 70, 60 64 Z" fill="{INK}"/>
+<circle cx="100" cy="46" r="26" fill="{INK}"/>
+<circle cx="90" cy="42" r="5" fill="#FFFFFF"/><circle cx="110" cy="42" r="5" fill="#FFFFFF"/>
+<path d="M100 66 V 182" stroke="{INK}" stroke-width="5"/>
+<g fill="{INK}"><circle cx="70" cy="100" r="11"/><circle cx="130" cy="100" r="11"/><circle cx="66" cy="140" r="9"/><circle cx="134" cy="140" r="9"/><circle cx="84" cy="166" r="8"/><circle cx="116" cy="166" r="8"/></g>
+<path d="M50 104 C 50 90, 56 80, 64 74" {GLOSS}/>
+""")),
+"bamboo": dict(collection="luck-fortune", name="Lucky Bamboo", category="nature", tags=["minimal"], rope="cord",
+  desc="Grows a little luck every day.", anchor=(0.5, 0.06), svg=svg(f"""
+{outlined([
+ '<rect x="60" y="34" width="24" height="150" rx="10"/>',
+ '<rect x="88" y="12" width="24" height="172" rx="10"/>',
+ '<rect x="116" y="44" width="24" height="140" rx="10"/>',
+ '<path d="M84 50 C 60 40, 40 50, 32 66 C 52 70, 70 64, 84 54 Z"/>',
+ '<path d="M116 64 C 140 54, 160 62, 168 78 C 148 82, 130 76, 116 68 Z"/>',
+], "#7FB36A")}
+<path d="M60 78 H 84 M60 130 H 84 M88 60 H 112 M88 112 H 112 M88 158 H 112 M116 92 H 140 M116 146 H 140" stroke="#4F7A55" stroke-width="5"/>
+<rect x="52" y="116" width="96" height="16" rx="4" fill="#E6B450" stroke="{INK}" stroke-width="4"/>
+<circle cx="100" cy="124" r="7" fill="#D9503B" stroke="{INK}" stroke-width="3"/>
+""")),
+"fortune-coin": dict(collection="luck-fortune", name="Fortune Coin", category="retro", tags=["minimal"], rope="thread",
+  desc="An old coin with a square heart.", anchor=(0.5, 0.06), svg=svg(f"""
+<path d="M100 10 V 40" stroke="#C8412B" stroke-width="6" stroke-linecap="round"/>
+<path d="M100 26 a 82 82 0 1 1 -0.1 0 Z M86 98 h 28 v 28 h -28 Z" fill="#D8B25C" fill-rule="evenodd" {W}/>
+<circle cx="100" cy="108" r="66" fill="none" stroke="#B9852E" stroke-width="5"/>
+<path d="M86 98 h 28 v 28 h -28 Z" fill="none" stroke="#B9852E" stroke-width="10"/>
+<g fill="#B9852E"><rect x="94" y="54" width="12" height="22" rx="3"/><rect x="94" y="140" width="12" height="22" rx="3"/><rect x="48" y="106" width="22" height="12" rx="3"/><rect x="130" y="106" width="22" height="12" rx="3"/></g>
+<path d="M44 82 C 50 64, 62 52, 78 46" {GLOSS}/>
+""")),
+"daruma": dict(collection="luck-fortune", name="Daruma", category="cute", tags=["retro"], rope="cord",
+  desc="Fill in one eye when you set a goal.", anchor=(0.5, 0.08), svg=svg(f"""
+<path d="M100 16 C 156 16, 182 72, 176 120 C 170 166, 140 188, 100 188 C 60 188, 30 166, 24 120 C 18 72, 44 16, 100 16 Z" fill="#D9503B" {W}/>
+<path d="M58 70 C 60 46, 140 46, 142 70 C 146 110, 128 132, 100 132 C 72 132, 54 110, 58 70 Z" fill="#FFF6E4" stroke="{INK}" stroke-width="4"/>
+<circle cx="80" cy="84" r="13" fill="#FFFFFF" stroke="{INK}" stroke-width="4"/><circle cx="80" cy="84" r="7" fill="{INK}"/>
+<circle cx="120" cy="84" r="13" fill="#FFFFFF" stroke="{INK}" stroke-width="4"/>
+<path d="M64 64 q 16 -10 28 0 M108 64 q 16 -10 28 0" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+<path d="M76 112 q 24 16 48 0" fill="none" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>
+<path d="M60 152 C 80 144, 120 144, 140 152" fill="none" stroke="#E6B450" stroke-width="7" stroke-linecap="round"/>
+<path d="M42 92 C 42 72, 50 56, 62 44" {GLOSS}/>
+""")),
+# ---------- Ritual & Home ----------
+"temple-bell": dict(collection="ritual-home", name="Temple Bell", category="seasonal", tags=["retro", "minimal"], rope="chain",
+  desc="One clear ring to start the day.", anchor=(0.5, 0.05), svg=svg(f"""
+<circle cx="100" cy="24" r="14" fill="none" stroke="{INK}" stroke-width="12"/>
+<circle cx="100" cy="24" r="14" fill="none" stroke="#C9A04D" stroke-width="6"/>
+<rect x="90" y="36" width="20" height="18" rx="4" fill="#B9852E" stroke="{INK}" stroke-width="4"/>
+<path d="M100 52 C 66 52, 56 82, 54 112 C 52 138, 40 150, 34 162 L 166 162 C 160 150, 148 138, 146 112 C 144 82, 134 52, 100 52 Z" fill="#C9A04D" {W}/>
+<path d="M56 100 H 144 M50 140 H 150" stroke="#9A7426" stroke-width="5"/>
+<g fill="#9A7426"><circle cx="76" cy="120" r="4"/><circle cx="100" cy="120" r="4"/><circle cx="124" cy="120" r="4"/></g>
+<path d="M30 160 H 170" stroke="{INK}" stroke-width="12" stroke-linecap="round"/>
+<path d="M30 160 H 170" stroke="#B9852E" stroke-width="5" stroke-linecap="round"/>
+<path d="M100 162 V 180" stroke="{INK}" stroke-width="4"/>
+<circle cx="100" cy="184" r="9" fill="#B9852E" stroke="{INK}" stroke-width="4"/>
+<path d="M72 74 C 66 92, 64 110, 64 128" {GLOSS}/>
+""")),
+"wind-chime": dict(collection="ritual-home", name="Wind Chime", category="nature", tags=["minimal"], rope="thread",
+  desc="Turns every breeze into a song.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M100 10 V 34" stroke="{INK}" stroke-width="4"/>
+<ellipse cx="100" cy="40" rx="62" ry="12" fill="#A46E45" {W}/>
+<g stroke="{INK}" stroke-width="2.5">{"".join(f'<path d="M{x} 50 V {y0}"/>' for x, y0 in [(52, 62), (76, 58), (100, 56), (124, 58), (148, 62)])}</g>
+{"".join(f'<rect x="{x - 7}" y="{y0}" width="14" height="{h}" rx="6" fill="#D8DEE8" stroke="{INK}" stroke-width="4"/>' for x, y0, h in [(52, 62, 70), (76, 58, 96), (100, 56, 118), (124, 58, 96), (148, 62, 70)])}
+<path d="M100 56 V 182" stroke="{INK}" stroke-width="2"/>
+<circle cx="100" cy="112" r="10" fill="#A46E45" stroke="{INK}" stroke-width="4"/>
+<path d="M90 176 L 110 176 L 104 196 L 96 196 Z" fill="#E27A8C" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+""")),
+"ghungroo": dict(collection="ritual-home", name="Ghungroo", category="seasonal", tags=["retro"], rope="cord",
+  desc="A string of tiny bells that sings when it moves.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M100 10 C 70 30, 50 80, 54 130 M100 10 C 130 30, 150 80, 146 130" fill="none" stroke="{INK}" stroke-width="10" stroke-linecap="round"/>
+<path d="M100 10 C 70 30, 50 80, 54 130 M100 10 C 130 30, 150 80, 146 130" fill="none" stroke="#C8412B" stroke-width="5" stroke-linecap="round"/>
+{"".join(f'<circle cx="{x}" cy="{y}" r="15" fill="#D8B25C" stroke="{INK}" stroke-width="4"/><path d="M{x - 8} {y + 3} H {x + 8}" stroke="{INK}" stroke-width="3" stroke-linecap="round"/><circle cx="{x - 5}" cy="{y - 6}" r="3" fill="#FFFFFF" opacity="0.7"/>' for x, y in [(70, 48), (130, 48), (58, 82), (142, 82), (56, 116), (144, 116), (78, 148), (122, 148), (100, 172)])}
+""")),
+"diya": dict(collection="ritual-home", name="Diya", category="seasonal", tags=["minimal"], rope="chain",
+  desc="A small flame that keeps the dark at bay.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M100 10 L 46 116 M100 10 L 100 116 M100 10 L 154 116" stroke="#C9A04D" stroke-width="3" stroke-dasharray="5 3"/>
+<circle cx="100" cy="12" r="6" fill="#C9A04D" stroke="{INK}" stroke-width="3"/>
+<path d="M100 76 C 112 92, 112 106, 100 114 C 88 106, 88 92, 100 76 Z" fill="#F6D365" stroke="#EE9B45" stroke-width="4"/>
+<path d="M100 92 C 105 100, 105 106, 100 110 C 95 106, 95 100, 100 92 Z" fill="#FFFFFF"/>
+<path d="M30 118 C 50 112, 150 112, 176 104 C 172 132, 148 162, 100 162 C 56 162, 34 140, 30 118 Z" fill="#C96A3A" {W}/>
+<path d="M44 126 C 70 132, 130 132, 160 120" fill="none" stroke="#F6D365" stroke-width="5" stroke-dasharray="2 8" stroke-linecap="round"/>
+<path d="M60 146 Q 100 158 140 146" fill="none" stroke="#8A4A26" stroke-width="4"/>
+""")),
+"lotus": dict(collection="ritual-home", name="Lotus", category="nature", tags=["minimal", "seasonal"], rope="thread",
+  desc="Blooms clean, whatever the water.", anchor=(0.5, 0.15), svg=svg(f"""
+<ellipse cx="100" cy="164" rx="76" ry="16" fill="#7FB36A" {W}/>
+{outlined([
+ '<path d="M100 32 C 124 62, 124 118, 100 150 C 76 118, 76 62, 100 32 Z"/>',
+ '<path d="M100 150 C 70 140, 50 104, 54 70 C 82 82, 100 116, 100 150 Z"/>',
+ '<path d="M100 150 C 130 140, 150 104, 146 70 C 118 82, 100 116, 100 150 Z"/>',
+ '<path d="M100 152 C 64 154, 32 132, 22 104 C 54 104, 84 126, 100 152 Z"/>',
+ '<path d="M100 152 C 136 154, 168 132, 178 104 C 146 104, 116 126, 100 152 Z"/>',
+], "#F2A7B5", width=10)}
+<path d="M100 44 V 140 M70 90 C 80 108, 92 128, 100 146 M130 90 C 120 108, 108 128, 100 146" fill="none" stroke="#E27A8C" stroke-width="3"/>
+""")),
+"tassel": dict(collection="ritual-home", name="Tassel", category="minimal", tags=["retro"], rope="cord",
+  desc="Swishes when it swings.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M100 10 C 82 10, 82 34, 100 40 C 118 34, 118 10, 100 10 Z" fill="none" stroke="#C8412B" stroke-width="6"/>
+<circle cx="100" cy="56" r="18" fill="#E6B450" {W}/>
+<path d="M76 76 H 124 L 132 186 C 120 192, 80 192, 68 186 Z" fill="#C8412B" {W}/>
+<path d="M84 90 L 80 184 M92 90 L 90 188 M100 90 V 190 M108 90 L 110 188 M116 90 L 120 184" stroke="#9E2A1C" stroke-width="3"/>
+<rect x="72" y="72" width="56" height="18" rx="6" fill="#E6B450" stroke="{INK}" stroke-width="4"/>
+<path d="M88 50 C 90 44, 94 42, 98 42" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+""")),
+}
+CHARMS.update(TALISMANS)
+COLLECTIONS.extend([
+    {"id": "protection", "name": "Protection", "description": "Charms people have hung for luck and safekeeping for centuries."},
+    {"id": "luck-fortune", "name": "Luck & Fortune", "description": "Little nudges in the right direction."},
+    {"id": "ritual-home", "name": "Ritual & Home", "description": "Bells, lamps, and things that make a place feel kept."},
+])
+SOUNDS.update({
+    "evil-eye": "glass", "hamsa": "metal", "nimbu-mirchi": "soft", "dreamcatcher": "wood", "omamori": "paper",
+    "lucky-knot": "soft", "horseshoe": "metal", "wishbone": "wood", "ladybug": "soft", "bamboo": "wood",
+    "fortune-coin": "metal", "daruma": "wood", "temple-bell": "bell", "wind-chime": "jingle", "ghungroo": "jingle",
+    "diya": "glass", "lotus": "paper", "tassel": "soft",
+})
+
 root = os.path.join(os.path.dirname(__file__), "..", "charms")
 for cid, c in CHARMS.items():
     d = os.path.join(root, cid)

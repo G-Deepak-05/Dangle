@@ -1,0 +1,20 @@
+{
+  "id": "ladybug",
+  "name": "Ladybug",
+  "category": "cute",
+  "tags": [
+    "nature"
+  ],
+  "collection": "luck-fortune",
+  "sound": "soft",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.12
+  },
+  "metadata": {
+    "description": "Landed on you. That means something good.",
+    "author": "Dangle"
+  }
+}

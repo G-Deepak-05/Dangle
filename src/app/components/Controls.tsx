@@ -143,3 +143,23 @@ export function BackBar({ title, onBack, children }: { title: string; onBack: ()
     </div>
   );
 }
+
+export function PageHeader({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <header className="page-header" data-tauri-drag-region>
+      <div data-tauri-drag-region>
+        <h1 data-tauri-drag-region>{title}</h1>
+        {subtitle && <p className="page-sub">{subtitle}</p>}
+      </div>
+      {children && <div className="row">{children}</div>}
+    </header>
+  );
+}

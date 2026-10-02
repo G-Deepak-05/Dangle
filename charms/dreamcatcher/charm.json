@@ -1,0 +1,20 @@
+{
+  "id": "dreamcatcher",
+  "name": "Dreamcatcher",
+  "category": "nature",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "protection",
+  "sound": "wood",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.1
+  },
+  "metadata": {
+    "description": "Catches the bad dreams; lets the good ones through.",
+    "author": "Dangle"
+  }
+}

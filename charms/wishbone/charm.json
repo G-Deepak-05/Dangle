@@ -1,0 +1,20 @@
+{
+  "id": "wishbone",
+  "name": "Wishbone",
+  "category": "nature",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "luck-fortune",
+  "sound": "wood",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Pull it with a friend. Or don't, and keep the wish.",
+    "author": "Dangle"
+  }
+}

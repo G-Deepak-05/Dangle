@@ -1,0 +1,20 @@
+{
+  "id": "hamsa",
+  "name": "Hamsa",
+  "category": "minimal",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "protection",
+  "sound": "metal",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.15
+  },
+  "metadata": {
+    "description": "An open hand for good fortune and protection.",
+    "author": "Dangle"
+  }
+}

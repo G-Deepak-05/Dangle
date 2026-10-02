@@ -1,6 +1,7 @@
 import { isSoundMaterial, sounds } from "../audio/sounds";
 import { BUILTIN_CHARMS, FALLBACK_CHARM_ID } from "../charms/builtin";
 import type { StageConfig } from "../engine/stage";
+import { SIZES } from "../physics/profiles";
 import type { Charm, RopeStyle } from "../charms/types";
 import { backend, events, type AppInfo, type CustomCharmRecord, type UpdateInfo } from "../ipc/backend";
 import { DEFAULT_SETTINGS, type Settings } from "./settings";
@@ -104,10 +105,22 @@ export function toggleFavorite(id: string) {
   return updateSettings({ favorites: next });
 }
 
+/** The charm at the size the user gave it (scroll over it on the desktop, or the slider). */
+export function scaledCharm(settings: Settings, charm: Charm): Charm {
+  const k = settings.scaleByCharm[charm.id];
+  return k && k !== 1 ? { ...charm, defaultScale: charm.defaultScale * k } : charm;
+}
+
+/** Charms hanging under the main one when they share a single string. */
+export function stackFor(settings: Settings, charms: Charm[]): Charm[] {
+  if (settings.hangMode !== "stacked") return [];
+  return settings.extraSlots.map((s) => scaledCharm(settings, findCharm(charms, s.charmId)));
+}
+
 /** Everything a CharmStage needs to show `charm` the way the user has set it up. */
 export function stageConfigFor(settings: Settings, charm: Charm): StageConfig {
   return {
-    charm,
+    charm: scaledCharm(settings, charm),
     size: settings.size,
     rope: ropeFor(settings, charm),
     threadColor: settings.threadColor,
@@ -123,4 +136,16 @@ export function stageConfigFor(settings: Settings, charm: Charm): StageConfig {
     glow: settings.glow,
     elastic: settings.ropeType === "elastic",
   };
+}
+
+/** Height a preview panel needs to show the whole string and every charm on it. */
+export function previewHeight(settings: Settings, charms: Charm[], extraScale = 1): number {
+  const size = SIZES[settings.size];
+  const k = settings.charmScale * extraScale;
+  const ids = [settings.activeCharmId, ...(settings.hangMode === "stacked" ? settings.extraSlots.map((s) => s.charmId) : [])];
+  const bodies = ids.reduce(
+    (sum, id) => sum + size.charm * k * (settings.scaleByCharm[id] ?? 1) * findCharm(charms, id).defaultScale * 1.2 + 18,
+    0,
+  );
+  return Math.round(size.rope * settings.threadLength * Math.min(1.25, Math.max(0.8, k)) + bodies + 60);
 }
