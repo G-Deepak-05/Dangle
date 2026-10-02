@@ -1,4 +1,4 @@
-import type { Beads, RopeStyle, ThreadColor } from "../charms/types";
+import type { Beads, Hook, RopeStyle, ThreadColor } from "../charms/types";
 import type { CharmSimulation } from "../physics/simulation";
 import { drawAnchor, drawBeads, drawJumpRing, drawRope } from "./rope";
 import type { Sprite } from "./sprite";
@@ -15,6 +15,8 @@ export interface SceneState {
   rope: RopeStyle;
   color: ThreadColor;
   beads: Beads;
+  hook: Hook;
+  shadow: boolean;
   /** Visual size multiplier for rope details (1 = medium). */
   detailScale: number;
   /** Animated charm scale for hover, press, and swap transitions. */
@@ -55,7 +57,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, width: number, height: 
 
   drawRope(ctx, sim.x, sim.y, sim.segments + 1, state.rope, state.color, state.detailScale);
   drawBeads(ctx, sim.x, sim.y, sim.segments + 1, state.beads, state.detailScale);
-  drawAnchor(ctx, sim.x[0], sim.y[0], state.rope, state.color, state.detailScale);
+  drawAnchor(ctx, sim.x[0], sim.y[0], state.rope, state.color, state.detailScale, state.hook);
 
   const tip = sim.tip;
   const ringR = RING_RADIUS * state.detailScale;
@@ -66,11 +68,13 @@ export function drawScene(ctx: CanvasRenderingContext2D, width: number, height: 
     const ox = -(sprite.attach.x + sprite.pad) * s;
     const oy = ringR * 2 - 1 - (sprite.attach.y + sprite.pad) * s;
 
-    ctx.save();
-    ctx.translate(tip.x, tip.y + 5 * state.detailScale);
-    ctx.rotate(sim.angle);
-    ctx.drawImage(sprite.shadow, ox, oy, w, h);
-    ctx.restore();
+    if (state.shadow) {
+      ctx.save();
+      ctx.translate(tip.x, tip.y + 5 * state.detailScale);
+      ctx.rotate(sim.angle);
+      ctx.drawImage(sprite.shadow, ox, oy, w, h);
+      ctx.restore();
+    }
 
     ctx.save();
     ctx.translate(tip.x, tip.y);

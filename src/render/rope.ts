@@ -1,4 +1,4 @@
-import type { Beads, RopeStyle, ThreadColor } from "../charms/types";
+import type { Beads, Hook, RopeStyle, ThreadColor } from "../charms/types";
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -237,23 +237,115 @@ export function drawBeads(
   ctx.restore();
 }
 
-/** The small clip that holds the string at the top edge of the screen. */
-export function drawAnchor(ctx: Ctx, x: number, y: number, style: RopeStyle, color: ThreadColor, scale: number) {
+/** What holds the string at the top edge of the screen. */
+export function drawAnchor(
+  ctx: Ctx,
+  x: number,
+  y: number,
+  style: RopeStyle,
+  color: ThreadColor,
+  scale: number,
+  hook: Hook = "clip",
+) {
+  const pal = paletteFor(style, color);
   ctx.save();
-  if (style === "minimal") {
-    ctx.beginPath();
-    ctx.arc(x, y + 1.5 * scale, 2 * scale, 0, Math.PI * 2);
-    ctx.fillStyle = paletteFor(style, color).main;
-    ctx.fill();
-  } else {
-    const w = 9 * scale;
-    const h = 5 * scale;
-    ctx.beginPath();
-    ctx.roundRect(x - w / 2, y - 1, w, h + 1, [0, 0, 2.5 * scale, 2.5 * scale]);
-    ctx.fillStyle = style === "chain" ? "#C9A04D" : "#2B2320";
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.fillRect(x - w / 2 + 1.5 * scale, y + 0.5, w - 3 * scale, 1 * scale);
+  switch (hook) {
+    case "none":
+      break;
+    case "clip": {
+      if (style === "minimal") {
+        ctx.beginPath();
+        ctx.arc(x, y + 1.5 * scale, 2 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = pal.main;
+        ctx.fill();
+        break;
+      }
+      const w = 9 * scale;
+      const h = 5 * scale;
+      ctx.beginPath();
+      ctx.roundRect(x - w / 2, y - 1, w, h + 1, [0, 0, 2.5 * scale, 2.5 * scale]);
+      ctx.fillStyle = style === "chain" ? "#C9A04D" : "#2B2320";
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.fillRect(x - w / 2 + 1.5 * scale, y + 0.5, w - 3 * scale, 1 * scale);
+      break;
+    }
+    case "pin": {
+      const r = 4.6 * scale;
+      const cy = y + r + 0.5;
+      const g = ctx.createRadialGradient(x - r * 0.4, cy - r * 0.4, r * 0.15, x, cy, r);
+      g.addColorStop(0, "#F7A08F");
+      g.addColorStop(1, "#C8412B");
+      ctx.beginPath();
+      ctx.arc(x, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(43,35,32,0.6)";
+      ctx.lineWidth = 1 * scale;
+      ctx.stroke();
+      break;
+    }
+    case "bow": {
+      const s = scale;
+      ctx.fillStyle = pal.main;
+      ctx.strokeStyle = "rgba(43,35,32,0.55)";
+      ctx.lineWidth = 0.9 * s;
+      for (const dir of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(x, y + 4 * s);
+        ctx.bezierCurveTo(x + dir * 4 * s, y - 2 * s, x + dir * 11 * s, y, x + dir * 9 * s, y + 6 * s);
+        ctx.bezierCurveTo(x + dir * 8 * s, y + 9 * s, x + dir * 3 * s, y + 6 * s, x, y + 4 * s);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y + 4.5 * s);
+        ctx.lineTo(x + dir * 4 * s, y + 12 * s);
+        ctx.lineWidth = 2 * s;
+        ctx.strokeStyle = pal.main;
+        ctx.stroke();
+        ctx.lineWidth = 0.9 * s;
+        ctx.strokeStyle = "rgba(43,35,32,0.55)";
+      }
+      ctx.beginPath();
+      ctx.arc(x, y + 4.5 * s, 2.2 * s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      break;
+    }
+    case "suction": {
+      const w = 15 * scale;
+      const h = 6 * scale;
+      ctx.beginPath();
+      ctx.moveTo(x - w / 2, y);
+      ctx.quadraticCurveTo(x, y + h * 1.8, x + w / 2, y);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(190,214,230,0.75)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(60,80,100,0.55)";
+      ctx.lineWidth = 1 * scale;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y + h * 0.95, 1.8 * scale, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(80,100,120,0.8)";
+      ctx.fill();
+      break;
+    }
+    case "nail": {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 5 * scale);
+      ctx.strokeStyle = "#8E959E";
+      ctx.lineWidth = 1.6 * scale;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(x, y + 5.5 * scale, 3.4 * scale, 1.6 * scale, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "#B8BFC8";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(43,35,32,0.6)";
+      ctx.lineWidth = 0.8 * scale;
+      ctx.stroke();
+      break;
+    }
   }
   ctx.restore();
 }

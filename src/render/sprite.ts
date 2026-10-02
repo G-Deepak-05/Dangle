@@ -1,4 +1,4 @@
-import type { AnchorOffset } from "../charms/types";
+import type { AnchorOffset, Finish } from "../charms/types";
 
 /**
  * Charm artwork pre-rasterised at device resolution, plus a blurred silhouette for the
@@ -35,7 +35,13 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
   return cached;
 }
 
-export function buildSprite(img: HTMLImageElement, maxSide: number, anchor: AnchorOffset, dpr: number): Sprite {
+export function buildSprite(
+  img: HTMLImageElement,
+  maxSide: number,
+  anchor: AnchorOffset,
+  dpr: number,
+  finish: Finish = "classic",
+): Sprite {
   const naturalW = img.naturalWidth || img.width || 1;
   const naturalH = img.naturalHeight || img.height || 1;
   const fit = maxSide / Math.max(naturalW, naturalH);
@@ -53,7 +59,51 @@ export function buildSprite(img: HTMLImageElement, maxSide: number, anchor: Anch
   const art = makeCanvas();
   const actx = art.getContext("2d")!;
   actx.imageSmoothingQuality = "high";
-  actx.drawImage(img, pad * dpr, pad * dpr, width * dpr, height * dpr);
+  const box = [pad * dpr, pad * dpr, width * dpr, height * dpr] as const;
+
+  // A flat-colour copy of the artwork's outline, used for sticker borders and glows.
+  const silhouette = (color: string) => {
+    const c = makeCanvas();
+    const cx = c.getContext("2d")!;
+    cx.drawImage(img, ...box);
+    cx.globalCompositeOperation = "source-in";
+    cx.fillStyle = color;
+    cx.fillRect(0, 0, c.width, c.height);
+    return c;
+  };
+
+  if (finish === "sticker") {
+    const white = silhouette("#ffffff");
+    const r = Math.max(1.5, maxSide * 0.045) * dpr;
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      actx.drawImage(white, Math.cos(a) * r, Math.sin(a) * r);
+    }
+  } else if (finish === "glow") {
+    const warm = silhouette("#ffd98a");
+    actx.filter = `blur(${Math.max(3, maxSide * 0.07) * dpr}px)`;
+    actx.globalAlpha = 0.9;
+    actx.drawImage(warm, 0, 0);
+    actx.drawImage(warm, 0, 0);
+    actx.filter = "none";
+    actx.globalAlpha = 1;
+  }
+
+  if (finish === "matte") actx.filter = "saturate(0.78) contrast(0.92) brightness(1.04)";
+  actx.drawImage(img, ...box);
+  actx.filter = "none";
+
+  if (finish === "glossy") {
+    actx.globalCompositeOperation = "source-atop";
+    const g = actx.createLinearGradient(box[0], box[1], box[0] + box[2], box[1] + box[3]);
+    g.addColorStop(0, "rgba(255,255,255,0.55)");
+    g.addColorStop(0.35, "rgba(255,255,255,0.12)");
+    g.addColorStop(0.36, "rgba(255,255,255,0)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    actx.fillStyle = g;
+    actx.fillRect(0, 0, art.width, art.height);
+    actx.globalCompositeOperation = "source-over";
+  }
 
   const shadow = makeCanvas();
   const sctx = shadow.getContext("2d")!;

@@ -1,4 +1,19 @@
-import type { Beads, RopeStyle, ThreadColor } from "../charms/types";
+import type { Beads, Finish, Hook, RopeStyle, ThreadColor } from "../charms/types";
+
+export type RotateMode = "off" | "hourly" | "daily";
+
+export interface CharmSlot {
+  charmId: string;
+  anchorX: number;
+}
+
+export interface UserCollection {
+  id: string;
+  name: string;
+  charmIds: string[];
+}
+
+export const MAX_EXTRA_SLOTS = 2;
 import type { CharmSize, PhysicsProfileName } from "../physics/profiles";
 
 /** Mirrors the Rust `Settings` struct; Rust owns validation and persistence. */
@@ -27,6 +42,14 @@ export interface Settings {
   hidden: boolean;
   debugOverlay: boolean;
   checkForUpdates: boolean;
+  extraSlots: CharmSlot[];
+  finish: Finish;
+  shadow: boolean;
+  hook: Hook;
+  rotate: RotateMode;
+  /** "favorites", "all", or "collection:<id>". */
+  rotateSource: string;
+  userCollections: UserCollection[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -53,4 +76,11 @@ export const DEFAULT_SETTINGS: Settings = {
   hidden: false,
   debugOverlay: false,
   checkForUpdates: true,
+  extraSlots: [],
+  finish: "classic",
+  shadow: true,
+  hook: "clip",
+  rotate: "off",
+  rotateSource: "favorites",
+  userCollections: [],
 };

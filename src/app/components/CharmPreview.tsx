@@ -46,10 +46,24 @@ export function CharmPreview({ config, height, label, onDragChange, onThreadLeng
     };
   }, [height]);
 
-  const { charm, size, rope, threadColor, beads, threadLength, physics, reduceMotion, scale } = config;
+  const { charm, size, rope, threadColor, beads, finish, hook, shadow, threadLength, physics, reduceMotion, scale } =
+    config;
   useEffect(() => {
-    void stageRef.current?.configure({ charm, size, rope, threadColor, beads, threadLength, physics, reduceMotion, scale });
-  }, [charm, size, rope, threadColor, beads, threadLength, physics, reduceMotion, scale, height]);
+    void stageRef.current?.configure({
+      charm,
+      size,
+      rope,
+      threadColor,
+      beads,
+      finish,
+      hook,
+      shadow,
+      threadLength,
+      physics,
+      reduceMotion,
+      scale,
+    });
+  }, [charm, size, rope, threadColor, beads, finish, hook, shadow, threadLength, physics, reduceMotion, scale, height]);
 
   useEffect(() => {
     if (nudgeKey !== undefined && !reduceMotion) stageRef.current?.nudge(120);

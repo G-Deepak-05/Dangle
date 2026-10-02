@@ -14,8 +14,7 @@ export interface DisplayInfo {
 export interface OverlayGeometry {
   width: number;
   height: number;
-  anchorX: number;
-  globalAnchorX: number;
+  globalLeft: number;
   globalTop: number;
   displayId: string;
 }
@@ -59,13 +58,19 @@ export interface UpdateInfo {
 
 export type FeedbackKind = "bug" | "idea" | "other";
 
+export interface PackImportResult {
+  collection: { id: string; name: string; charmIds: string[] };
+  imported: number;
+  skipped: number;
+}
+
 export const backend = {
   getSettings: () => invoke<Settings>("get_settings"),
   updateSettings: (patch: Partial<Settings>) => invoke<Settings>("update_settings", { patch }),
   resetPosition: () => invoke<Settings>("reset_position"),
   listDisplays: () => invoke<DisplayInfo[]>("list_displays"),
   overlayGeometry: () => invoke<OverlayGeometry | null>("overlay_geometry"),
-  overlayHitbox: (hitbox: Hitbox | null) => invoke<void>("overlay_hitbox", { hitbox }),
+  overlayHitbox: (slot: number, hitbox: Hitbox | null) => invoke<void>("overlay_hitbox", { slot, hitbox }),
   overlayDrag: (active: boolean) => invoke<void>("overlay_drag", { active }),
   overlayReel: (active: boolean) => invoke<void>("overlay_reel", { active }),
   setTrayCharm: (name: string) => invoke<void>("set_tray_charm", { name }),
@@ -82,6 +87,8 @@ export const backend = {
   openReleases: () => invoke<void>("open_releases"),
   checkForUpdates: () => invoke<UpdateInfo | null>("check_for_updates"),
   installUpdate: () => invoke<void>("install_update"),
+  exportPack: (collectionId: string) => invoke<boolean>("export_pack", { collectionId }),
+  importPack: () => invoke<PackImportResult | null>("import_pack"),
 };
 
 type Handler<T> = (payload: T) => void;
@@ -93,7 +100,8 @@ const on =
 export const events = {
   settings: on<Settings>("settings-changed"),
   geometry: on<OverlayGeometry>("overlay-geometry"),
-  hover: on<boolean>("overlay-hover"),
+  /** Index of the hovered charm slot, or null. */
+  hover: on<number | null>("overlay-hover"),
   navigate: on<Route>("navigate"),
   customCharmsChanged: on<null>("custom-charms-changed"),
   displaysChanged: on<DisplayInfo[]>("displays-changed"),

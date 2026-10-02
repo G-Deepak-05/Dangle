@@ -3,6 +3,8 @@ import {
   MIN_THREAD_LENGTH,
   type Beads,
   type Charm,
+  type Finish,
+  type Hook,
   type RopeStyle,
   type ThreadColor,
 } from "../charms/types";
@@ -17,6 +19,9 @@ export interface StageConfig {
   rope: RopeStyle;
   threadColor: ThreadColor;
   beads: Beads;
+  finish: Finish;
+  hook: Hook;
+  shadow: boolean;
   /** String length multiplier, 0.5–3. */
   threadLength: number;
   physics: PhysicsProfileName;
@@ -166,7 +171,7 @@ export class CharmStage {
     this.sim.setTipInset(charmSide * 0.55);
     this.breezeEnabled = (this.options.breeze ?? true) && !reduce;
 
-    const key = `${config.charm.id}|${config.charm.image.length}|${config.charm.image.slice(-32)}|${charmSide}|${config.charm.anchorOffset.x},${config.charm.anchorOffset.y}|${this.dpr}`;
+    const key = `${config.charm.id}|${config.charm.image.length}|${config.charm.image.slice(-32)}|${charmSide}|${config.charm.anchorOffset.x},${config.charm.anchorOffset.y}|${this.dpr}|${config.finish}`;
     if (key === this.spriteKey) {
       this.requestFrame();
       return;
@@ -182,7 +187,7 @@ export class CharmStage {
       return;
     }
     if (token !== this.loadToken || this.destroyed) return;
-    const next = buildSprite(img, charmSide, config.charm.anchorOffset, this.dpr);
+    const next = buildSprite(img, charmSide, config.charm.anchorOffset, this.dpr, config.finish);
 
     const sameCharm = previous?.charm.id === config.charm.id;
     if (!this.sprite) {
@@ -303,6 +308,8 @@ export class CharmStage {
       rope: this.config?.rope ?? "thread",
       color: this.config?.threadColor ?? "classic",
       beads: this.config?.beads ?? "none",
+      hook: this.config?.hook ?? "clip",
+      shadow: this.config?.shadow ?? true,
       detailScale: Math.max(0.8, size.charm / SIZES.medium.charm),
       charmScale: this.charmScale,
       opacity: this.opacity,

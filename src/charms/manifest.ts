@@ -37,6 +37,8 @@ export function parseManifest(raw: unknown, image: string | undefined): Charm | 
     name: m.name.trim().slice(0, 40),
     category,
     tags,
+    collection:
+      typeof m.collection === "string" && ID_PATTERN.test(m.collection) ? m.collection : undefined,
     image,
     thumbnail: image,
     defaultScale: scale,

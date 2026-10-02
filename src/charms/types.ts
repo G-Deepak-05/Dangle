@@ -12,6 +12,14 @@ export type Beads = "none" | "pearl" | "wood" | "glass" | "star";
 
 export const BEADS: Beads[] = ["none", "pearl", "wood", "glass", "star"];
 
+export type Finish = "classic" | "glossy" | "matte" | "sticker" | "glow";
+
+export const FINISHES: Finish[] = ["classic", "glossy", "matte", "sticker", "glow"];
+
+export type Hook = "clip" | "pin" | "bow" | "suction" | "nail" | "none";
+
+export const HOOKS: Hook[] = ["clip", "pin", "bow", "suction", "nail", "none"];
+
 export const MIN_THREAD_LENGTH = 0.5;
 export const MAX_THREAD_LENGTH = 3;
 
@@ -33,12 +41,20 @@ export interface AnchorOffset {
   y: number;
 }
 
+export interface CollectionInfo {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export interface Charm {
   id: string;
   name: string;
   category: CharmCategory;
   /** Extra categories the charm also appears under. */
   tags: CharmCategory[];
+  /** Built-in collection this charm belongs to, if any. */
+  collection?: string;
   image: string;
   thumbnail: string;
   defaultScale: number;
