@@ -4,6 +4,7 @@ mod custom_charms;
 mod displays;
 mod feedback;
 mod overlay;
+mod packs;
 mod platform;
 mod settings;
 mod shortcuts;
@@ -19,6 +20,9 @@ use tauri::{AppHandle, Emitter, Manager, RunEvent, WindowEvent};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 /// Single write path for settings: merge, persist, broadcast, then apply side effects.
+/// Generated at build time from the /charms folder (see build.rs).
+pub(crate) const BUILTIN_CHARM_IDS: &[&str] = include!(concat!(env!("OUT_DIR"), "/builtin_ids.rs"));
+
 pub(crate) fn apply_patch(app: &AppHandle, patch: Value) -> Settings {
     let state = app.state::<AppState>();
     let (old, new) = {
@@ -132,6 +136,8 @@ pub fn run() {
             commands::open_releases,
             commands::check_for_updates,
             commands::install_update,
+            commands::export_pack,
+            commands::import_pack,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

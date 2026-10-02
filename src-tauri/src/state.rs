@@ -18,22 +18,21 @@ pub struct Hitbox {
 pub struct OverlayGeometry {
     pub width: f64,
     pub height: f64,
-    /// Anchor position in overlay-local logical pixels.
-    pub anchor_x: f64,
-    /// Anchor position in global logical pixels; lets the overlay keep the charm
-    /// in place on screen when the window moves.
-    pub global_anchor_x: f64,
+    /// Window origin in global logical pixels.
+    pub global_left: f64,
     pub global_top: f64,
     pub display_id: String,
 }
 
 #[derive(Default)]
 pub struct PointerState {
-    pub hitbox: Option<Hitbox>,
+    /// One hit circle per hanging charm, indexed by slot.
+    pub hitboxes: Vec<Option<Hitbox>>,
     pub dragging: bool,
     /// While the user reels string in or out, the overlay grows to full height.
     pub reeling: bool,
-    pub over: bool,
+    /// Slot under the cursor (or being dragged), if any.
+    pub over: Option<usize>,
     pub origin: (f64, f64),
     /// Scale factor of the overlay's display, for platforms that report physical cursors.
     pub scale: f64,

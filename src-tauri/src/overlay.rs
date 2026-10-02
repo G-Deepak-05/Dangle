@@ -9,16 +9,14 @@ use tauri::{
 };
 
 pub const LABEL: &str = "overlay";
-const MIN_WIDTH: f64 = 640.0;
 const MIN_HEIGHT: f64 = 380.0;
-const EDGE_MARGIN: f64 = 24.0;
 const HIT_PADDING: f64 = 6.0;
 const IDLE_AFTER_SECS: f64 = 60.0;
 
 pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
     let window = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("overlay.html".into()))
         .title("Dangle Charm")
-        .inner_size(MIN_WIDTH, MIN_HEIGHT)
+        .inner_size(800.0, MIN_HEIGHT)
         .transparent(true)
         .decorations(false)
         .shadow(false)
@@ -61,6 +59,7 @@ fn layout_now(app: &AppHandle) {
     let (wx, wy) = (pos.x as f64 / scale, pos.y as f64 / scale);
     let (ww, wh) = (size.width as f64 / scale, size.height as f64 / scale);
 
+    // The band spans the whole display so several charms can hang anywhere along it.
     let (charm, rope) = match settings.size {
         CharmSize::Small => (58.0, 96.0),
         CharmSize::Medium => (78.0, 124.0),
@@ -68,29 +67,24 @@ fn layout_now(app: &AppHandle) {
     };
     let rope = rope * settings.thread_length;
     let reeling = state.pointer.lock().unwrap().reeling;
-    let width = (2.0 * (rope * 1.15 + charm) + 80.0).max(MIN_WIDTH).min(ww);
     let height = if reeling {
         wh
     } else {
         (rope * 1.3 + charm * 2.4 + 90.0).max(MIN_HEIGHT).min(wh)
     };
-    let global_anchor =
-        (wx + settings.anchor_x * ww).clamp(wx + EDGE_MARGIN, wx + ww - EDGE_MARGIN);
-    let left = (global_anchor - width / 2.0).clamp(wx, wx + ww - width);
 
-    let _ = window.set_size(LogicalSize::new(width, height));
-    let _ = window.set_position(LogicalPosition::new(left, wy));
+    let _ = window.set_size(LogicalSize::new(ww, height));
+    let _ = window.set_position(LogicalPosition::new(wx, wy));
     {
         let mut p = state.pointer.lock().unwrap();
-        p.origin = (left, wy);
+        p.origin = (wx, wy);
         p.scale = scale;
     }
 
     let geometry = OverlayGeometry {
-        width,
+        width: ww,
         height,
-        anchor_x: global_anchor - left,
-        global_anchor_x: global_anchor,
+        global_left: wx,
         global_top: wy,
         display_id: displays::monitor_id(&monitor),
     };
@@ -108,9 +102,9 @@ pub fn sync_visibility(app: &AppHandle) {
     }
 }
 
-fn set_over(app: &AppHandle, over: bool) {
+fn set_over(app: &AppHandle, over: Option<usize>) {
     if let Some(window) = window(app) {
-        platform::set_click_through(&window, !over);
+        platform::set_click_through(&window, over.is_none());
     }
     let _ = app.emit_to(LABEL, "overlay-hover", over);
 }
@@ -144,20 +138,30 @@ pub fn spawn_pointer_watch(app: AppHandle) {
                 let mut near = false;
                 let change = {
                     let mut p = state.pointer.lock().unwrap();
-                    let over = match (interactive, p.hitbox, cursor) {
-                        _ if p.dragging => true,
-                        (true, Some(hb), Some((cx, cy))) => {
-                            let dx = cx - (p.origin.0 + hb.x);
-                            let dy = cy - (p.origin.1 + hb.y);
-                            let dist = (dx * dx + dy * dy).sqrt();
-                            near = dist < hb.r + 240.0;
-                            dist <= hb.r + HIT_PADDING
+                    let over = if p.dragging {
+                        p.over
+                    } else {
+                        match (interactive, cursor) {
+                            (true, Some((cx, cy))) => {
+                                let mut hit = None;
+                                for (i, hb) in p.hitboxes.iter().enumerate() {
+                                    let Some(hb) = hb else { continue };
+                                    let dx = cx - (p.origin.0 + hb.x);
+                                    let dy = cy - (p.origin.1 + hb.y);
+                                    let dist = (dx * dx + dy * dy).sqrt();
+                                    near |= dist < hb.r + 240.0;
+                                    if hit.is_none() && dist <= hb.r + HIT_PADDING {
+                                        hit = Some(i);
+                                    }
+                                }
+                                hit
+                            }
+                            _ => None,
                         }
-                        _ => false,
                     };
                     if over != p.over {
                         p.over = over;
-                        if over {
+                        if over.is_some() {
                             p.previous_app = platform::frontmost_app_pid()
                                 .filter(|pid| *pid != platform::own_pid());
                         }

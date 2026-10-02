@@ -2,7 +2,7 @@ use crate::custom_charms::{self, CustomCharm, NewCustomCharm};
 use crate::displays::{self, DisplayInfo};
 use crate::settings::{self, Settings};
 use crate::state::{AppState, Hitbox, OverlayGeometry};
-use crate::{apply_patch, control, feedback, overlay, platform, tray, updates};
+use crate::{apply_patch, control, feedback, overlay, packs, platform, tray, updates};
 use base64::Engine;
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -51,10 +51,17 @@ pub fn overlay_geometry(state: State<AppState>) -> Option<OverlayGeometry> {
 }
 
 #[tauri::command]
-pub fn overlay_hitbox(state: State<AppState>, hitbox: Option<Hitbox>) {
+pub fn overlay_hitbox(state: State<AppState>, slot: usize, hitbox: Option<Hitbox>) {
+    if slot > settings::MAX_EXTRA_SLOTS {
+        return;
+    }
     let valid =
         hitbox.filter(|h| h.x.is_finite() && h.y.is_finite() && h.r.is_finite() && h.r > 0.0);
-    state.pointer.lock().unwrap().hitbox = valid;
+    let mut p = state.pointer.lock().unwrap();
+    if p.hitboxes.len() <= slot {
+        p.hitboxes.resize(slot + 1, None);
+    }
+    p.hitboxes[slot] = valid;
 }
 
 #[tauri::command]
@@ -114,12 +121,25 @@ pub fn delete_custom_charm(
     id: String,
 ) -> Result<(), String> {
     custom_charms::delete(&state.custom_dir, &id)?;
-    let (active, mut favorites) = {
+    let (active, mut favorites, mut collections, mut slots) = {
         let s = state.settings.lock().unwrap();
-        (s.active_charm_id.clone(), s.favorites.clone())
+        (
+            s.active_charm_id.clone(),
+            s.favorites.clone(),
+            s.user_collections.clone(),
+            s.extra_slots.clone(),
+        )
     };
     favorites.retain(|f| f != &id);
-    let mut patch = vec![("favorites", json!(favorites))];
+    for c in &mut collections {
+        c.charm_ids.retain(|c| c != &id);
+    }
+    slots.retain(|slot| slot.charm_id != id);
+    let mut patch = vec![
+        ("favorites", json!(favorites)),
+        ("userCollections", json!(collections)),
+        ("extraSlots", json!(slots)),
+    ];
     if active == id {
         patch.push(("activeCharmId", json!(settings::DEFAULT_CHARM_ID)));
     }
@@ -224,4 +244,130 @@ pub async fn check_for_updates(app: AppHandle) -> Result<Option<updates::UpdateI
 #[tauri::command]
 pub async fn install_update(app: AppHandle) -> Result<(), String> {
     updates::install(&app).await
+}
+
+fn pick_path(
+    app: &AppHandle,
+    save_name: Option<String>,
+) -> Result<Option<std::path::PathBuf>, String> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let mut dialog = app
+        .dialog()
+        .file()
+        .add_filter("Dangle pack", &["danglepack"]);
+    if let Some(window) = app.get_webview_window(control::LABEL) {
+        dialog = dialog.set_parent(&window);
+    }
+    match save_name {
+        Some(name) => dialog.set_file_name(name).save_file(move |p| {
+            let _ = tx.send(p);
+        }),
+        None => dialog.pick_file(move |p| {
+            let _ = tx.send(p);
+        }),
+    }
+    let picked = rx.recv().ok().flatten();
+    Ok(picked.and_then(|p| p.into_path().ok()))
+}
+
+#[tauri::command]
+pub async fn export_pack(app: AppHandle, collection_id: String) -> Result<bool, String> {
+    let (collection, custom_dir) = {
+        let state = app.state::<AppState>();
+        let s = state.settings.lock().unwrap();
+        let c = s
+            .user_collections
+            .iter()
+            .find(|c| c.id == collection_id)
+            .cloned()
+            .ok_or_else(|| "That collection no longer exists.".to_string())?;
+        (c, state.custom_dir.clone())
+    };
+    let pack = packs::build(&custom_dir, &collection);
+    let safe: String = collection
+        .name
+        .chars()
+        .map(|c| {
+            if c.is_alphanumeric() || c == ' ' || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    let handle = app.clone();
+    let path = tauri::async_runtime::spawn_blocking(move || {
+        pick_path(&handle, Some(format!("{}.danglepack", safe.trim())))
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+    let Some(path) = path else { return Ok(false) };
+    let body = serde_json::to_vec(&pack).map_err(|e| e.to_string())?;
+    std::fs::write(&path, body).map_err(|_| "Couldn't save the pack there.".to_string())?;
+    Ok(true)
+}
+
+#[tauri::command]
+pub async fn import_pack(app: AppHandle) -> Result<Option<packs::ImportResult>, String> {
+    let handle = app.clone();
+    let path = tauri::async_runtime::spawn_blocking(move || pick_path(&handle, None))
+        .await
+        .map_err(|e| e.to_string())??;
+    let Some(path) = path else { return Ok(None) };
+    let pack = packs::read(&path)?;
+    let name = pack.name.clone();
+    let custom_dir = app.state::<AppState>().custom_dir.clone();
+    let (ids, skipped) = tauri::async_runtime::spawn_blocking(move || {
+        packs::import(&custom_dir, pack, is_builtin_id)
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    if ids.is_empty() {
+        return Err("None of the charms in that pack could be imported.".into());
+    }
+    let mut collections = app
+        .state::<AppState>()
+        .settings
+        .lock()
+        .unwrap()
+        .user_collections
+        .clone();
+    let base: String = name.chars().filter(|c| !c.is_control()).take(34).collect();
+    let base = if base.trim().is_empty() {
+        "Imported".to_string()
+    } else {
+        base.trim().to_string()
+    };
+    let mut unique = base.clone();
+    let mut n = 2;
+    while collections.iter().any(|c| c.name == unique) {
+        unique = format!("{base} ({n})");
+        n += 1;
+    }
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let collection = settings::UserCollection {
+        id: format!("uc-{nanos:x}"),
+        name: unique,
+        charm_ids: ids,
+    };
+    collections.push(collection.clone());
+    apply_patch(
+        &app,
+        settings::patch_from_pairs(&[("userCollections", json!(collections))]),
+    );
+    let _ = app.emit("custom-charms-changed", ());
+    Ok(Some(packs::ImportResult {
+        imported: collection.charm_ids.len(),
+        skipped,
+        collection,
+    }))
+}
+
+/// Built-in charm ids are plain folder names; anything a pack references is checked
+/// against the app's bundled list before it is linked.
+fn is_builtin_id(id: &str) -> bool {
+    crate::BUILTIN_CHARM_IDS.contains(&id)
 }

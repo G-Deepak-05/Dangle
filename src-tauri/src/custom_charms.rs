@@ -180,6 +180,10 @@ pub fn save(root: &Path, input: NewCustomCharm) -> Result<CustomCharm, String> {
     read_charm(&dir).ok_or_else(|| "Saved charm could not be read back.".into())
 }
 
+pub fn get(root: &Path, id: &str) -> Option<CustomCharm> {
+    read_charm(&charm_dir(root, id).ok()?)
+}
+
 pub fn delete(root: &Path, id: &str) -> Result<(), String> {
     let dir = charm_dir(root, id)?;
     if dir.exists() {
