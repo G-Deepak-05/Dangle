@@ -116,3 +116,28 @@ export function RopeSwatch({ style }: { style: "minimal" | "thread" | "cord" | "
     </svg>
   );
 }
+
+export const FolderPlusIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2 4.5h4l1.5 1.5H14v6.5H2Z" />
+    <path d="M8 7.5v3.5M6.25 9.25h3.5" />
+  </Icon>
+);
+
+export const DownloadIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 2.5v8M5 7.5l3 3 3-3M3 12.5h10" />
+  </Icon>
+);
+
+export const PencilIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10.5 3.5l2 2L6 12H4v-2Z" />
+  </Icon>
+);
+
+export const CloseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 4l8 8M12 4l-8 8" />
+  </Icon>
+);

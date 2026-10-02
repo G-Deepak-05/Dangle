@@ -1,0 +1,19 @@
+{
+  "id": "space-helmet",
+  "name": "Space Helmet",
+  "category": "space",
+  "tags": [
+    "retro"
+  ],
+  "collection": "galaxy-rebels",
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Fishbowl-chic.",
+    "author": "Dangle"
+  }
+}

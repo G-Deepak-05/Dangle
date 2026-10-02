@@ -1,0 +1,19 @@
+{
+  "id": "pixel-gem",
+  "name": "Pixel Gem",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "retro-arcade",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.17
+  },
+  "metadata": {
+    "description": "Worth exactly 500 points.",
+    "author": "Dangle"
+  }
+}

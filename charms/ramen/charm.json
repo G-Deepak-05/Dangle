@@ -1,0 +1,19 @@
+{
+  "id": "ramen",
+  "name": "Ramen",
+  "category": "cute",
+  "tags": [
+    "retro"
+  ],
+  "collection": "anime-cafe",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.66,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Midnight study fuel.",
+    "author": "Dangle"
+  }
+}

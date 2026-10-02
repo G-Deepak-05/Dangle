@@ -301,6 +301,274 @@ EXTRA = {
 }
 CHARMS.update(EXTRA)
 
+def pixels(rows, colors, cell, ox, oy):
+    """Pixel art from strings; each character maps to a colour, '.' is empty."""
+    out = []
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in colors:
+                out.append(f'<rect x="{ox + x * cell}" y="{oy + y * cell}" width="{cell}" height="{cell}" fill="{colors[ch]}"/>')
+    return f'<g shape-rendering="crispEdges">{"".join(out)}</g>'
+
+def burst(cx, cy, r_out, r_in, n):
+    import math
+    pts = []
+    for i in range(n * 2):
+        r = r_out if i % 2 == 0 else r_in
+        a = -math.pi / 2 + i * math.pi / n
+        pts.append(f"{cx + r * math.cos(a):.1f},{cy + r * math.sin(a):.1f}")
+    return " ".join(pts)
+
+COLLECTIONS = [
+    {"id": "originals", "name": "Dangle Originals", "description": "The first thirty. Little things with big personalities."},
+    {"id": "hero-squad", "name": "Hero Squad", "description": "Masks, capes, and big entrances."},
+    {"id": "wizard-school", "name": "Wizard School", "description": "Wands, potions, and a very wise owl."},
+    {"id": "galaxy-rebels", "name": "Galaxy Rebels", "description": "For pilots, tinkerers, and stargazers."},
+    {"id": "anime-cafe", "name": "Anime Café", "description": "Snacks and keepsakes from your favourite slice-of-life."},
+    {"id": "retro-arcade", "name": "Retro Arcade", "description": "Insert coin. Press start."},
+]
+
+NEW = {
+# ---------- Hero Squad ----------
+"hero-mask": dict(collection="hero-squad", name="Hero Mask", category="retro", tags=["cute"], rope="cord",
+  desc="Secret identity: safe.", anchor=(0.5, 0.34), svg=svg(f"""
+<path d="M22 92 C 22 64, 62 58, 100 70 C 138 58, 178 64, 178 92 C 178 128, 150 142, 128 132 C 116 126, 108 114, 100 114 C 92 114, 84 126, 72 132 C 50 142, 22 128, 22 92 Z" fill="#D9503B" {W}/>
+<path d="M22 96 L6 110 M178 96 L194 110" stroke="{INK}" stroke-width="6" stroke-linecap="round"/>
+<path d="M44 98 C 54 82, 78 82, 86 100 C 72 110, 54 110, 44 98 Z" fill="#FFF6E4" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<path d="M156 98 C 146 82, 122 82, 114 100 C 128 110, 146 110, 156 98 Z" fill="#FFF6E4" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<path d="M48 76 C 60 70, 74 70, 84 74" {GLOSS}/>
+""")),
+"bolt-shield": dict(collection="hero-squad", name="Bolt Shield", category="retro", tags=["minimal"], rope="chain",
+  desc="Blocks bad days.", anchor=(0.5, 0.07), svg=svg(f"""
+<path d="M100 14 L176 56 L176 144 L100 186 L24 144 L24 56 Z" fill="#2C3B5E" {W}/>
+<path d="M100 36 L156 68 L156 132 L100 164 L44 132 L44 68 Z" fill="none" stroke="#E6B450" stroke-width="7" stroke-linejoin="round"/>
+<path d="M112 52 L76 106 L98 106 L86 150 L126 92 L104 92 Z" fill="#F6D365" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<path d="M40 72 L40 104" {GLOSS}/>
+""")),
+"power-glove": dict(collection="hero-squad", name="Power Glove", category="retro", tags=[], rope="cord",
+  desc="Charged and ready.", anchor=(0.5, 0.15), svg=svg(f"""
+<g fill="#D8DEE8" stroke="{INK}" stroke-width="6" stroke-linejoin="round">
+<rect x="52" y="30" width="24" height="56" rx="12"/><rect x="76" y="24" width="24" height="62" rx="12"/>
+<rect x="100" y="28" width="24" height="58" rx="12"/><rect x="124" y="38" width="22" height="50" rx="11"/>
+<path d="M50 120 C 30 112, 24 92, 34 84 C 42 78, 52 90, 56 100 Z"/>
+<rect x="48" y="66" width="102" height="80" rx="20"/>
+<rect x="56" y="140" width="86" height="40" rx="8" fill="#D9503B"/>
+</g>
+<circle cx="99" cy="104" r="16" fill="#F6D365" stroke="{INK}" stroke-width="5"/>
+<circle cx="94" cy="99" r="5" fill="#FFFFFF" opacity="0.8"/>
+<path d="M64 150 H134 M64 166 H134" stroke="{INK}" stroke-width="3" opacity="0.4"/>
+""")),
+"hero-cape": dict(collection="hero-squad", name="Hero Cape", category="retro", tags=["minimal"], rope="thread",
+  desc="Flutters even indoors.", anchor=(0.5, 0.1), svg=svg(f"""
+<path d="M62 22 L138 22 C 150 80, 168 138, 184 184 Q 142 168 100 184 Q 58 168 16 184 C 32 138, 50 80, 62 22 Z" fill="#D9503B" {W}/>
+<path d="M78 40 C 72 90, 60 140, 50 176 M122 40 C 128 90, 140 140, 150 176 M100 40 V178" fill="none" stroke="#B03A28" stroke-width="5" stroke-linecap="round"/>
+<rect x="56" y="14" width="88" height="18" rx="9" fill="#E6B450" stroke="{INK}" stroke-width="5"/>
+<circle cx="100" cy="23" r="6" fill="#F6D365" stroke="{INK}" stroke-width="3"/>
+""")),
+"pow": dict(collection="hero-squad", name="POW!", category="retro", tags=["cute"], rope="minimal",
+  desc="Sound effects included.", anchor=(0.5, 0.06), svg=svg(f"""
+<polygon points="{burst(100, 102, 90, 58, 12)}" fill="#F6D365" stroke="{INK}" stroke-width="6" stroke-linejoin="round"/>
+<polygon points="{burst(100, 102, 62, 44, 12)}" fill="#EE9B45"/>
+<text x="100" y="122" text-anchor="middle" font-family="Impact, Arial Black, Helvetica, sans-serif" font-weight="900" font-size="52" fill="#D9503B" stroke="{INK}" stroke-width="4" paint-order="stroke" transform="rotate(-8 100 110)">POW!</text>
+""")),
+# ---------- Wizard School ----------
+"wand": dict(collection="wizard-school", name="Wand", category="minimal", tags=["cute"], rope="thread",
+  desc="Mostly for pointing at things dramatically.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M90 12 L110 12 L106 146 L94 146 Z" fill="#5B3A24" {W}/>
+<path d="M90 30 H110 M91 46 H109 M91 62 H109" stroke="#8A5A3B" stroke-width="5"/>
+<g fill="#F6D365" stroke="{INK}" stroke-width="4" stroke-linejoin="round">
+<path d="M100 150 l6 14 l15 2 l-11 10 l3 15 l-13 -8 l-13 8 l3 -15 l-11 -10 l15 -2 Z"/>
+<path d="M136 128 l3 7 l7 1 l-5 5 l1 7 l-6 -4 l-6 4 l1 -7 l-5 -5 l7 -1 Z"/>
+<path d="M62 138 l3 7 l7 1 l-5 5 l1 7 l-6 -4 l-6 4 l1 -7 l-5 -5 l7 -1 Z"/>
+</g>
+""")),
+"potion": dict(collection="wizard-school", name="Potion", category="cute", tags=["minimal"], rope="cord",
+  desc="Tastes like blueberries and confidence.", anchor=(0.5, 0.06), svg=svg(f"""
+<rect x="84" y="12" width="32" height="20" rx="5" fill="#A46E45" {W}/>
+<path d="M86 32 H114 V72 C 146 82, 160 106, 158 130 C 156 164, 130 186, 100 186 C 70 186, 44 164, 42 130 C 40 106, 54 82, 86 72 Z" fill="#E8F4F8" {W}/>
+<path d="M46 122 C 70 112, 130 132, 154 120 C 156 160, 130 182, 100 182 C 70 182, 44 160, 46 122 Z" fill="#9A6BD6"/>
+<path d="M86 32 H114 V72 C 146 82, 160 106, 158 130 C 156 164, 130 186, 100 186 C 70 186, 44 164, 42 130 C 40 106, 54 82, 86 72 Z" fill="none" {W}/>
+<circle cx="84" cy="146" r="7" fill="#C9AEF0"/><circle cx="112" cy="160" r="5" fill="#C9AEF0"/><circle cx="120" cy="138" r="4" fill="#C9AEF0"/>
+<path d="M60 112 C 60 100, 66 92, 74 88" {GLOSS}/>
+""")),
+"owl": dict(collection="wizard-school", name="Wise Owl", category="cute", tags=["nature"], rope="thread",
+  desc="Delivers mail, judges gently.", anchor=(0.5, 0.16), svg=svg(f"""
+<path d="M44 52 L58 26 L80 44 Q 100 38 120 44 L142 26 L156 52 C 176 90, 168 172, 100 180 C 32 172, 24 90, 44 52 Z" fill="#A46E45" {W}/>
+<path d="M62 120 C 70 150, 130 150, 138 120 C 136 160, 64 160, 62 120 Z" fill="#E6C9A0"/>
+<circle cx="76" cy="86" r="22" fill="#FFF6E4" stroke="{INK}" stroke-width="5"/><circle cx="124" cy="86" r="22" fill="#FFF6E4" stroke="{INK}" stroke-width="5"/>
+<circle cx="78" cy="88" r="9" fill="{INK}"/><circle cx="122" cy="88" r="9" fill="{INK}"/>
+<circle cx="81" cy="85" r="3" fill="#FFFFFF"/><circle cx="125" cy="85" r="3" fill="#FFFFFF"/>
+<path d="M92 104 L108 104 L100 118 Z" fill="#EE9B45" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<path d="M84 136 l6 6 l6 -6 M104 136 l6 6 l6 -6 M94 150 l6 6 l6 -6" fill="none" stroke="#8A5A3B" stroke-width="3" stroke-linecap="round"/>
+""")),
+"spellbook": dict(collection="wizard-school", name="Spellbook", category="minimal", tags=["retro"], rope="chain",
+  desc="Chapter one: making tea warmer.", anchor=(0.5, 0.13), svg=svg(f"""
+<rect x="38" y="26" width="128" height="150" rx="10" fill="#6B4FA0" {W}/>
+<rect x="38" y="26" width="22" height="150" rx="8" fill="#55398A" stroke="{INK}" stroke-width="5"/>
+<path d="M146 26 h20 v20 Z M146 176 h20 v-20 Z" fill="#E6B450" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="112" cy="100" r="30" fill="none" stroke="#E6B450" stroke-width="5"/>
+<path d="M112 76 C 124 86, 124 114, 112 124 C 132 120, 140 92, 112 76 Z" fill="#F6D365"/>
+<path d="M98 92 l3 6 l6 1 l-5 4 l1 6 l-5 -3 l-5 3 l1 -6 l-5 -4 l6 -1 Z" fill="#F6D365"/>
+<path d="M100 176 L100 196 L108 188 L116 196 L116 176" fill="#D9503B" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+""")),
+"wizard-hat": dict(collection="wizard-school", name="Wizard Hat", category="minimal", tags=["seasonal"], rope="thread",
+  desc="Pointy, by tradition.", anchor=(0.6, 0.06), svg=svg(f"""
+<ellipse cx="100" cy="160" rx="86" ry="22" fill="#2C3B5E" {W}/>
+<path d="M120 12 C 108 40, 70 90, 52 156 L148 156 C 140 110, 130 70, 132 40 C 132 30, 128 18, 120 12 Z" fill="#3A4E7A" {W}/>
+<path d="M58 136 C 86 146, 120 146, 146 136 L 148 156 L 52 156 Z" fill="#E6B450" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<g fill="#F6D365"><circle cx="96" cy="86" r="4"/><circle cx="116" cy="110" r="3"/><circle cx="84" cy="118" r="3"/>
+<path d="M112 56 l3 7 l7 1 l-5 5 l1 7 l-6 -4 l-6 4 l1 -7 l-5 -5 l7 -1 Z"/></g>
+""")),
+# ---------- Galaxy Rebels ----------
+"space-helmet": dict(collection="galaxy-rebels", name="Space Helmet", category="space", tags=["retro"], rope="minimal",
+  desc="Fishbowl-chic.", anchor=(0.5, 0.06), svg=svg(f"""
+<path d="M100 12 V30" stroke="{INK}" stroke-width="6" stroke-linecap="round"/>
+<circle cx="100" cy="12" r="6" fill="#D9503B" stroke="{INK}" stroke-width="4"/>
+<circle cx="100" cy="104" r="74" fill="#FFFFFF" {W}/>
+<rect x="46" y="70" width="108" height="72" rx="34" fill="#2C3B5E" stroke="{INK}" stroke-width="5"/>
+<path d="M62 92 C 70 82, 84 78, 98 78" fill="none" stroke="#8EC5E8" stroke-width="7" stroke-linecap="round"/>
+<rect x="56" y="168" width="88" height="18" rx="6" fill="#B8BFC8" {W}/>
+<circle cx="150" cy="58" r="6" fill="#E6B450"/>
+""")),
+"ufo": dict(collection="galaxy-rebels", name="Saucer", category="space", tags=["cute", "retro"], rope="thread",
+  desc="Just visiting.", anchor=(0.5, 0.28), svg=svg(f"""
+<path d="M64 98 C 64 66, 136 66, 136 98 Z" fill="#BFE3F2" {W}/>
+<path d="M78 84 C 82 76, 90 72, 98 72" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+<ellipse cx="100" cy="112" rx="88" ry="28" fill="#B8BFC8" {W}/>
+<ellipse cx="100" cy="104" rx="58" ry="10" fill="#8E959E"/>
+<g fill="#F6D365" stroke="{INK}" stroke-width="3"><circle cx="46" cy="116" r="6"/><circle cx="78" cy="124" r="6"/><circle cx="122" cy="124" r="6"/><circle cx="154" cy="116" r="6"/></g>
+<path d="M76 140 L58 190 L142 190 L124 140 Z" fill="#F6D365" opacity="0.35"/>
+""")),
+"droid": dict(collection="galaxy-rebels", name="Tin Droid", category="space", tags=["cute"], rope="cord",
+  desc="Beeps encouragingly.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M100 10 V40" stroke="{INK}" stroke-width="6" stroke-linecap="round"/>
+<circle cx="100" cy="12" r="7" fill="#5CC8C0" stroke="{INK}" stroke-width="4"/>
+<rect x="36" y="40" width="128" height="104" rx="24" fill="#D8DEE8" {W}/>
+<rect x="24" y="74" width="14" height="36" rx="6" fill="#8E959E" {W}/><rect x="162" y="74" width="14" height="36" rx="6" fill="#8E959E" {W}/>
+<circle cx="76" cy="86" r="16" fill="#2C3B5E" stroke="{INK}" stroke-width="5"/><circle cx="124" cy="86" r="16" fill="#2C3B5E" stroke="{INK}" stroke-width="5"/>
+<circle cx="80" cy="82" r="5" fill="#5CC8C0"/><circle cx="128" cy="82" r="5" fill="#5CC8C0"/>
+<rect x="72" y="114" width="56" height="16" rx="4" fill="#8E959E" stroke="{INK}" stroke-width="4"/>
+<path d="M84 114 V130 M100 114 V130 M116 114 V130" stroke="{INK}" stroke-width="3"/>
+<rect x="64" y="144" width="72" height="38" rx="10" fill="#B8BFC8" {W}/>
+<circle cx="100" cy="163" r="7" fill="#D9503B"/>
+""")),
+"ray-gun": dict(collection="galaxy-rebels", name="Ray Gun", category="space", tags=["retro"], rope="chain",
+  desc="Fires only sparkles.", anchor=(0.5, 0.26), svg=svg(f"""
+<path d="M70 108 L58 168 C 56 178, 80 182, 84 172 L96 116 Z" fill="#8A5A3B" {W}/>
+<path d="M28 76 C 28 62, 40 54, 60 54 L140 62 C 150 63, 156 70, 156 80 C 156 90, 150 97, 140 98 L60 106 C 40 106, 28 98, 28 84 Z" fill="#D8DEE8" {W}/>
+<g fill="#D9503B" stroke="{INK}" stroke-width="4"><ellipse cx="86" cy="80" rx="7" ry="28"/><ellipse cx="108" cy="80" rx="6" ry="24"/></g>
+<path d="M156 80 L176 80" stroke="{INK}" stroke-width="10" stroke-linecap="round"/>
+<circle cx="186" cy="80" r="9" fill="#5CC8C0" stroke="{INK}" stroke-width="4"/>
+<circle cx="48" cy="80" r="10" fill="#E6B450" stroke="{INK}" stroke-width="4"/>
+""")),
+"alien": dict(collection="galaxy-rebels", name="Little Alien", category="space", tags=["cute"], rope="thread",
+  desc="Comes in peace. Mostly naps.", anchor=(0.5, 0.05), svg=svg(f"""
+<path d="M80 50 L66 16 M120 50 L134 16" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+<circle cx="66" cy="14" r="7" fill="#F6D365" stroke="{INK}" stroke-width="4"/><circle cx="134" cy="14" r="7" fill="#F6D365" stroke="{INK}" stroke-width="4"/>
+<path d="M100 40 C 160 40, 176 84, 168 116 C 160 152, 128 182, 100 182 C 72 182, 40 152, 32 116 C 24 84, 40 40, 100 40 Z" fill="#8DD18A" {W}/>
+<path d="M58 104 C 58 84, 92 88, 90 112 C 88 128, 60 124, 58 104 Z" fill="{INK}"/>
+<path d="M142 104 C 142 84, 108 88, 110 112 C 112 128, 140 124, 142 104 Z" fill="{INK}"/>
+<circle cx="72" cy="102" r="5" fill="#FFFFFF"/><circle cx="128" cy="102" r="5" fill="#FFFFFF"/>
+<path d="M90 150 q 10 8 20 0" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+<path d="M54 64 C 62 54, 74 48, 86 46" {GLOSS}/>
+""")),
+# ---------- Anime Café ----------
+"onigiri": dict(collection="anime-cafe", name="Onigiri", category="cute", tags=["minimal"], rope="thread",
+  desc="Tuna mayo, probably.", anchor=(0.5, 0.1), svg=svg(f"""
+<path d="M100 20 C 116 20, 124 34, 132 48 L178 136 C 190 160, 176 182, 150 182 L50 182 C 24 182, 10 160, 22 136 L68 48 C 76 34, 84 20, 100 20 Z" fill="#FFFFFF" {W}/>
+<path d="M62 132 H138 V182 H62 Z" fill="#2B3A2E" stroke="{INK}" stroke-width="5"/>
+{eyes(102, dx=18, r=5)}
+<path d="M92 114 q 8 7 16 0" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+{blush(112, dx=34, color="#F7A7B5")}
+<path d="M72 64 C 78 52, 84 44, 92 40" fill="none" stroke="#E8EEF4" stroke-width="7" stroke-linecap="round"/>
+""")),
+"ramen": dict(collection="anime-cafe", name="Ramen", category="cute", tags=["retro"], rope="cord",
+  desc="Midnight study fuel.", anchor=(0.66, 0.05), svg=svg(f"""
+<path d="M120 12 L150 92 M144 10 L162 92" stroke="#A46E45" stroke-width="8" stroke-linecap="round"/>
+<path d="M120 12 L150 92 M144 10 L162 92" stroke="{INK}" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+<path d="M30 96 C 52 84, 80 102, 100 90 C 120 102, 150 84, 170 96" fill="none" stroke="#F6D365" stroke-width="10" stroke-linecap="round"/>
+<path d="M22 100 H178 C 176 148, 142 180, 100 180 C 58 180, 24 148, 22 100 Z" fill="#D9503B" {W}/>
+<path d="M40 124 H160" stroke="#FFF6E4" stroke-width="6" stroke-dasharray="10 8"/>
+<circle cx="64" cy="94" r="14" fill="#FFF6E4" stroke="{INK}" stroke-width="4"/><circle cx="64" cy="94" r="7" fill="#F6B450"/>
+<path d="M88 86 q 6 -10 14 0" fill="#8DB38B" stroke="{INK}" stroke-width="3"/>
+""")),
+"lucky-cat": dict(collection="anime-cafe", name="Lucky Cat", category="cute", tags=["seasonal"], rope="thread",
+  desc="Waves good fortune your way.", anchor=(0.5, 0.15), svg=svg(f"""
+<path d="M136 66 C 142 40, 150 26, 162 22 C 176 24, 178 46, 168 70 Z" fill="#FFFFFF" {W}/>
+<path d="M48 56 L52 28 L76 44 Q 100 38 124 44 L148 28 L152 56 C 166 80, 166 108, 150 122 L156 172 C 156 184, 44 184, 44 172 L50 122 C 34 108, 34 80, 48 56 Z" fill="#FFFFFF" {W}/>
+<path d="M56 50 L58 36 L70 46 Z M144 50 L142 36 L130 46 Z" fill="#F7A7A0"/>
+<path d="M76 84 q 6 -6 12 0 M112 84 q 6 -6 12 0" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+<path d="M94 98 L106 98 L100 104 Z" fill="#F28C8C"/>
+<path d="M58 120 C 80 128, 120 128, 142 120" fill="none" stroke="#D9503B" stroke-width="9" stroke-linecap="round"/>
+<circle cx="100" cy="134" r="10" fill="#E6B450" stroke="{INK}" stroke-width="4"/>
+<ellipse cx="78" cy="160" rx="16" ry="10" fill="#FFFFFF" stroke="{INK}" stroke-width="4"/>
+<path d="M150 70 l8 -8" stroke="#F7A7A0" stroke-width="4" stroke-linecap="round"/>
+""")),
+"katana": dict(collection="anime-cafe", name="Katana", category="retro", tags=["minimal"], rope="cord",
+  desc="Ceremonial. Very sharp-looking.", anchor=(0.5, 0.05), svg=svg(f"""
+<rect x="88" y="10" width="24" height="56" rx="6" fill="#2B2320" {W}/>
+<path d="M88 18 L112 30 M112 18 L88 30 M88 34 L112 46 M112 34 L88 46 M88 50 L112 62 M112 50 L88 62" stroke="#E6B450" stroke-width="3"/>
+<ellipse cx="100" cy="72" rx="26" ry="9" fill="#E6B450" {W}/>
+<path d="M90 80 L110 80 L110 176 Q 100 192 90 176 Z" fill="#7A2A20" {W}/>
+<path d="M90 120 H110 M90 150 H110" stroke="#E6B450" stroke-width="4"/>
+<path d="M96 88 V170" stroke="#FFFFFF" stroke-width="3" opacity="0.35"/>
+""")),
+"sakura": dict(collection="anime-cafe", name="Sakura", category="nature", tags=["seasonal", "minimal"], rope="thread",
+  desc="Blooms all year here.", anchor=(0.5, 0.08), svg=svg(f"""
+<g fill="#F7B8C8" stroke="{INK}" stroke-width="5" stroke-linejoin="round">
+<path d="M100 104 C 76 76, 80 30, 94 18 L100 30 L106 18 C 120 30, 124 76, 100 104 Z"/>
+<path d="M100 104 C 76 76, 80 30, 94 18 L100 30 L106 18 C 120 30, 124 76, 100 104 Z" transform="rotate(72 100 104)"/>
+<path d="M100 104 C 76 76, 80 30, 94 18 L100 30 L106 18 C 120 30, 124 76, 100 104 Z" transform="rotate(144 100 104)"/>
+<path d="M100 104 C 76 76, 80 30, 94 18 L100 30 L106 18 C 120 30, 124 76, 100 104 Z" transform="rotate(216 100 104)"/>
+<path d="M100 104 C 76 76, 80 30, 94 18 L100 30 L106 18 C 120 30, 124 76, 100 104 Z" transform="rotate(288 100 104)"/>
+</g>
+<circle cx="100" cy="104" r="14" fill="#F6D365" stroke="{INK}" stroke-width="4"/>
+<g fill="#D9503B"><circle cx="100" cy="82" r="3"/><circle cx="121" cy="98" r="3"/><circle cx="113" cy="122" r="3"/><circle cx="87" cy="122" r="3"/><circle cx="79" cy="98" r="3"/></g>
+""")),
+# ---------- Retro Arcade ----------
+"joystick": dict(collection="retro-arcade", name="Joystick", category="retro", tags=[], rope="cord",
+  desc="Up, up, down, down…", anchor=(0.5, 0.06), svg=svg(f"""
+<circle cx="100" cy="36" r="24" fill="#D9503B" {W}/>
+<path d="M86 28 C 88 22, 94 18, 100 18" {GLOSS}/>
+<rect x="93" y="58" width="14" height="66" rx="5" fill="#2B2320" {W}/>
+<path d="M28 132 L172 132 L182 176 L18 176 Z" fill="#2C3B5E" {W}/>
+<ellipse cx="100" cy="132" rx="72" ry="12" fill="#3A4E7A" stroke="{INK}" stroke-width="5"/>
+<circle cx="146" cy="156" r="8" fill="#F6D365" stroke="{INK}" stroke-width="4"/><circle cx="54" cy="156" r="8" fill="#5CC8C0" stroke="{INK}" stroke-width="4"/>
+""")),
+"arcade": dict(collection="retro-arcade", name="Arcade Cabinet", category="retro", tags=[], rope="chain",
+  desc="High score: you.", anchor=(0.5, 0.06), svg=svg(f"""
+<path d="M52 12 L148 12 L148 40 L156 112 L148 116 L148 188 L52 188 L52 116 L44 112 L52 40 Z" fill="#6B4FA0" {W}/>
+<rect x="56" y="18" width="88" height="22" rx="3" fill="#F6D365" stroke="{INK}" stroke-width="4"/>
+<path d="M66 29 H134" stroke="#D9503B" stroke-width="6" stroke-dasharray="6 5"/>
+<rect x="62" y="48" width="76" height="56" rx="6" fill="#1C2740" stroke="{INK}" stroke-width="5"/>
+{pixels(["..g..", ".ggg.", "g.g.g", "ggggg", ".g.g."], {"g": "#8DD18A"}, 6, 85, 58)}
+<path d="M48 112 L152 112 L148 130 L52 130 Z" fill="#55398A" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<circle cx="76" cy="121" r="5" fill="#D9503B"/><circle cx="118" cy="121" r="5" fill="#F6D365"/><circle cx="132" cy="121" r="5" fill="#5CC8C0"/>
+<rect x="84" y="150" width="32" height="20" rx="3" fill="#2B2320"/><rect x="96" y="154" width="8" height="12" fill="#E6B450"/>
+""")),
+"pixel-heart": dict(collection="retro-arcade", name="Extra Life", category="retro", tags=["cute"], rope="minimal",
+  desc="+1 up.", anchor=(0.5, 0.2), svg=svg(f"""
+{pixels([".kk...kk.", "krrk.krrk", "krwrrrrrk", "krwrrrrrk", "krrrrrrrk", ".krrrrrk.", "..krrrk..", "...krk...", "....k...."], {"k": "#2B2320", "r": "#E35D6A", "w": "#FFFFFF"}, 18, 19, 38)}
+""")),
+"cartridge": dict(collection="retro-arcade", name="Game Cartridge", category="retro", tags=["minimal"], rope="cord",
+  desc="Blow on it first.", anchor=(0.5, 0.08), svg=svg(f"""
+<path d="M40 16 H160 V170 C 160 180, 154 186, 144 186 H56 C 46 186, 40 180, 40 170 Z" fill="#B8BFC8" {W}/>
+<path d="M52 16 V40 M68 16 V40 M84 16 V40 M100 16 V40 M116 16 V40 M132 16 V40 M148 16 V40" stroke="#8E959E" stroke-width="5"/>
+<rect x="56" y="54" width="88" height="96" rx="6" fill="#FFF6E4" stroke="{INK}" stroke-width="5"/>
+<rect x="56" y="54" width="88" height="22" rx="6" fill="#D9503B" stroke="{INK}" stroke-width="5"/>
+<path d="M70 132 L92 96 L104 116 L114 104 L132 132 Z" fill="#8DB38B" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="120" cy="92" r="7" fill="#F6D365"/>
+<path d="M88 168 L112 168" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+""")),
+"pixel-gem": dict(collection="retro-arcade", name="Pixel Gem", category="retro", tags=["minimal"], rope="chain",
+  desc="Worth exactly 500 points.", anchor=(0.5, 0.17), svg=svg(f"""
+{pixels(["..kkkkk..", ".kwcccbk.", "kwccccbbk", "kccccbbbk", ".kccbbbk.", "..kcbbk..", "...kbk...", "....k...."], {"k": "#2B2320", "c": "#8EE3F0", "b": "#4FAFD0", "w": "#FFFFFF"}, 18, 19, 34)}
+""")),
+}
+for v in NEW.values():
+    v.setdefault("collection", "hero-squad")
+CHARMS.update(NEW)
+
 root = os.path.join(os.path.dirname(__file__), "..", "charms")
 for cid, c in CHARMS.items():
     d = os.path.join(root, cid)
@@ -312,6 +580,7 @@ for cid, c in CHARMS.items():
         "name": c["name"],
         "category": c["category"],
         "tags": c["tags"],
+        "collection": c.get("collection", "originals"),
         "defaultScale": 1,
         "ropeStyle": c["rope"],
         "anchorOffset": {"x": c["anchor"][0], "y": c["anchor"][1]},
@@ -320,4 +589,7 @@ for cid, c in CHARMS.items():
     with open(os.path.join(d, "charm.json"), "w") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
-print("wrote", len(CHARMS), "charms")
+with open(os.path.join(root, "collections.json"), "w") as f:
+    json.dump(COLLECTIONS, f, indent=2)
+    f.write("\n")
+print("wrote", len(CHARMS), "charms in", len(COLLECTIONS), "collections")

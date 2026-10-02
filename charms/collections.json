@@ -1,0 +1,32 @@
+[
+  {
+    "id": "originals",
+    "name": "Dangle Originals",
+    "description": "The first thirty. Little things with big personalities."
+  },
+  {
+    "id": "hero-squad",
+    "name": "Hero Squad",
+    "description": "Masks, capes, and big entrances."
+  },
+  {
+    "id": "wizard-school",
+    "name": "Wizard School",
+    "description": "Wands, potions, and a very wise owl."
+  },
+  {
+    "id": "galaxy-rebels",
+    "name": "Galaxy Rebels",
+    "description": "For pilots, tinkerers, and stargazers."
+  },
+  {
+    "id": "anime-cafe",
+    "name": "Anime Caf\u00e9",
+    "description": "Snacks and keepsakes from your favourite slice-of-life."
+  },
+  {
+    "id": "retro-arcade",
+    "name": "Retro Arcade",
+    "description": "Insert coin. Press start."
+  }
+]

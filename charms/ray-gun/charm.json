@@ -1,0 +1,19 @@
+{
+  "id": "ray-gun",
+  "name": "Ray Gun",
+  "category": "space",
+  "tags": [
+    "retro"
+  ],
+  "collection": "galaxy-rebels",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.26
+  },
+  "metadata": {
+    "description": "Fires only sparkles.",
+    "author": "Dangle"
+  }
+}

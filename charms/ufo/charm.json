@@ -1,0 +1,20 @@
+{
+  "id": "ufo",
+  "name": "Saucer",
+  "category": "space",
+  "tags": [
+    "cute",
+    "retro"
+  ],
+  "collection": "galaxy-rebels",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.28
+  },
+  "metadata": {
+    "description": "Just visiting.",
+    "author": "Dangle"
+  }
+}

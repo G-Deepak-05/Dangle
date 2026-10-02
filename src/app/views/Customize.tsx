@@ -12,11 +12,33 @@ import {
 import { backend, events, type DisplayInfo, type Route } from "../../ipc/backend";
 import type { CharmSize, PhysicsProfileName } from "../../physics/profiles";
 import { paletteFor } from "../../render/rope";
-import { ropeFor, stageConfigFor, updateSettings } from "../../state/stores";
+import { findCharm, ropeFor, stageConfigFor, updateSettings } from "../../state/stores";
+import { BUILTIN_COLLECTIONS } from "../../charms/builtin";
+import { FINISHES, HOOKS, type Finish, type Hook } from "../../charms/types";
+import { addSlot, removeSlot, setSlotAnchor } from "../../state/collections";
+import { MAX_EXTRA_SLOTS, type RotateMode } from "../../state/settings";
+import { targetSlotStore } from "../../state/ui";
 import { CharmPreview } from "../components/CharmPreview";
 import { BackBar, Segmented } from "../components/Controls";
-import { RopeSwatch } from "../components/Icons";
-import { useActiveCharm, useSettings } from "../hooks";
+import { CloseIcon, PlusIcon, RopeSwatch } from "../components/Icons";
+import { useActiveCharm, useCharms, useSettings } from "../hooks";
+
+const FINISH_LABELS: Record<Finish, string> = {
+  classic: "Classic",
+  glossy: "Glossy",
+  matte: "Matte",
+  sticker: "Sticker",
+  glow: "Glow",
+};
+
+const HOOK_LABELS: Record<Hook, string> = {
+  clip: "Clip",
+  pin: "Pin",
+  bow: "Bow",
+  suction: "Suction",
+  nail: "Nail",
+  none: "None",
+};
 
 const PHYSICS_HELP: Record<PhysicsProfileName, string> = {
   calm: "Settles quickly with small, soft swings.",
@@ -35,6 +57,8 @@ const BEAD_LABELS: Record<Beads, string> = {
 export function Customize({ go }: { go: (r: Route) => void }) {
   const settings = useSettings();
   const charm = useActiveCharm();
+  const charms = useCharms();
+  const slots = [{ charmId: settings.activeCharmId, anchorX: settings.anchorX }, ...settings.extraSlots];
   const rope = ropeFor(settings, charm);
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
   const [nudge, setNudge] = useState(0);
@@ -151,24 +175,137 @@ export function Customize({ go }: { go: (r: Route) => void }) {
       </div>
 
       <div className="field">
-        <label className="field-label" htmlFor="position">
-          Position
-        </label>
-        <input
-          id="position"
-          className="slider"
-          type="range"
-          min={0}
-          max={1}
-          step={0.005}
-          value={settings.anchorX}
-          aria-valuetext={`${Math.round(settings.anchorX * 100)} percent from the left`}
-          onChange={(e) => void updateSettings({ anchorX: Number(e.target.value) })}
-        />
-        <div className="slider-ends">
-          <span>Left</span>
-          <span>Right</span>
+        <div className="field-label">
+          Charms on your desktop <span className="field-note">{slots.length} of {MAX_EXTRA_SLOTS + 1}</span>
         </div>
+        <div className="group">
+          {slots.map((slot, i) => {
+            const c = findCharm(charms, slot.charmId);
+            return (
+              <div className="slot-row" key={i}>
+                <button
+                  type="button"
+                  className="slot-thumb"
+                  aria-label={`Change charm ${i + 1} (${c.name})`}
+                  title="Change charm"
+                  onClick={() => {
+                    targetSlotStore.set(i);
+                    go("library");
+                  }}
+                >
+                  <img src={c.thumbnail} alt="" />
+                </button>
+                <div className="slot-main">
+                  <label className="slot-name" htmlFor={`slot-pos-${i}`}>
+                    {c.name}
+                  </label>
+                  <input
+                    id={`slot-pos-${i}`}
+                    className="slider"
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.005}
+                    value={slot.anchorX}
+                    aria-valuetext={`${Math.round(slot.anchorX * 100)} percent from the left`}
+                    onChange={(e) => void setSlotAnchor(i, Number(e.target.value))}
+                  />
+                </div>
+                {i > 0 && (
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label={`Remove ${c.name}`}
+                    onClick={() => void removeSlot(i)}
+                  >
+                    <CloseIcon size={15} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {slots.length <= MAX_EXTRA_SLOTS && (
+          <button type="button" className="btn btn-ghost" style={{ marginTop: 6 }} onClick={() => void addSlot()}>
+            <PlusIcon size={14} /> Hang another charm
+          </button>
+        )}
+        <p className="help">Each charm gets its own string. Drag the sliders to move them along the top.</p>
+      </div>
+
+      <div className="field">
+        <div className="field-label">Finish</div>
+        <Segmented<Finish>
+          label="Finish"
+          value={settings.finish}
+          onChange={(finish) => set({ finish })}
+          options={FINISHES.map((f) => ({ value: f, label: FINISH_LABELS[f] }))}
+        />
+        <label className="checkbox-row">
+          <input type="checkbox" checked={settings.shadow} onChange={(e) => set({ shadow: e.target.checked })} />
+          <span>Soft shadow</span>
+        </label>
+      </div>
+
+      <div className="field">
+        <div className="field-label">Hook</div>
+        <div className="segmented segmented-wrap" role="radiogroup" aria-label="Hook">
+          {HOOKS.map((h) => (
+            <button
+              key={h}
+              type="button"
+              role="radio"
+              className="segment"
+              aria-checked={settings.hook === h}
+              onClick={() => set({ hook: h })}
+            >
+              {HOOK_LABELS[h]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="field">
+        <div className="field-label">Auto-rotate</div>
+        <Segmented<RotateMode>
+          label="Auto-rotate"
+          value={settings.rotate}
+          onChange={(rotate) => void updateSettings({ rotate })}
+          options={[
+            { value: "off", label: "Off" },
+            { value: "hourly", label: "Every hour" },
+            { value: "daily", label: "Every day" },
+          ]}
+        />
+        {settings.rotate !== "off" && (
+          <select
+            className="select"
+            style={{ marginTop: 8 }}
+            aria-label="Rotate through"
+            value={settings.rotateSource}
+            onChange={(e) => void updateSettings({ rotateSource: e.target.value })}
+          >
+            <option value="favorites">Your favorites ({settings.favorites.length})</option>
+            <option value="all">All charms</option>
+            {BUILTIN_COLLECTIONS.map((c) => (
+              <option key={c.id} value={`collection:${c.id}`}>
+                {c.name}
+              </option>
+            ))}
+            {settings.userCollections.map((c) => (
+              <option key={c.id} value={`collection:${c.id}`}>
+                {c.name} (yours)
+              </option>
+            ))}
+          </select>
+        )}
+        <p className="help">
+          {settings.rotate === "off"
+            ? "Swap the main charm automatically for a little surprise."
+            : settings.rotateSource === "favorites" && settings.favorites.length === 0
+              ? "Heart a few charms first. Rotation uses your favorites."
+              : "The main charm changes on its own. Picking one yourself still works in between."}
+        </p>
       </div>
 
       {displays.length > 1 && (

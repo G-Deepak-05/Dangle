@@ -1,0 +1,17 @@
+{
+  "id": "power-glove",
+  "name": "Power Glove",
+  "category": "retro",
+  "tags": [],
+  "collection": "hero-squad",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.15
+  },
+  "metadata": {
+    "description": "Charged and ready.",
+    "author": "Dangle"
+  }
+}

@@ -3,6 +3,7 @@
   "name": "Pixel Sword",
   "category": "retro",
   "tags": [],
+  "collection": "originals",
   "defaultScale": 1,
   "ropeStyle": "chain",
   "anchorOffset": {

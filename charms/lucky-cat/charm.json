@@ -1,0 +1,19 @@
+{
+  "id": "lucky-cat",
+  "name": "Lucky Cat",
+  "category": "cute",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "anime-cafe",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.15
+  },
+  "metadata": {
+    "description": "Waves good fortune your way.",
+    "author": "Dangle"
+  }
+}

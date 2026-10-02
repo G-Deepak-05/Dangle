@@ -1,0 +1,19 @@
+{
+  "id": "droid",
+  "name": "Tin Droid",
+  "category": "space",
+  "tags": [
+    "cute"
+  ],
+  "collection": "galaxy-rebels",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Beeps encouragingly.",
+    "author": "Dangle"
+  }
+}

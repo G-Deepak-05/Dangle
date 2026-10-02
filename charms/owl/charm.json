@@ -1,0 +1,19 @@
+{
+  "id": "owl",
+  "name": "Wise Owl",
+  "category": "cute",
+  "tags": [
+    "nature"
+  ],
+  "collection": "wizard-school",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.16
+  },
+  "metadata": {
+    "description": "Delivers mail, judges gently.",
+    "author": "Dangle"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "arcade",
+  "name": "Arcade Cabinet",
+  "category": "retro",
+  "tags": [],
+  "collection": "retro-arcade",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "High score: you.",
+    "author": "Dangle"
+  }
+}

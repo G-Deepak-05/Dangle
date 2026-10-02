@@ -1,0 +1,19 @@
+{
+  "id": "onigiri",
+  "name": "Onigiri",
+  "category": "cute",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "anime-cafe",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.1
+  },
+  "metadata": {
+    "description": "Tuna mayo, probably.",
+    "author": "Dangle"
+  }
+}

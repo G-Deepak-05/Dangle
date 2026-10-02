@@ -1,0 +1,19 @@
+{
+  "id": "hero-mask",
+  "name": "Hero Mask",
+  "category": "retro",
+  "tags": [
+    "cute"
+  ],
+  "collection": "hero-squad",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.34
+  },
+  "metadata": {
+    "description": "Secret identity: safe.",
+    "author": "Dangle"
+  }
+}

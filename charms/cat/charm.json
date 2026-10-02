@@ -3,6 +3,7 @@
   "name": "Cat",
   "category": "cute",
   "tags": [],
+  "collection": "originals",
   "defaultScale": 1,
   "ropeStyle": "thread",
   "anchorOffset": {

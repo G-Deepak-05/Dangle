@@ -1,0 +1,19 @@
+{
+  "id": "cartridge",
+  "name": "Game Cartridge",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "retro-arcade",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Blow on it first.",
+    "author": "Dangle"
+  }
+}

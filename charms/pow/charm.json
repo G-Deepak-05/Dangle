@@ -1,0 +1,19 @@
+{
+  "id": "pow",
+  "name": "POW!",
+  "category": "retro",
+  "tags": [
+    "cute"
+  ],
+  "collection": "hero-squad",
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Sound effects included.",
+    "author": "Dangle"
+  }
+}

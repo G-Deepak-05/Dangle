@@ -3,6 +3,7 @@
   "name": "Camera",
   "category": "retro",
   "tags": [],
+  "collection": "originals",
   "defaultScale": 1,
   "ropeStyle": "cord",
   "anchorOffset": {

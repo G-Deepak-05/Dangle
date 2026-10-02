@@ -5,6 +5,8 @@ import { CharmPreview } from "../components/CharmPreview";
 import { ChevronIcon, GearIcon, HeartIcon, PauseIcon, PlayIcon, PlusIcon } from "../components/Icons";
 import { useActiveCharm, useCharms, useSettings } from "../hooks";
 import { UpdateBanner } from "../components/UpdateBanner";
+import { BUILTIN_COLLECTIONS } from "../../charms/builtin";
+import { libraryFilterStore, targetSlotStore, type LibraryFilter } from "../../state/ui";
 
 const COLLECTION_PREVIEW = 10;
 
@@ -13,6 +15,11 @@ export function Home({ go }: { go: (r: Route) => void }) {
   const charm = useActiveCharm();
   const charms = useCharms();
   const favorite = settings.favorites.includes(charm.id);
+  const openLibrary = (filter: LibraryFilter) => {
+    libraryFilterStore.set(filter);
+    targetSlotStore.set(0);
+    go("library");
+  };
 
   const ordered = [
     ...charms.filter((c) => settings.favorites.includes(c.id)),
@@ -68,7 +75,7 @@ export function Home({ go }: { go: (r: Route) => void }) {
           </button>
         </div>
         <div className="row">
-          <button type="button" className="btn btn-primary btn-wide" onClick={() => go("library")}>
+          <button type="button" className="btn btn-primary btn-wide" onClick={() => openLibrary({ kind: "all" })}>
             Change Charm
           </button>
           <button type="button" className="btn btn-wide" onClick={() => go("customize")}>
@@ -82,7 +89,7 @@ export function Home({ go }: { go: (r: Route) => void }) {
           <h2 className="eyebrow" id="collection-heading">
             Your collection
           </h2>
-          <button type="button" className="link" onClick={() => go("library")}>
+          <button type="button" className="link" onClick={() => openLibrary({ kind: "all" })}>
             See all {charms.length}
           </button>
         </div>
@@ -98,6 +105,45 @@ export function Home({ go }: { go: (r: Route) => void }) {
               onClick={() => void updateSettings({ activeCharmId: c.id })}
             >
               <img src={c.thumbnail} alt="" draggable={false} />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="section" aria-labelledby="collections-heading">
+        <div className="section-head">
+          <h2 className="eyebrow" id="collections-heading">
+            Collections
+          </h2>
+          <button type="button" className="link" onClick={() => openLibrary({ kind: "all" })}>
+            Browse all
+          </button>
+        </div>
+        <div className="collection-row">
+          {[
+            ...BUILTIN_COLLECTIONS.map((col) => ({
+              key: col.id,
+              name: col.name,
+              filter: { kind: "collection", id: col.id } as LibraryFilter,
+              items: charms.filter((c) => c.collection === col.id),
+            })),
+            ...settings.userCollections.map((col) => ({
+              key: col.id,
+              name: col.name,
+              filter: { kind: "user", id: col.id } as LibraryFilter,
+              items: col.charmIds.map((id) => charms.find((c) => c.id === id)).filter((c) => c !== undefined),
+            })),
+          ].map((col) => (
+            <button key={col.key} type="button" className="collection-card" onClick={() => openLibrary(col.filter)}>
+              <span className="collection-thumbs" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <span key={i}>{col.items[i] && <img src={col.items[i].thumbnail} alt="" draggable={false} />}</span>
+                ))}
+              </span>
+              <span className="collection-name">{col.name}</span>
+              <span className="collection-count">
+                {col.items.length} charm{col.items.length === 1 ? "" : "s"}
+              </span>
             </button>
           ))}
         </div>

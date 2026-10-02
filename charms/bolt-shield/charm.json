@@ -1,0 +1,19 @@
+{
+  "id": "bolt-shield",
+  "name": "Bolt Shield",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "hero-squad",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.07
+  },
+  "metadata": {
+    "description": "Blocks bad days.",
+    "author": "Dangle"
+  }
+}

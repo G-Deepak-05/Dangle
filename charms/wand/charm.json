@@ -1,0 +1,19 @@
+{
+  "id": "wand",
+  "name": "Wand",
+  "category": "minimal",
+  "tags": [
+    "cute"
+  ],
+  "collection": "wizard-school",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Mostly for pointing at things dramatically.",
+    "author": "Dangle"
+  }
+}

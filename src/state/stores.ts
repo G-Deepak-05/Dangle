@@ -7,7 +7,7 @@ import { DEFAULT_SETTINGS, type Settings } from "./settings";
 type Listener = () => void;
 
 /** Minimal observable value, readable from React (useSyncExternalStore) and plain TS. */
-class Store<T> {
+export class Store<T> {
   private listeners = new Set<Listener>();
   constructor(private value: T) {}
   get = (): T => this.value;

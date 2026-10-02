@@ -1,0 +1,19 @@
+{
+  "id": "hero-cape",
+  "name": "Hero Cape",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "hero-squad",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.1
+  },
+  "metadata": {
+    "description": "Flutters even indoors.",
+    "author": "Dangle"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "alien",
+  "name": "Little Alien",
+  "category": "space",
+  "tags": [
+    "cute"
+  ],
+  "collection": "galaxy-rebels",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Comes in peace. Mostly naps.",
+    "author": "Dangle"
+  }
+}

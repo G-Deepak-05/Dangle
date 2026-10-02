@@ -1,5 +1,10 @@
 import { parseManifest } from "./manifest";
-import type { Charm } from "./types";
+import collections from "../../charms/collections.json";
+import type { Charm, CollectionInfo } from "./types";
+
+export const BUILTIN_COLLECTIONS: CollectionInfo[] = (collections as CollectionInfo[]).filter(
+  (c) => typeof c.id === "string" && typeof c.name === "string",
+);
 
 // Every folder in /charms with a charm.json and charm.svg becomes a built-in charm.
 const manifests = import.meta.glob("../../charms/*/charm.json", { eager: true, import: "default" });
@@ -23,7 +28,13 @@ function load(): Charm[] {
     const i = ORDER.indexOf(id);
     return i === -1 ? ORDER.length : i;
   };
-  return charms.sort((a, b) => rank(a.id) - rank(b.id) || a.name.localeCompare(b.name));
+  const collectionRank = (c: Charm) => {
+    const i = BUILTIN_COLLECTIONS.findIndex((col) => col.id === c.collection);
+    return i === -1 ? BUILTIN_COLLECTIONS.length : i;
+  };
+  return charms.sort(
+    (a, b) => collectionRank(a) - collectionRank(b) || rank(a.id) - rank(b.id) || a.name.localeCompare(b.name),
+  );
 }
 
 export const BUILTIN_CHARMS: Charm[] = load();

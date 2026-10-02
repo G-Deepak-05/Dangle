@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { events, type Route } from "../ipc/backend";
 import { useSettings, useSettingsReady } from "./hooks";
+import { DialogHost } from "./components/Dialog";
 import { CreateCharm } from "./views/CreateCharm";
 import { Customize } from "./views/Customize";
 import { Feedback } from "./views/Feedback";
@@ -113,6 +114,7 @@ export function App() {
       <main key={settings.onboardingComplete ? route : "onboarding"} style={{ display: "contents" }}>
         {view}
       </main>
+      <DialogHost />
       {toast && (
         <div className="toast" role="status" aria-live="polite">
           {toast}

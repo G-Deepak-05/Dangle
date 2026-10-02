@@ -1,0 +1,19 @@
+{
+  "id": "pixel-heart",
+  "name": "Extra Life",
+  "category": "retro",
+  "tags": [
+    "cute"
+  ],
+  "collection": "retro-arcade",
+  "defaultScale": 1,
+  "ropeStyle": "minimal",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "metadata": {
+    "description": "+1 up.",
+    "author": "Dangle"
+  }
+}

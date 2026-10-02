@@ -1,0 +1,19 @@
+{
+  "id": "potion",
+  "name": "Potion",
+  "category": "cute",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "wizard-school",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Tastes like blueberries and confidence.",
+    "author": "Dangle"
+  }
+}

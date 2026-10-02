@@ -1,0 +1,19 @@
+{
+  "id": "katana",
+  "name": "Katana",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "anime-cafe",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.05
+  },
+  "metadata": {
+    "description": "Ceremonial. Very sharp-looking.",
+    "author": "Dangle"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "spellbook",
+  "name": "Spellbook",
+  "category": "minimal",
+  "tags": [
+    "retro"
+  ],
+  "collection": "wizard-school",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.13
+  },
+  "metadata": {
+    "description": "Chapter one: making tea warmer.",
+    "author": "Dangle"
+  }
+}

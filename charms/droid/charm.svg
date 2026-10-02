@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+<path d="M100 10 V40" stroke="#2B2320" stroke-width="6" stroke-linecap="round"/>
+<circle cx="100" cy="12" r="7" fill="#5CC8C0" stroke="#2B2320" stroke-width="4"/>
+<rect x="36" y="40" width="128" height="104" rx="24" fill="#D8DEE8" stroke="#2B2320" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="24" y="74" width="14" height="36" rx="6" fill="#8E959E" stroke="#2B2320" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><rect x="162" y="74" width="14" height="36" rx="6" fill="#8E959E" stroke="#2B2320" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="76" cy="86" r="16" fill="#2C3B5E" stroke="#2B2320" stroke-width="5"/><circle cx="124" cy="86" r="16" fill="#2C3B5E" stroke="#2B2320" stroke-width="5"/>
+<circle cx="80" cy="82" r="5" fill="#5CC8C0"/><circle cx="128" cy="82" r="5" fill="#5CC8C0"/>
+<rect x="72" y="114" width="56" height="16" rx="4" fill="#8E959E" stroke="#2B2320" stroke-width="4"/>
+<path d="M84 114 V130 M100 114 V130 M116 114 V130" stroke="#2B2320" stroke-width="3"/>
+<rect x="64" y="144" width="72" height="38" rx="10" fill="#B8BFC8" stroke="#2B2320" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="100" cy="163" r="7" fill="#D9503B"/>
+</svg>

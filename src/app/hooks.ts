@@ -26,3 +26,7 @@ export function useAppInfo() {
 export function useUpdate() {
   return useSyncExternalStore(updateStore.subscribe, updateStore.get);
 }
+
+export function useStore<T>(store: { subscribe: (l: () => void) => () => void; get: () => T }): T {
+  return useSyncExternalStore(store.subscribe, store.get);
+}

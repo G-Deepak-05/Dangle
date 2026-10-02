@@ -1,0 +1,17 @@
+{
+  "id": "joystick",
+  "name": "Joystick",
+  "category": "retro",
+  "tags": [],
+  "collection": "retro-arcade",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Up, up, down, down\u2026",
+    "author": "Dangle"
+  }
+}

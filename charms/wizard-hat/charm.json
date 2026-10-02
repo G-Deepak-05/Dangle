@@ -1,0 +1,19 @@
+{
+  "id": "wizard-hat",
+  "name": "Wizard Hat",
+  "category": "minimal",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "wizard-school",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.6,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Pointy, by tradition.",
+    "author": "Dangle"
+  }
+}

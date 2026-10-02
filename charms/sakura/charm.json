@@ -1,0 +1,20 @@
+{
+  "id": "sakura",
+  "name": "Sakura",
+  "category": "nature",
+  "tags": [
+    "seasonal",
+    "minimal"
+  ],
+  "collection": "anime-cafe",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Blooms all year here.",
+    "author": "Dangle"
+  }
+}
