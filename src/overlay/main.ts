@@ -62,7 +62,7 @@ inputLayer.addEventListener(
     e.preventDefault();
     const s = settingsStore.get();
     const current = pendingScale.get(charm.id) ?? s.scaleByCharm[charm.id] ?? 1;
-    const factor = Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.003));
+    const factor = Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0012));
     pendingScale.set(charm.id, Math.min(2.5, Math.max(0.4, current * factor)));
     if (!scaleTimer) {
       scaleTimer = window.setTimeout(() => {
