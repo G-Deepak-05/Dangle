@@ -157,10 +157,21 @@ pub fn run() {
                 initial.display_id = None;
             }
 
+            // Earlier versions could make the same app charm twice; merge them once here.
+            let custom_dir = data_dir.join("custom-charms");
+            let dupes = custom_charms::duplicate_app_charms(&custom_dir);
+            if !dupes.is_empty() {
+                for (dupe, keep) in &dupes {
+                    initial.remap_charm(dupe, keep);
+                    let _ = custom_charms::delete(&custom_dir, dupe);
+                }
+                let _ = settings::save(&settings_path, &initial);
+            }
+
             app.manage(AppState {
                 settings: Mutex::new(initial.clone()),
                 settings_path,
-                custom_dir: data_dir.join("custom-charms"),
+                custom_dir,
                 pointer: Mutex::new(PointerState::default()),
                 geometry: Mutex::new(None),
                 tray: Mutex::new(None),

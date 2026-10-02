@@ -93,6 +93,11 @@ export function Apps({ go, onToast }: { go: (r: Route) => void; onToast: (msg: s
       const fallback = IS_MAC ? undefined : monogram(app.name).split(",")[1];
       const charm = await backend.createAppCharm(app.path, app.name, fallback);
       await refreshCustomCharms();
+      const hanging = [settings.activeCharmId, ...settings.extraSlots.map((x) => x.charmId)];
+      if (hanging.includes(charm.id) && targetSlot === 0) {
+        onToast(`${app.name} is already hanging`);
+        return;
+      }
       if (targetSlot > 0) {
         await chooseCharmForSlot(targetSlot, charm.id);
         targetSlotStore.set(0);

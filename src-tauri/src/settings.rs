@@ -530,6 +530,23 @@ mod tests {
     }
 
     #[test]
+    fn remap_moves_every_reference() {
+        let mut s = Settings::default();
+        s.active_charm_id = "custom-b".into();
+        s.favorites = vec!["custom-a".into(), "custom-b".into()];
+        s.extra_slots = vec![CharmSlot {
+            charm_id: "custom-b".into(),
+            anchor_x: 0.3,
+        }];
+        s.scale_by_charm.insert("custom-b".into(), 1.5);
+        s.remap_charm("custom-b", "custom-a");
+        assert_eq!(s.active_charm_id, "custom-a");
+        assert_eq!(s.favorites, vec!["custom-a".to_string()]);
+        assert_eq!(s.extra_slots[0].charm_id, "custom-a");
+        assert_eq!(s.scale_by_charm.get("custom-a"), Some(&1.5));
+    }
+
+    #[test]
     fn corrupted_file_recovers_with_backup() {
         let dir = temp_dir("corrupt");
         let path = settings_path(&dir);
@@ -552,6 +569,40 @@ mod tests {
 }
 
 impl Settings {
+    /// Points every reference to charm `from` at charm `to` (used when merging duplicates).
+    pub fn remap_charm(&mut self, from: &str, to: &str) {
+        if self.active_charm_id == from {
+            self.active_charm_id = to.into();
+        }
+        for slot in &mut self.extra_slots {
+            if slot.charm_id == from {
+                slot.charm_id = to.into();
+            }
+        }
+        for id in &mut self.favorites {
+            if id == from {
+                *id = to.into();
+            }
+        }
+        for c in &mut self.user_collections {
+            for id in &mut c.charm_ids {
+                if id == from {
+                    *id = to.into();
+                }
+            }
+        }
+        if let Some(v) = self.rope_by_charm.remove(from) {
+            self.rope_by_charm.entry(to.into()).or_insert(v);
+        }
+        if let Some(v) = self.scale_by_charm.remove(from) {
+            self.scale_by_charm.entry(to.into()).or_insert(v);
+        }
+        if let Some(v) = self.look_by_charm.remove(from) {
+            self.look_by_charm.entry(to.into()).or_insert(v);
+        }
+        self.sanitize();
+    }
+
     /// Longest string among the charms currently hanging, for sizing the overlay.
     pub fn max_thread_length(&self) -> f64 {
         std::iter::once(&self.active_charm_id)

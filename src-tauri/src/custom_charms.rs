@@ -206,6 +206,31 @@ pub fn save_with_launch(
     read_charm(&dir).ok_or_else(|| "Saved charm could not be read back.".into())
 }
 
+/// The existing charm for an app, if one was already made (oldest first).
+pub fn find_app_charm(root: &Path, launch: &str) -> Option<CustomCharm> {
+    list(root)
+        .into_iter()
+        .find(|c| c.meta.launch.as_deref() == Some(launch))
+}
+
+/// Pairs of (duplicate id, id to keep) for app charms that open the same app.
+pub fn duplicate_app_charms(root: &Path) -> Vec<(String, String)> {
+    let mut first: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+    let mut dupes = Vec::new();
+    for charm in list(root) {
+        let Some(launch) = charm.meta.launch.clone() else {
+            continue;
+        };
+        match first.get(&launch) {
+            Some(keep) => dupes.push((charm.meta.id, keep.clone())),
+            None => {
+                first.insert(launch, charm.meta.id);
+            }
+        }
+    }
+    dupes
+}
+
 pub fn get(root: &Path, id: &str) -> Option<CustomCharm> {
     read_charm(&charm_dir(root, id).ok()?)
 }
@@ -253,6 +278,44 @@ mod tests {
         assert_eq!(clean_name("  \u{7}Hi\n "), "Hi");
         assert_eq!(clean_name(""), "My charm");
         assert_eq!(clean_name(&"a".repeat(100)).len(), MAX_NAME_CHARS);
+    }
+
+    #[test]
+    fn finds_duplicate_app_charms() {
+        let root = std::env::temp_dir().join(format!("dangle-dupes-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let png = base64::engine::general_purpose::STANDARD.encode(tiny_png(64, 64));
+        let make = |name: &str, launch: Option<&str>| {
+            save_with_launch(
+                &root,
+                NewCustomCharm {
+                    name: name.into(),
+                    rope_style: RopeStyle::Thread,
+                    anchor_offset: AnchorOffset { x: 0.5, y: 0.1 },
+                    default_scale: 1.0,
+                    png_base64: png.clone(),
+                    sound: None,
+                },
+                launch.map(String::from),
+            )
+            .unwrap()
+            .meta
+            .id
+        };
+        let a = make("Notes", Some("/Applications/Notes.app"));
+        std::thread::sleep(std::time::Duration::from_millis(2));
+        let b = make("Notes", Some("/Applications/Notes.app"));
+        make("Photo", None);
+        let dupes = duplicate_app_charms(&root);
+        assert_eq!(dupes, vec![(b, a.clone())]);
+        assert_eq!(
+            find_app_charm(&root, "/Applications/Notes.app")
+                .unwrap()
+                .meta
+                .id,
+            a
+        );
+        let _ = fs::remove_dir_all(&root);
     }
 
     #[test]

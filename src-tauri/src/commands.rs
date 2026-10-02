@@ -465,6 +465,11 @@ pub async fn create_app_charm(
     if !apps::is_known(&path) {
         return Err("That app isn't installed in a standard place.".into());
     }
+    // One charm per app: hanging it again reuses the charm you already have.
+    let custom_dir = app.state::<AppState>().custom_dir.clone();
+    if let Some(existing) = custom_charms::find_app_charm(&custom_dir, &path) {
+        return Ok(existing);
+    }
     let handle = app.clone();
     let icon_path = path.clone();
     let png = tauri::async_runtime::spawn_blocking(move || icon_on_main(&handle, icon_path, 256))
@@ -474,7 +479,6 @@ pub async fn create_app_charm(
         Some(bytes) => base64::engine::general_purpose::STANDARD.encode(bytes),
         None => fallback_png_base64.ok_or_else(|| "Couldn't read that app's icon.".to_string())?,
     };
-    let custom_dir = app.state::<AppState>().custom_dir.clone();
     let saved = custom_charms::save_with_launch(
         &custom_dir,
         NewCustomCharm {
