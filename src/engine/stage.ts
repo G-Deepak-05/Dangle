@@ -9,14 +9,25 @@ import {
   type ThreadColor,
 } from "../charms/types";
 import { resolveParams, SIZES, type CharmSize, type PhysicsProfileName } from "../physics/profiles";
+import { ChainSimulation } from "../physics/chain";
+import type { Rig } from "../physics/rig";
 import { CharmSimulation, type Vec2 } from "../physics/simulation";
 import { sounds, type SoundMaterial } from "../audio/sounds";
 import { soundFor } from "../charms/types";
-import { drawScene, hitCircle, type DebugInfo, type SceneState } from "../render/scene";
+import {
+  charmBodyLength,
+  drawScene,
+  hitCircles,
+  type DebugInfo,
+  type HitCircle,
+  type SceneState,
+} from "../render/scene";
 import { buildSprite, loadImage, type Sprite } from "../render/sprite";
 
 export interface StageConfig {
   charm: Charm;
+  /** Charms hung one below another on the same string, under `charm`. */
+  stack?: Charm[];
   size: CharmSize;
   rope: RopeStyle;
   threadColor: ThreadColor;
@@ -36,7 +47,7 @@ export interface StageConfig {
 
 export interface StageOptions {
   /** Notified (throttled) with the charm's hit circle, or null when it cannot be touched. */
-  onHitbox?: (hitbox: { x: number; y: number; r: number } | null) => void;
+  onHitbox?: (hitboxes: HitCircle[]) => void;
   onDragChange?: (dragging: boolean) => void;
   /** ⌥-drag reels string in or out. Called when reeling starts and stops. */
   onReelChange?: (reeling: boolean) => void;
@@ -60,7 +71,7 @@ const HOVER_SCALE = 1.06;
 const PRESS_SCALE = 0.96;
 const SWAP_OUT_MS = 140;
 
-type SwapPhase = { kind: "none" } | { kind: "out"; start: number; next: Sprite };
+type SwapPhase = { kind: "none" } | { kind: "out"; start: number; next: Sprite[] };
 
 /**
  * Owns one charm on one canvas: simulation, sprite, render loop, and pointer input.
@@ -68,10 +79,11 @@ type SwapPhase = { kind: "none" } | { kind: "out"; start: number; next: Sprite }
  */
 export class CharmStage {
   private ctx: CanvasRenderingContext2D;
-  private sim: CharmSimulation;
+  private sim: Rig;
   private config: StageConfig | null = null;
-  private sprite: Sprite | null = null;
+  private sprites: (Sprite | null)[] = [];
   private spriteKey = "";
+  private grabbedBody = 0;
   private width = 0;
   private height = 0;
   private dpr = 1;
@@ -87,6 +99,7 @@ export class CharmStage {
   private scaleVelocity = 0;
   private opacity = 1;
   private swap: SwapPhase = { kind: "none" };
+  private bounds = { width: 1, height: 1 };
   private lastHitboxSent = 0;
   private breezeTimer = 0;
   private breezeEnabled: boolean;
@@ -149,7 +162,8 @@ export class CharmStage {
       this.canvas.style.height = `${height}px`;
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    this.sim.setBounds({ width, height });
+    this.bounds = { width, height };
+    this.sim.setBounds(this.bounds);
     this.anchor = { x: anchorX, y: anchorY };
     this.sim.setAnchor(this.anchor);
     if (dpr !== this.dpr) {
@@ -166,53 +180,88 @@ export class CharmStage {
     this.requestFrame();
   }
 
+  private charms(config = this.config): Charm[] {
+    return config ? [config.charm, ...(config.stack ?? [])] : [];
+  }
+
   async configure(config: StageConfig): Promise<void> {
     const previous = this.config;
     this.config = config;
     const scale = (config.scale ?? 1) * config.charm.defaultScale;
     const size = SIZES[config.size];
     const charmSide = size.charm * scale;
+    const charms = this.charms(config);
 
     const prefersReduced =
       typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     const reduce = config.reduceMotion || prefersReduced;
-    this.sim.setParams(resolveParams(config.physics, reduce, config.charm.physicsProfile));
+    const params = resolveParams(config.physics, reduce, config.charm.physicsProfile);
     this.baseRope = size.rope * Math.min(1.25, Math.max(0.8, scale));
-    if (!this.reeling) {
-      this.threadLength = config.threadLength;
-      this.sim.setRopeLength(this.baseRope * this.threadLength);
+    if (!this.reeling) this.threadLength = config.threadLength;
+
+    // One charm keeps the tuned single-pendant physics; several share one strand.
+    const wantChain = charms.length > 1;
+    if (wantChain !== this.sim instanceof ChainSimulation) {
+      const length = this.baseRope * this.threadLength;
+      this.sim = wantChain
+        ? new ChainSimulation(this.anchor, length, params, this.bounds, charms.map(() => ({ length: charmSide })))
+        : new CharmSimulation(this.anchor, length, params, this.bounds);
+      this.spriteKey = "";
     }
-    this.sim.setTipInset(charmSide * 0.55);
+    this.sim.setParams(params);
+    if (!this.reeling) this.sim.setRopeLength(this.baseRope * this.threadLength);
+    if (this.sim instanceof CharmSimulation) this.sim.setTipInset(charmSide * 0.55);
     this.breezeEnabled = (this.options.breeze ?? true) && !reduce;
 
-    const key = `${config.charm.id}|${config.charm.image.length}|${config.charm.image.slice(-32)}|${charmSide}|${config.charm.anchorOffset.x},${config.charm.anchorOffset.y}|${this.dpr}|${config.finish}`;
+    const key = charms
+      .map(
+        (c) =>
+          `${c.id}|${c.image.length}|${c.image.slice(-32)}|${c.anchorOffset.x},${c.anchorOffset.y}|${c.defaultScale}`,
+      )
+      .concat([`${charmSide}|${this.dpr}|${config.finish}`])
+      .join(";");
     if (key === this.spriteKey) {
       this.requestFrame();
       return;
     }
     this.spriteKey = key;
     const token = ++this.loadToken;
-    let img: HTMLImageElement;
-    try {
-      img = await loadImage(config.charm.image);
-    } catch (err) {
-      console.error(err);
-      if (token === this.loadToken) this.options.onCharmError?.(config.charm);
-      return;
-    }
+    const loaded = await Promise.all(
+      charms.map((c) =>
+        loadImage(c.image).then(
+          (img) => buildSprite(img, size.charm * (config.scale ?? 1) * c.defaultScale, c.anchorOffset, this.dpr, config.finish),
+          (err) => {
+            console.error(err);
+            if (token === this.loadToken) this.options.onCharmError?.(c);
+            return null;
+          },
+        ),
+      ),
+    );
     if (token !== this.loadToken || this.destroyed) return;
-    const next = buildSprite(img, charmSide, config.charm.anchorOffset, this.dpr, config.finish);
 
-    const sameCharm = previous?.charm.id === config.charm.id;
-    if (!this.sprite) {
-      this.sprite = next;
+    if (this.sim instanceof ChainSimulation) {
+      const detail = this.detailScale();
+      this.sim.setBodies(
+        loaded.map((sp) => ({ length: sp ? charmBodyLength(sp, detail, 1) : charmSide })),
+      );
+    }
+
+    const sameCharm = previous?.charm.id === config.charm.id && charms.length === this.sprites.length;
+    if (this.sprites.length === 0 || this.sprites.every((sp) => !sp)) {
+      this.sprites = loaded;
       this.dropIn(reduce);
-    } else if (sameCharm || reduce) {
-      this.sprite = next;
+    } else if (sameCharm || reduce || charms.length > 1) {
+      this.sprites = loaded;
     } else {
-      this.swap = { kind: "out", start: performance.now(), next };
+      this.swap = { kind: "out", start: performance.now(), next: loaded.filter((sp): sp is Sprite => !!sp) };
     }
     this.requestFrame();
+  }
+
+  private detailScale() {
+    const size = this.config ? SIZES[this.config.size] : SIZES.medium;
+    return Math.max(0.8, size.charm / SIZES.medium.charm);
   }
 
   setHover(hovered: boolean) {
@@ -226,7 +275,7 @@ export class CharmStage {
     this.paused = paused;
     if (paused) {
       this.endDrag();
-      this.options.onHitbox?.(null);
+      this.options.onHitbox?.([]);
     } else {
       this.sim.wake();
     }
@@ -253,8 +302,8 @@ export class CharmStage {
     this.charmScale = reduce ? 1 : 0.6;
     this.scaleVelocity = 0;
     if (reduce) return;
-    const tip = this.sim.tip;
-    this.sim.translate(0, this.anchor.y + 8 - tip.y);
+    const top = this.sim.poses()[0];
+    this.sim.translate(0, this.anchor.y + 8 - top.y);
     this.sim.impulse((Math.random() - 0.5) * 120, 0);
   }
 
@@ -291,11 +340,11 @@ export class CharmStage {
       this.charmScale = Math.max(0, 1 - t * t);
       this.opacity = 1;
       if (t >= 1) {
-        this.sprite = this.swap.next;
+        this.sprites = this.swap.next;
         this.swap = { kind: "none" };
         this.charmScale = 0.35;
         this.scaleVelocity = 0;
-        this.sim.impulse((Math.random() - 0.5) * 140, -40);
+        this.sim.impulse((Math.random() - 0.5) * 140, -40, 0);
       }
       return true;
     }
@@ -315,16 +364,15 @@ export class CharmStage {
   }
 
   private sceneState(): SceneState {
-    const size = this.config ? SIZES[this.config.size] : SIZES.medium;
     return {
-      sim: this.sim,
-      sprite: this.sprite,
+      rig: this.sim,
+      sprites: this.sprites,
       rope: this.config?.rope ?? "thread",
       color: this.config?.threadColor ?? "classic",
       beads: this.config?.beads ?? "none",
       hook: this.config?.hook ?? "clip",
       shadow: this.config?.shadow ?? true,
-      detailScale: Math.max(0.8, size.charm / SIZES.medium.charm),
+      detailScale: this.detailScale(),
       charmScale: this.charmScale,
       opacity: this.opacity,
       debug: this.debug ? this.debugInfo() : undefined,
@@ -336,7 +384,7 @@ export class CharmStage {
   }
 
   private debugInfo(): DebugInfo {
-    const tip = this.sim.tip;
+    const tip = this.sim.poses()[0];
     const v = this.sim.tipVelocity;
     const p = this.sim.currentParams;
     const state = this.paused
@@ -354,7 +402,7 @@ export class CharmStage {
       rows: [
         ["Position", `${tip.x.toFixed(0)}, ${tip.y.toFixed(0)}`],
         ["Velocity", `${Math.hypot(v.x, v.y).toFixed(0)} px/s`],
-        ["Angle", `${((this.sim.angle * 180) / Math.PI).toFixed(1)}°`],
+        ["Angle", `${((tip.angle * 180) / Math.PI).toFixed(1)}°`],
         ["Spin", `${this.sim.angularVelocity.toFixed(2)} rad/s`],
         ["Damping", `${Math.round((1 - p.retention) * 100)}%/s`],
         ["String", `${(this.baseRope * this.threadLength).toFixed(0)} px · ${this.threadLength.toFixed(2)}×`],
@@ -367,8 +415,8 @@ export class CharmStage {
     if (!force && moving && now - this.lastHitboxSent < HITBOX_INTERVAL) return;
     if (!force && !moving) return;
     this.lastHitboxSent = now;
-    const hit = this.paused ? null : hitCircle(this.sceneState());
-    this.options.onHitbox(hit);
+    const hits = this.paused ? [] : hitCircles(this.sceneState()).filter((h): h is HitCircle => !!h);
+    this.options.onHitbox(hits);
   }
 
   private scheduleBreeze() {
@@ -388,9 +436,9 @@ export class CharmStage {
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
-  /** True when a pointer event lands on this stage's charm. */
+  /** True when a pointer event lands on one of this stage's charms. */
   hits(e: PointerEvent): boolean {
-    return !this.paused && this.isOverCharm(this.localPoint(e));
+    return !this.paused && this.bodyAt(this.localPoint(e)) !== -1;
   }
 
   get isDragging(): boolean {
@@ -401,14 +449,26 @@ export class CharmStage {
     return this.options.externalInput ?? this.canvas;
   }
 
+  /** Index of the charm under `p` (lowest first, since it is drawn on top), or -1. */
+  private bodyAt(p: Vec2): number {
+    const circles = hitCircles(this.sceneState());
+    for (let i = circles.length - 1; i >= 0; i--) {
+      const hit = circles[i];
+      if (hit && Math.hypot(p.x - hit.x, p.y - hit.y) <= hit.r + 6) return i;
+    }
+    return -1;
+  }
+
   private isOverCharm(p: Vec2): boolean {
-    const hit = hitCircle(this.sceneState());
-    if (!hit) return false;
-    return Math.hypot(p.x - hit.x, p.y - hit.y) <= hit.r + 6;
+    return this.bodyAt(p) !== -1;
+  }
+
+  private grabbedCharm(): Charm | undefined {
+    return this.charms()[this.grabbedBody] ?? this.config?.charm;
   }
 
   private updateCursor() {
-    const clickable = Boolean(this.config?.charm.launch && this.options.onClick);
+    const clickable = Boolean(this.charms().some((c) => c.launch) && this.options.onClick);
     (this.options.externalInput ?? this.canvas).style.cursor =
       this.pointerId !== null ? "grabbing" : this.hovered ? (clickable ? "pointer" : "grab") : "default";
   }
@@ -416,8 +476,10 @@ export class CharmStage {
   readonly onPointerDown = (e: PointerEvent) => {
     if (this.paused || e.button !== 0) return;
     const p = this.localPoint(e);
-    if (!this.isOverCharm(p)) return;
+    const body = this.bodyAt(p);
+    if (body === -1) return;
     e.preventDefault();
+    this.grabbedBody = body;
     this.pointerId = e.pointerId;
     try {
       this.captureTarget.setPointerCapture(e.pointerId);
@@ -429,7 +491,7 @@ export class CharmStage {
     this.downAt = performance.now();
     this.downPoint = p;
     this.travelled = 0;
-    this.sim.startDrag(p);
+    this.sim.startDrag(p, body);
     this.options.onDragChange?.(true);
     this.playSound("grab", 0.55);
     if (e.altKey) {
@@ -462,9 +524,10 @@ export class CharmStage {
     if (this.pointerId !== e.pointerId) return;
     const wasClick = !this.reeling && this.travelled < 5 && performance.now() - this.downAt < 350;
     this.endDrag();
-    if (wasClick && this.config && this.options.onClick) {
-      this.sim.impulse(0, -260);
-      this.options.onClick(this.config.charm);
+    const charm = this.grabbedCharm();
+    if (wasClick && charm && this.options.onClick) {
+      this.sim.impulse(0, -260, this.grabbedBody);
+      this.options.onClick(charm);
     }
     if (this.options.selfHover) this.setHover(this.isOverCharm(this.localPoint(e)));
   };
@@ -475,7 +538,7 @@ export class CharmStage {
 
   /** Sets the string length from the anchor-to-pointer distance, like pulling thread off a spool. */
   private reelTo(p: Vec2) {
-    const charmReach = this.sprite ? this.sprite.height * 0.5 : 20;
+    const charmReach = this.sprites[0] ? this.sprites[0].height * 0.5 : 20;
     const dist = Math.hypot(p.x - this.anchor.x, p.y - this.anchor.y) - charmReach;
     const next = Math.min(MAX_THREAD_LENGTH, Math.max(MIN_THREAD_LENGTH, dist / this.baseRope));
     if (Math.abs(next - this.threadLength) < 0.005) return;
@@ -484,8 +547,9 @@ export class CharmStage {
   }
 
   private playSound(event: "grab" | "release" | "whoosh", intensity: number) {
-    if (!this.config) return;
-    sounds.play(this.config.sound ?? soundFor(this.config.charm), event, intensity);
+    const charm = this.grabbedCharm();
+    if (!this.config || !charm) return;
+    sounds.play(this.grabbedBody === 0 && this.config.sound ? this.config.sound : soundFor(charm), event, intensity);
   }
 
   private endDrag() {

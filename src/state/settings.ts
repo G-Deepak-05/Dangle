@@ -2,6 +2,9 @@ import type { Beads, Finish, Hook, RopeStyle, ThreadColor } from "../charms/type
 
 export type RotateMode = "off" | "hourly" | "daily";
 
+/** Each charm on its own string, or all of them on one string, one below another. */
+export type HangMode = "separate" | "stacked";
+
 export interface CharmSlot {
   charmId: string;
   anchorX: number;
@@ -53,6 +56,7 @@ export interface Settings {
   soundEnabled: boolean;
   /** 0–1. */
   soundVolume: number;
+  hangMode: HangMode;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -88,4 +92,5 @@ export const DEFAULT_SETTINGS: Settings = {
   userCollections: [],
   soundEnabled: true,
   soundVolume: 0.6,
+  hangMode: "separate",
 };

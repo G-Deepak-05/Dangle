@@ -85,6 +85,15 @@ pub enum RotateMode {
     Daily,
 }
 
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum HangMode {
+    /// Each charm on its own string.
+    Separate,
+    /// All charms on one string, one below another.
+    Stacked,
+}
+
 /// An additional charm hanging on its own string.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -146,6 +155,7 @@ pub struct Settings {
     pub user_collections: Vec<UserCollection>,
     pub sound_enabled: bool,
     pub sound_volume: f64,
+    pub hang_mode: HangMode,
 }
 
 impl Default for Settings {
@@ -183,6 +193,7 @@ impl Default for Settings {
             user_collections: Vec::new(),
             sound_enabled: true,
             sound_volume: 0.6,
+            hang_mode: HangMode::Separate,
         }
     }
 }

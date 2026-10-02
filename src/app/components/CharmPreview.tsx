@@ -48,6 +48,9 @@ export function CharmPreview({ config, height, label, onDragChange, onThreadLeng
 
   const { charm, size, rope, threadColor, beads, finish, hook, shadow, threadLength, physics, reduceMotion, scale } =
     config;
+  const stackKey = (config.stack ?? []).map((c) => c.id + c.image.length).join(",");
+  const stackRef = useRef(config.stack);
+  stackRef.current = config.stack;
   useEffect(() => {
     void stageRef.current?.configure({
       charm,
@@ -62,8 +65,9 @@ export function CharmPreview({ config, height, label, onDragChange, onThreadLeng
       physics,
       reduceMotion,
       scale,
+      stack: stackRef.current,
     });
-  }, [charm, size, rope, threadColor, beads, finish, hook, shadow, threadLength, physics, reduceMotion, scale, height]);
+  }, [charm, size, rope, threadColor, beads, finish, hook, shadow, threadLength, physics, reduceMotion, scale, height, stackKey]);
 
   useEffect(() => {
     if (nudgeKey !== undefined && !reduceMotion) stageRef.current?.nudge(120);

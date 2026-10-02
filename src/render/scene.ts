@@ -1,5 +1,5 @@
 import type { Beads, Hook, RopeStyle, ThreadColor } from "../charms/types";
-import type { CharmSimulation } from "../physics/simulation";
+import type { Rig } from "../physics/rig";
 import { drawAnchor, drawBeads, drawJumpRing, drawRope } from "./rope";
 import type { Sprite } from "./sprite";
 
@@ -10,8 +10,9 @@ export interface DebugInfo {
 }
 
 export interface SceneState {
-  sim: CharmSimulation;
-  sprite: Sprite | null;
+  rig: Rig;
+  /** One sprite per charm, top to bottom; null while loading. */
+  sprites: (Sprite | null)[];
   rope: RopeStyle;
   color: ThreadColor;
   beads: Beads;
@@ -25,9 +26,15 @@ export interface SceneState {
   debug?: DebugInfo;
 }
 
+export interface HitCircle {
+  x: number;
+  y: number;
+  r: number;
+}
+
 export const RING_RADIUS = 4;
 
-/** Where the charm's centre sits relative to the string tip, in the charm's rotated frame. */
+/** Where the charm's centre sits relative to its hang point, in the charm's rotated frame. */
 export function charmCenterOffset(sprite: Sprite, detailScale: number, scale: number) {
   const ring = RING_RADIUS * detailScale * 2 - 1;
   return {
@@ -36,33 +43,45 @@ export function charmCenterOffset(sprite: Sprite, detailScale: number, scale: nu
   };
 }
 
-export function hitCircle(state: SceneState) {
-  const { sim, sprite } = state;
-  if (!sprite) return null;
-  const off = charmCenterOffset(sprite, state.detailScale, state.charmScale);
-  const cos = Math.cos(sim.angle);
-  const sin = Math.sin(sim.angle);
-  const tip = sim.tip;
-  return {
-    x: tip.x + off.x * cos - off.y * sin,
-    y: tip.y + off.x * sin + off.y * cos,
-    r: (Math.max(sprite.width, sprite.height) / 2) * 0.82 * state.charmScale,
-  };
+/** Distance from a charm's hang point to the bottom edge, where a stacked charm hangs on. */
+export function charmBodyLength(sprite: Sprite, detailScale: number, scale: number) {
+  return RING_RADIUS * detailScale * 2 - 1 + (sprite.height - sprite.attach.y) * scale * 0.96;
+}
+
+export function hitCircles(state: SceneState): (HitCircle | null)[] {
+  const poses = state.rig.poses();
+  return poses.map((pose, i) => {
+    const sprite = state.sprites[i];
+    if (!sprite) return null;
+    const off = charmCenterOffset(sprite, state.detailScale, state.charmScale);
+    const cos = Math.cos(pose.angle);
+    const sin = Math.sin(pose.angle);
+    return {
+      x: pose.x + off.x * cos - off.y * sin,
+      y: pose.y + off.x * sin + off.y * cos,
+      r: (Math.max(sprite.width, sprite.height) / 2) * 0.82 * state.charmScale,
+    };
+  });
 }
 
 export function drawScene(ctx: CanvasRenderingContext2D, width: number, height: number, state: SceneState) {
-  const { sim, sprite } = state;
+  const { rig } = state;
   ctx.clearRect(0, 0, width, height);
   ctx.globalAlpha = state.opacity;
 
-  drawRope(ctx, sim.x, sim.y, sim.segments + 1, state.rope, state.color, state.detailScale);
-  drawBeads(ctx, sim.x, sim.y, sim.segments + 1, state.beads, state.detailScale);
-  drawAnchor(ctx, sim.x[0], sim.y[0], state.rope, state.color, state.detailScale, state.hook);
+  const ropes = rig.ropes();
+  ropes.forEach((piece, i) => {
+    drawRope(ctx, piece.xs, piece.ys, piece.xs.length, state.rope, state.color, state.detailScale);
+    if (i === 0) drawBeads(ctx, piece.xs, piece.ys, piece.xs.length, state.beads, state.detailScale);
+  });
+  drawAnchor(ctx, ropes[0].xs[0], ropes[0].ys[0], state.rope, state.color, state.detailScale, state.hook);
 
-  const tip = sim.tip;
   const ringR = RING_RADIUS * state.detailScale;
-  if (sprite) {
-    const s = state.charmScale;
+  const poses = rig.poses();
+  const s = state.charmScale;
+  poses.forEach((pose, i) => {
+    const sprite = state.sprites[i];
+    if (!sprite) return;
     const w = (sprite.width + sprite.pad * 2) * s;
     const h = (sprite.height + sprite.pad * 2) * s;
     const ox = -(sprite.attach.x + sprite.pad) * s;
@@ -70,22 +89,27 @@ export function drawScene(ctx: CanvasRenderingContext2D, width: number, height: 
 
     if (state.shadow) {
       ctx.save();
-      ctx.translate(tip.x, tip.y + 5 * state.detailScale);
-      ctx.rotate(sim.angle);
+      ctx.translate(pose.x, pose.y + 5 * state.detailScale);
+      ctx.rotate(pose.angle);
       ctx.drawImage(sprite.shadow, ox, oy, w, h);
       ctx.restore();
     }
 
     ctx.save();
-    ctx.translate(tip.x, tip.y);
-    ctx.rotate(sim.angle);
+    ctx.translate(pose.x, pose.y);
+    ctx.rotate(pose.angle);
     ctx.drawImage(sprite.art, ox, oy, w, h);
     drawJumpRing(ctx, ringR, state.detailScale);
+    if (i < poses.length - 1) {
+      // A small ring at the bottom edge holds the next charm's string.
+      ctx.translate(0, charmBodyLength(sprite, state.detailScale, s) - ringR);
+      drawJumpRing(ctx, ringR * 0.8, state.detailScale);
+    }
     ctx.restore();
-  }
+  });
   ctx.globalAlpha = 1;
 
-  if (state.debug) drawDebugCard(ctx, width, sim.x[0], state.debug);
+  if (state.debug) drawDebugCard(ctx, width, ropes[0].xs[0], state.debug);
 }
 
 const STATE_COLORS: Record<DebugInfo["state"], string> = {

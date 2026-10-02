@@ -1,6 +1,6 @@
 use crate::displays;
 use crate::platform;
-use crate::settings::CharmSize;
+use crate::settings::{CharmSize, HangMode};
 use crate::state::{AppState, OverlayGeometry};
 use std::time::Duration;
 use tauri::{
@@ -66,11 +66,18 @@ fn layout_now(app: &AppHandle) {
         CharmSize::Large => (104.0, 150.0),
     };
     let rope = rope * settings.thread_length;
+    let stacked_extra = if settings.hang_mode == HangMode::Stacked {
+        settings.extra_slots.len() as f64 * (charm * 1.25 + 20.0)
+    } else {
+        0.0
+    };
     let reeling = state.pointer.lock().unwrap().reeling;
     let height = if reeling {
         wh
     } else {
-        (rope * 1.3 + charm * 2.4 + 90.0).max(MIN_HEIGHT).min(wh)
+        (rope * 1.3 + charm * 2.4 + 90.0 + stacked_extra * 1.2)
+            .max(MIN_HEIGHT)
+            .min(wh)
     };
 
     let _ = window.set_size(LogicalSize::new(ww, height));
@@ -144,8 +151,12 @@ pub fn spawn_pointer_watch(app: AppHandle) {
                         match (interactive, cursor) {
                             (true, Some((cx, cy))) => {
                                 let mut hit = None;
-                                for (i, hb) in p.hitboxes.iter().enumerate() {
-                                    let Some(hb) = hb else { continue };
+                                for (i, hb) in p
+                                    .hitboxes
+                                    .iter()
+                                    .enumerate()
+                                    .flat_map(|(i, list)| list.iter().map(move |h| (i, h)))
+                                {
                                     let dx = cx - (p.origin.0 + hb.x);
                                     let dy = cy - (p.origin.1 + hb.y);
                                     let dist = (dx * dx + dy * dy).sqrt();

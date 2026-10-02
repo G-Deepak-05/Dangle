@@ -1519,3 +1519,18 @@ kbd {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.slot-order {
+  display: flex;
+  flex-direction: column;
+}
+
+.slot-order .icon-btn {
+  width: 24px;
+  height: 20px;
+}
+
+.slot-order .icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}

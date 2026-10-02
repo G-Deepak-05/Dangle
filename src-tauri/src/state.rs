@@ -27,7 +27,7 @@ pub struct OverlayGeometry {
 #[derive(Default)]
 pub struct PointerState {
     /// One hit circle per hanging charm, indexed by slot.
-    pub hitboxes: Vec<Option<Hitbox>>,
+    pub hitboxes: Vec<Vec<Hitbox>>,
     pub dragging: bool,
     /// While the user reels string in or out, the overlay grows to full height.
     pub reeling: bool,

@@ -15,12 +15,12 @@ import { paletteFor } from "../../render/rope";
 import { findCharm, ropeFor, stageConfigFor, updateSettings } from "../../state/stores";
 import { BUILTIN_COLLECTIONS } from "../../charms/builtin";
 import { FINISHES, HOOKS, type Finish, type Hook } from "../../charms/types";
-import { addSlot, removeSlot, setSlotAnchor } from "../../state/collections";
-import { MAX_EXTRA_SLOTS, type RotateMode } from "../../state/settings";
+import { addSlot, moveSlot, removeSlot, setSlotAnchor } from "../../state/collections";
+import { MAX_EXTRA_SLOTS, type HangMode, type RotateMode } from "../../state/settings";
 import { targetSlotStore } from "../../state/ui";
 import { CharmPreview } from "../components/CharmPreview";
 import { BackBar, Segmented } from "../components/Controls";
-import { CloseIcon, PlusIcon, RopeSwatch } from "../components/Icons";
+import { ChevronIcon, CloseIcon, PlusIcon, RopeSwatch } from "../components/Icons";
 import { useActiveCharm, useCharms, useSettings } from "../hooks";
 
 const FINISH_LABELS: Record<Finish, string> = {
@@ -59,6 +59,7 @@ export function Customize({ go }: { go: (r: Route) => void }) {
   const charm = useActiveCharm();
   const charms = useCharms();
   const slots = [{ charmId: settings.activeCharmId, anchorX: settings.anchorX }, ...settings.extraSlots];
+  const stacked = settings.hangMode === "stacked";
   const rope = ropeFor(settings, charm);
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
   const [nudge, setNudge] = useState(0);
@@ -82,8 +83,11 @@ export function Customize({ go }: { go: (r: Route) => void }) {
       <BackBar title="Customize" onBack={() => go("home")} />
 
       <CharmPreview
-        config={stageConfigFor(settings, charm)}
-        height={Math.round(Math.min(340, 170 + 70 * settings.threadLength))}
+        config={{
+          ...stageConfigFor(settings, charm),
+          stack: stacked ? settings.extraSlots.map((x) => findCharm(charms, x.charmId)) : [],
+        }}
+        height={Math.round(Math.min(stacked ? 520 : 340, 170 + 70 * settings.threadLength + (stacked ? settings.extraSlots.length * 95 : 0)))}
         label={`Preview of ${charm.name}`}
         nudgeKey={nudge}
         onThreadLengthCommit={(threadLength) => void updateSettings({ threadLength })}
@@ -178,7 +182,16 @@ export function Customize({ go }: { go: (r: Route) => void }) {
         <div className="field-label">
           Charms on your desktop <span className="field-note">{slots.length} of {MAX_EXTRA_SLOTS + 1}</span>
         </div>
-        <div className="group">
+        <Segmented<HangMode>
+          label="How they hang"
+          value={settings.hangMode}
+          onChange={(hangMode) => set({ hangMode })}
+          options={[
+            { value: "separate", label: "Separate strings" },
+            { value: "stacked", label: "One string" },
+          ]}
+        />
+        <div className="group" style={{ marginTop: 10 }}>
           {slots.map((slot, i) => {
             const c = findCharm(charms, slot.charmId);
             return (
@@ -199,6 +212,9 @@ export function Customize({ go }: { go: (r: Route) => void }) {
                   <label className="slot-name" htmlFor={`slot-pos-${i}`}>
                     {c.name}
                   </label>
+                  {stacked && i > 0 ? (
+                    <span className="field-note">Charm {i + 1} on the string</span>
+                  ) : (
                   <input
                     id={`slot-pos-${i}`}
                     className="slider"
@@ -210,6 +226,27 @@ export function Customize({ go }: { go: (r: Route) => void }) {
                     aria-valuetext={`${Math.round(slot.anchorX * 100)} percent from the left`}
                     onChange={(e) => void setSlotAnchor(i, Number(e.target.value))}
                   />
+                  )}
+                </div>
+                <div className="slot-order">
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label={`Move ${c.name} up`}
+                    disabled={i === 0}
+                    onClick={() => void moveSlot(i, -1)}
+                  >
+                    <ChevronIcon size={14} style={{ transform: "rotate(-90deg)" }} />
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label={`Move ${c.name} down`}
+                    disabled={i === slots.length - 1}
+                    onClick={() => void moveSlot(i, 1)}
+                  >
+                    <ChevronIcon size={14} style={{ transform: "rotate(90deg)" }} />
+                  </button>
                 </div>
                 {i > 0 && (
                   <button
@@ -230,7 +267,11 @@ export function Customize({ go }: { go: (r: Route) => void }) {
             <PlusIcon size={14} /> Hang another charm
           </button>
         )}
-        <p className="help">Each charm gets its own string. Drag the sliders to move them along the top.</p>
+        <p className="help">
+          {stacked
+            ? "All charms hang on one string, one below another. Use the arrows to change the order."
+            : "Each charm gets its own string. Drag the sliders to move them along the top."}
+        </p>
       </div>
 
       <div className="field">

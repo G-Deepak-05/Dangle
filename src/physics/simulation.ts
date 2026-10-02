@@ -1,4 +1,6 @@
+import type { BodyPose } from "./chain";
 import type { PhysicsParams } from "./profiles";
+import type { Rig, RopePiece } from "./rig";
 
 export const FIXED_DT = 1 / 120;
 const MAX_STEPS_PER_FRAME = 10;
@@ -34,7 +36,7 @@ function wrapAngle(a: number): number {
  * The charm body has its own angle that chases the last string segment through a
  * damped spring, which gives the slight lag and wobble of a real pendant.
  */
-export class CharmSimulation {
+export class CharmSimulation implements Rig {
   readonly x = new Float64Array(SEGMENTS + 1);
   readonly y = new Float64Array(SEGMENTS + 1);
   private readonly px = new Float64Array(SEGMENTS + 1);
@@ -91,6 +93,14 @@ export class CharmSimulation {
 
   get currentParams(): PhysicsParams {
     return this.params;
+  }
+
+  poses(): BodyPose[] {
+    return [{ x: this.x[SEGMENTS], y: this.y[SEGMENTS], angle: this.angle }];
+  }
+
+  ropes(): RopePiece[] {
+    return [{ xs: this.x, ys: this.y }];
   }
 
   /** Angle the charm would rest at given the current string direction. */
@@ -153,14 +163,14 @@ export class CharmSimulation {
   }
 
   /** Adds a velocity change (px/s) to the charm. */
-  impulse(vx: number, vy: number): void {
+  impulse(vx: number, vy: number, _body?: number): void {
     this.px[SEGMENTS] -= vx * FIXED_DT;
     this.py[SEGMENTS] -= vy * FIXED_DT;
     this.wake();
   }
 
   /** Starts a drag. `grab` is where the pointer touched, in the same space as the sim. */
-  startDrag(grab: Vec2): void {
+  startDrag(grab: Vec2, _body = 0): void {
     const cos = Math.cos(-this.angle);
     const sin = Math.sin(-this.angle);
     const dx = grab.x - this.x[SEGMENTS];

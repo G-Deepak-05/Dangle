@@ -50,16 +50,20 @@ pub fn overlay_geometry(state: State<AppState>) -> Option<OverlayGeometry> {
     state.geometry.lock().unwrap().clone()
 }
 
+/// Hit circles for one hanging stage (one per charm on its string).
 #[tauri::command]
-pub fn overlay_hitbox(state: State<AppState>, slot: usize, hitbox: Option<Hitbox>) {
+pub fn overlay_hitbox(state: State<AppState>, slot: usize, hitboxes: Vec<Hitbox>) {
     if slot > settings::MAX_EXTRA_SLOTS {
         return;
     }
-    let valid =
-        hitbox.filter(|h| h.x.is_finite() && h.y.is_finite() && h.r.is_finite() && h.r > 0.0);
+    let valid: Vec<Hitbox> = hitboxes
+        .into_iter()
+        .filter(|h| h.x.is_finite() && h.y.is_finite() && h.r.is_finite() && h.r > 0.0)
+        .take(settings::MAX_EXTRA_SLOTS + 1)
+        .collect();
     let mut p = state.pointer.lock().unwrap();
     if p.hitboxes.len() <= slot {
-        p.hitboxes.resize(slot + 1, None);
+        p.hitboxes.resize(slot + 1, Vec::new());
     }
     p.hitboxes[slot] = valid;
 }

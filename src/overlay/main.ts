@@ -62,9 +62,16 @@ function stageWidth(): number {
   return Math.round(2 * (rope * 1.15 + size.charm) + 80);
 }
 
-function slotAnchors(): { charmId: string; anchorX: number }[] {
+/** One entry per string. In stacked mode every charm shares the main string. */
+function slotAnchors(): { charmId: string; anchorX: number; stack: string[] }[] {
   const s = settingsStore.get();
-  return [{ charmId: s.activeCharmId, anchorX: s.anchorX }, ...s.extraSlots];
+  if (s.hangMode === "stacked") {
+    return [{ charmId: s.activeCharmId, anchorX: s.anchorX, stack: s.extraSlots.map((x) => x.charmId) }];
+  }
+  return [
+    { charmId: s.activeCharmId, anchorX: s.anchorX, stack: [] },
+    ...s.extraSlots.map((x) => ({ ...x, stack: [] })),
+  ];
 }
 
 function createSlot(index: number): Slot {
@@ -78,8 +85,11 @@ function createSlot(index: number): Slot {
     left: 0,
     width: 0,
     stage: new CharmStage(canvas, {
-      onHitbox: (hb) =>
-        void backend.overlayHitbox(index, hb ? { x: hb.x + slot.left, y: hb.y, r: hb.r } : null),
+      onHitbox: (hits) =>
+        void backend.overlayHitbox(
+          index,
+          hits.map((h) => ({ x: h.x + slot.left, y: h.y, r: h.r })),
+        ),
       onDragChange: (dragging) => void backend.overlayDrag(dragging),
       onReelChange: (reeling) => void backend.overlayReel(reeling),
       onThreadLengthCommit: (threadLength) => void updateSettings({ threadLength }),
@@ -129,7 +139,7 @@ function syncSlotCount() {
     const slot = slots.pop()!;
     slot.stage.destroy();
     slot.canvas.remove();
-    void backend.overlayHitbox(slots.length, null);
+    void backend.overlayHitbox(slots.length, []);
   }
 }
 
@@ -143,7 +153,8 @@ function applySettings() {
     const charm = findCharm(charms, spec.charmId);
     if (!charm) return;
     const stage = slots[i].stage;
-    void stage.configure(stageConfigFor(settings, charm));
+    const stack = spec.stack.map((id) => findCharm(charms, id));
+    void stage.configure({ ...stageConfigFor(settings, charm), stack });
     stage.setPaused(settings.paused);
     stage.setBreeze(!(settings.pauseWhenInactive && systemIdle));
     stage.setDebug(debug && i === 0);

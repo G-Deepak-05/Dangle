@@ -86,3 +86,16 @@ export function removeSlot(slot: number) {
 export function canAddSlot() {
   return settingsStore.get().extraSlots.length < MAX_EXTRA_SLOTS;
 }
+
+/** Swaps a charm with its neighbour; positions along the top stay where they were. */
+export function moveSlot(slot: number, direction: -1 | 1) {
+  const s = settingsStore.get();
+  const ids = [s.activeCharmId, ...s.extraSlots.map((x) => x.charmId)];
+  const other = slot + direction;
+  if (other < 0 || other >= ids.length) return Promise.resolve();
+  [ids[slot], ids[other]] = [ids[other], ids[slot]];
+  return updateSettings({
+    activeCharmId: ids[0],
+    extraSlots: s.extraSlots.map((x, i) => ({ ...x, charmId: ids[i + 1] })),
+  });
+}
