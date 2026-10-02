@@ -220,6 +220,16 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
 
         <div className="bulk-card">
           <div>
+            <p className="custom-title">Hang an app</p>
+            <p className="custom-sub">Use any installed app's icon. Click the charm to open the app.</p>
+          </div>
+          <button type="button" className="btn" onClick={() => go("apps")}>
+            Choose app
+          </button>
+        </div>
+
+        <div className="bulk-card">
+          <div>
             <p className="custom-title">Make a whole collection</p>
             <p className="custom-sub">
               {bulk

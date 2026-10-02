@@ -34,6 +34,8 @@ export interface CustomCharmRecord {
   createdAt: number;
   imageDataUrl: string;
   sound?: string | null;
+  /** Present on app charms: the app a click opens. */
+  launch?: string | null;
 }
 
 export interface NewCustomCharm {
@@ -45,7 +47,16 @@ export interface NewCustomCharm {
   sound?: string;
 }
 
-export type Route = "home" | "library" | "customize" | "create" | "settings" | "privacy" | "feedback" | "onboarding";
+export type Route =
+  | "home"
+  | "library"
+  | "customize"
+  | "create"
+  | "settings"
+  | "privacy"
+  | "feedback"
+  | "apps"
+  | "onboarding";
 
 export interface AppInfo {
   version: string;
@@ -56,6 +67,11 @@ export interface AppInfo {
 export interface UpdateInfo {
   version: string;
   notes: string | null;
+}
+
+export interface InstalledApp {
+  name: string;
+  path: string;
 }
 
 export type FeedbackKind = "bug" | "idea" | "other";
@@ -84,6 +100,11 @@ export const backend = {
   quit: () => invoke<void>("quit_app"),
   pickImage: () => invoke<{ name: string; base64: string } | null>("pick_image"),
   pickImages: () => invoke<{ name: string; base64: string }[]>("pick_images"),
+  listApps: () => invoke<InstalledApp[]>("list_apps"),
+  appIcon: (path: string) => invoke<string | null>("app_icon", { path }),
+  createAppCharm: (path: string, name: string, fallbackPngBase64?: string) =>
+    invoke<CustomCharmRecord>("create_app_charm", { path, name, fallbackPngBase64 }),
+  launchCharm: (id: string) => invoke<void>("launch_charm", { id }),
   appInfo: () => invoke<AppInfo>("app_info"),
   openFeedback: (kind: FeedbackKind, message: string, includeInfo: boolean) =>
     invoke<void>("open_feedback", { kind, message, includeInfo }),

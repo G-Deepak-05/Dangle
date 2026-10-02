@@ -40,6 +40,9 @@ pub struct CustomCharmMeta {
     pub created_at: u64,
     #[serde(default)]
     pub sound: Option<String>,
+    /// For app charms: the installed app a click opens. Set only by Rust, never by input.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub launch: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -156,6 +159,14 @@ pub fn list(root: &Path) -> Vec<CustomCharm> {
 }
 
 pub fn save(root: &Path, input: NewCustomCharm) -> Result<CustomCharm, String> {
+    save_with_launch(root, input, None)
+}
+
+pub fn save_with_launch(
+    root: &Path,
+    input: NewCustomCharm,
+    launch: Option<String>,
+) -> Result<CustomCharm, String> {
     if list(root).len() >= MAX_CUSTOM_CHARMS {
         return Err("You have reached the custom charm limit.".into());
     }
@@ -179,6 +190,7 @@ pub fn save(root: &Path, input: NewCustomCharm) -> Result<CustomCharm, String> {
         },
         created_at: now_millis(),
         sound: clean_sound(input.sound),
+        launch,
     };
     let dir = charm_dir(root, &meta.id)?;
     fs::create_dir_all(&dir).map_err(|e| format!("Could not save charm: {e}"))?;

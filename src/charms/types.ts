@@ -58,6 +58,8 @@ export interface Charm {
   collection?: string;
   /** What the charm sounds like when grabbed and let go. */
   sound?: SoundMaterial;
+  /** App charms open an app when clicked. */
+  launch?: boolean;
   image: string;
   thumbnail: string;
   defaultScale: number;

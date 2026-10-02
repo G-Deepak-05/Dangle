@@ -42,6 +42,8 @@ export interface StageOptions {
   onReelChange?: (reeling: boolean) => void;
   /** Called on release after reeling with the new length multiplier. */
   onThreadLengthCommit?: (threadLength: number) => void;
+  /** A quick tap without dragging. */
+  onClick?: (charm: Charm) => void;
   /** Called once when a charm image fails to load, so the host can fall back. */
   onCharmError?: (charm: Charm) => void;
   /** When true the stage decides hover itself from pointer events. */
@@ -92,6 +94,9 @@ export class CharmStage {
   private loadToken = 0;
   private reeling = false;
   private lastWhoosh = 0;
+  private downAt = 0;
+  private downPoint: Vec2 = { x: 0, y: 0 };
+  private travelled = 0;
   private baseRope = SIZES.medium.rope;
   private threadLength = 1;
 
@@ -386,7 +391,9 @@ export class CharmStage {
   }
 
   private updateCursor() {
-    this.canvas.style.cursor = this.pointerId !== null ? "grabbing" : this.hovered ? "grab" : "default";
+    const clickable = Boolean(this.config?.charm.launch && this.options.onClick);
+    this.canvas.style.cursor =
+      this.pointerId !== null ? "grabbing" : this.hovered ? (clickable ? "pointer" : "grab") : "default";
   }
 
   private onPointerDown = (e: PointerEvent) => {
@@ -402,6 +409,9 @@ export class CharmStage {
     }
     this.pressed = true;
     this.hovered = true;
+    this.downAt = performance.now();
+    this.downPoint = p;
+    this.travelled = 0;
     this.sim.startDrag(p);
     this.options.onDragChange?.(true);
     this.playSound("grab", 0.55);
@@ -418,6 +428,7 @@ export class CharmStage {
     if (this.pointerId === e.pointerId) {
       if (this.pressed && Math.hypot(e.movementX, e.movementY) > 0.5) this.pressed = false;
       if (this.reeling) this.reelTo(p);
+      this.travelled = Math.max(this.travelled, Math.hypot(p.x - this.downPoint.x, p.y - this.downPoint.y));
       this.sim.moveDrag(p);
       const now = performance.now();
       if (this.sim.speed > 1500 && now - this.lastWhoosh > 380) {
@@ -432,7 +443,12 @@ export class CharmStage {
 
   private onPointerUp = (e: PointerEvent) => {
     if (this.pointerId !== e.pointerId) return;
+    const wasClick = !this.reeling && this.travelled < 5 && performance.now() - this.downAt < 350;
     this.endDrag();
+    if (wasClick && this.config && this.options.onClick) {
+      this.sim.impulse(0, -260);
+      this.options.onClick(this.config.charm);
+    }
     if (this.options.selfHover) this.setHover(this.isOverCharm(this.localPoint(e)));
   };
 

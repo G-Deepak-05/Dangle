@@ -159,7 +159,7 @@ export function Home({ go }: { go: (r: Route) => void }) {
           </span>
           <span className="grow">
             <span className="custom-title">Create your own charm</span>
-            <span className="custom-sub">Use any photo or drawing. It never leaves {THIS_DEVICE}.</span>
+            <span className="custom-sub">Any photo, drawing, or app icon. It never leaves {THIS_DEVICE}.</span>
           </span>
           <ChevronIcon />
         </button>

@@ -3,6 +3,7 @@ import { events, type Route } from "../ipc/backend";
 import { useSettings, useSettingsReady } from "./hooks";
 import { DialogHost } from "./components/Dialog";
 import { CreateCharm } from "./views/CreateCharm";
+import { Apps } from "./views/Apps";
 import { Customize } from "./views/Customize";
 import { Feedback } from "./views/Feedback";
 import { Home } from "./views/Home";
@@ -100,6 +101,8 @@ export function App() {
     <CreateCharm go={go} onToast={showToast} />
   ) : route === "settings" ? (
     <Settings go={go} onToast={showToast} />
+  ) : route === "apps" ? (
+    <Apps go={go} onToast={showToast} />
   ) : route === "feedback" ? (
     <Feedback go={go} onToast={showToast} />
   ) : route === "privacy" ? (

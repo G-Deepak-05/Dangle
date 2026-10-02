@@ -2,7 +2,7 @@ use crate::custom_charms::{self, CustomCharm, NewCustomCharm};
 use crate::displays::{self, DisplayInfo};
 use crate::settings::{self, Settings};
 use crate::state::{AppState, Hitbox, OverlayGeometry};
-use crate::{apply_patch, control, feedback, overlay, packs, platform, tray, updates};
+use crate::{apply_patch, apps, control, feedback, overlay, packs, platform, tray, updates};
 use base64::Engine;
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -418,4 +418,83 @@ pub async fn pick_images(app: AppHandle) -> Result<Vec<PickedImage>, String> {
         })
         .collect();
     Ok(images)
+}
+
+#[tauri::command]
+pub async fn list_apps() -> Vec<apps::InstalledApp> {
+    tauri::async_runtime::spawn_blocking(apps::list)
+        .await
+        .unwrap_or_default()
+}
+
+fn icon_on_main(app: &AppHandle, path: String, size: u32) -> Option<Vec<u8>> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let _ = app.run_on_main_thread(move || {
+        let _ = tx.send(apps::icon_png(&path, size));
+    });
+    rx.recv_timeout(std::time::Duration::from_secs(5))
+        .ok()
+        .flatten()
+}
+
+/// Small icon for the app picker; returns None where the OS icon isn't available.
+#[tauri::command]
+pub async fn app_icon(app: AppHandle, path: String) -> Option<String> {
+    if !apps::is_known(&path) {
+        return None;
+    }
+    let handle = app.clone();
+    let png = tauri::async_runtime::spawn_blocking(move || icon_on_main(&handle, path, 96))
+        .await
+        .ok()
+        .flatten()?;
+    Some(base64::engine::general_purpose::STANDARD.encode(png))
+}
+
+#[tauri::command]
+pub async fn create_app_charm(
+    app: AppHandle,
+    path: String,
+    name: String,
+    fallback_png_base64: Option<String>,
+) -> Result<CustomCharm, String> {
+    if !apps::is_known(&path) {
+        return Err("That app isn't installed in a standard place.".into());
+    }
+    let handle = app.clone();
+    let icon_path = path.clone();
+    let png = tauri::async_runtime::spawn_blocking(move || icon_on_main(&handle, icon_path, 256))
+        .await
+        .map_err(|e| e.to_string())?;
+    let png_base64 = match png {
+        Some(bytes) => base64::engine::general_purpose::STANDARD.encode(bytes),
+        None => fallback_png_base64.ok_or_else(|| "Couldn't read that app's icon.".to_string())?,
+    };
+    let custom_dir = app.state::<AppState>().custom_dir.clone();
+    let saved = custom_charms::save_with_launch(
+        &custom_dir,
+        NewCustomCharm {
+            name,
+            rope_style: settings::RopeStyle::Thread,
+            anchor_offset: custom_charms::AnchorOffset { x: 0.5, y: 0.1 },
+            default_scale: 1.0,
+            png_base64,
+            sound: Some("plastic".into()),
+        },
+        Some(path),
+    )?;
+    let _ = app.emit("custom-charms-changed", ());
+    Ok(saved)
+}
+
+/// The overlay asks to open a charm by id; the target path comes from Rust's own records.
+#[tauri::command]
+pub fn launch_charm(state: State<AppState>, id: String) -> Result<(), String> {
+    let charm = custom_charms::get(&state.custom_dir, &id)
+        .ok_or_else(|| "That charm no longer exists.".to_string())?;
+    let target = charm
+        .meta
+        .launch
+        .ok_or_else(|| "That charm doesn't open an app.".to_string())?;
+    apps::launch(&target)
 }

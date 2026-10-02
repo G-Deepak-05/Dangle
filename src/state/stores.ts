@@ -40,6 +40,7 @@ export function customToCharm(c: CustomCharmRecord): Charm {
     ropeStyle: c.ropeStyle,
     anchorOffset: c.anchorOffset,
     sound: isSoundMaterial(c.sound) ? c.sound : undefined,
+    launch: Boolean(c.launch),
     metadata: { source: "custom", createdAt: c.createdAt, author: "You" },
   };
 }

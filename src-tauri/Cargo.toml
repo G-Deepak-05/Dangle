@@ -26,8 +26,8 @@ base64 = "0.22"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6"
-objc2-foundation = { version = "0.3", features = ["NSGeometry"] }
-objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSEvent", "NSApplication", "NSScreen", "NSGraphics", "NSWorkspace", "NSRunningApplication"] }
+objc2-foundation = { version = "0.3", features = ["NSGeometry", "NSString", "NSDictionary", "NSData"] }
+objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSResponder", "NSEvent", "NSApplication", "NSScreen", "NSGraphics", "NSWorkspace", "NSRunningApplication", "NSImage", "NSBitmapImageRep", "NSImageRep", "NSGraphicsContext"] }
 
 [profile.release]
 codegen-units = 1

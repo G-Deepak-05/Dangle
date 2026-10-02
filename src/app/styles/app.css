@@ -1456,3 +1456,66 @@ kbd {
   flex: none;
   white-space: nowrap;
 }
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.app-tile {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px 8px;
+  border-radius: var(--radius-m);
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  transition:
+    background 120ms,
+    border-color 120ms,
+    transform 140ms var(--ease);
+}
+
+.app-tile:hover {
+  background: var(--surface);
+  border-color: var(--line);
+  transform: translateY(-1px);
+}
+
+.app-tile:disabled {
+  opacity: 0.5;
+}
+
+.app-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+}
+
+.app-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.app-icon-placeholder {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--paper-deep);
+}
+
+.app-name {
+  max-width: 100%;
+  font-size: 0.8rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

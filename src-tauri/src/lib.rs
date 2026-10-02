@@ -1,3 +1,4 @@
+mod apps;
 mod commands;
 mod control;
 mod custom_charms;
@@ -83,7 +84,7 @@ fn apply_side_effects(app: &AppHandle, old: Option<&Settings>, new: &Settings) {
     }
 }
 
-const ROUTES: [&str; 7] = [
+const ROUTES: [&str; 8] = [
     "home",
     "library",
     "customize",
@@ -91,6 +92,7 @@ const ROUTES: [&str; 7] = [
     "settings",
     "privacy",
     "feedback",
+    "apps",
 ];
 
 /// `dangle --open library` jumps straight to a screen; unknown values are ignored.
@@ -139,6 +141,10 @@ pub fn run() {
             commands::export_pack,
             commands::import_pack,
             commands::pick_images,
+            commands::list_apps,
+            commands::app_icon,
+            commands::create_app_charm,
+            commands::launch_charm,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

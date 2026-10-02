@@ -53,6 +53,9 @@ function createSlot(index: number): Slot {
       onDragChange: (dragging) => void backend.overlayDrag(dragging),
       onReelChange: (reeling) => void backend.overlayReel(reeling),
       onThreadLengthCommit: (threadLength) => void updateSettings({ threadLength }),
+      onClick: (charm) => {
+        if (charm.launch) void backend.launchCharm(charm.id).catch(() => undefined);
+      },
       onCharmError: (charm) => {
         if (index === 0 && charm.id !== FALLBACK_CHARM_ID) {
           void updateSettings({ activeCharmId: FALLBACK_CHARM_ID });
