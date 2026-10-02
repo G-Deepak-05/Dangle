@@ -20,6 +20,7 @@ export interface Rig {
   setParams(params: PhysicsParams): void;
   setBounds(bounds: Bounds): void;
   setRopeLength(length: number): void;
+  setElastic(elastic: boolean): void;
   setAnchor(anchor: Vec2): void;
   translate(dx: number, dy: number): void;
   impulse(vx: number, vy: number, body?: number): void;

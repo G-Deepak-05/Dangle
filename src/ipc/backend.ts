@@ -16,6 +16,7 @@ export interface OverlayGeometry {
   height: number;
   globalLeft: number;
   globalTop: number;
+  displayHeight: number;
   displayId: string;
 }
 
@@ -131,4 +132,5 @@ export const events = {
   displaysChanged: on<DisplayInfo[]>("displays-changed"),
   systemIdle: on<boolean>("system-idle"),
   updateAvailable: on<UpdateInfo>("update-available"),
+  poke: on<{ slot: number; body: number; vx: number; vy: number }>("overlay-poke"),
 };

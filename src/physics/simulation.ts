@@ -13,6 +13,11 @@ const SWING_COUPLING = 0.0009;
 /** Below this speed (px/s) extra damping fades in, so tiny oscillations die out like a real pendant. */
 const SETTLE_SPEED = 70;
 const SETTLE_RETENTION = 0.08;
+/** Fraction of each over-stretch an elastic string corrects per iteration: soft while
+ * pulled so it stretches like a bungee, firm otherwise so it snaps back and holds the charm. */
+export const ELASTIC_STIFFNESS = 0.035;
+export const ELASTIC_REST_STIFFNESS = 0.4;
+export const MAX_ELASTIC_STRETCH = 2.2;
 
 export interface Vec2 {
   x: number;
@@ -57,6 +62,7 @@ export class CharmSimulation implements Rig {
   private drag: { target: Vec2; offset: Vec2 } | null = null;
   private lastSpeed = 0;
   private tipInset = 0;
+  private elastic = false;
 
   constructor(anchor: Vec2, ropeLength: number, params: PhysicsParams, bounds: Bounds) {
     this.anchor = { ...anchor };
@@ -131,6 +137,12 @@ export class CharmSimulation implements Rig {
 
   setBounds(bounds: Bounds): void {
     this.bounds = bounds;
+    this.wake();
+  }
+
+  /** An elastic string stretches when pulled and springs back, like a bungee. */
+  setElastic(elastic: boolean): void {
+    this.elastic = elastic;
     this.wake();
   }
 
@@ -310,7 +322,7 @@ export class CharmSimulation implements Rig {
         const w2 = this.invMass[i + 1];
         const total = w1 + w2;
         if (total === 0) continue;
-        const correction = (dist - rest) / (dist * total);
+        const correction = ((dist - rest) / (dist * total)) * (this.elastic ? (this.drag ? ELASTIC_STIFFNESS : ELASTIC_REST_STIFFNESS) : 1);
         this.x[i] += dx * correction * w1;
         this.y[i] += dy * correction * w1;
         this.x[i + 1] -= dx * correction * w2;
@@ -326,12 +338,13 @@ export class CharmSimulation implements Rig {
     }
     // The mass-weighted solve cannot fully hold a heavy charm on a light string, so
     // finish with an anchor-outward pass that makes the string strictly inextensible.
+    const limit = this.elastic ? rest * MAX_ELASTIC_STRETCH : rest;
     for (let i = 1; i <= n; i++) {
       const dx = this.x[i] - this.x[i - 1];
       const dy = this.y[i] - this.y[i - 1];
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist > rest) {
-        const k = rest / dist;
+      if (dist > limit) {
+        const k = limit / dist;
         this.x[i] = this.x[i - 1] + dx * k;
         this.y[i] = this.y[i - 1] + dy * k;
       }

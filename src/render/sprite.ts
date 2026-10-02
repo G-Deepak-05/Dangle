@@ -41,6 +41,7 @@ export function buildSprite(
   anchor: AnchorOffset,
   dpr: number,
   finish: Finish = "classic",
+  glow: "off" | "soft" | "strong" = "off",
 ): Sprite {
   const naturalW = img.naturalWidth || img.width || 1;
   const naturalH = img.naturalHeight || img.height || 1;
@@ -79,12 +80,15 @@ export function buildSprite(
       const a = (i / 16) * Math.PI * 2;
       actx.drawImage(white, Math.cos(a) * r, Math.sin(a) * r);
     }
-  } else if (finish === "glow") {
+  }
+  const glowLevel = finish === "glow" && glow === "off" ? "strong" : glow;
+  if (glowLevel !== "off") {
     const warm = silhouette("#ffd98a");
-    actx.filter = `blur(${Math.max(3, maxSide * 0.07) * dpr}px)`;
-    actx.globalAlpha = 0.9;
+    const strong = glowLevel === "strong";
+    actx.filter = `blur(${Math.max(3, maxSide * (strong ? 0.08 : 0.055)) * dpr}px)`;
+    actx.globalAlpha = strong ? 0.95 : 0.6;
     actx.drawImage(warm, 0, 0);
-    actx.drawImage(warm, 0, 0);
+    if (strong) actx.drawImage(warm, 0, 0);
     actx.filter = "none";
     actx.globalAlpha = 1;
   }

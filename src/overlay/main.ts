@@ -58,8 +58,10 @@ let lastBucket: number | null = null;
 function stageWidth(): number {
   const s = settingsStore.get();
   const size = SIZES[s.size];
-  const rope = size.rope * s.threadLength;
-  return Math.round(2 * (rope * 1.15 + size.charm) + 80);
+  const k = s.charmScale;
+  const rope = size.rope * s.threadLength * Math.min(1.25, Math.max(0.8, k));
+  const stack = s.hangMode === "stacked" ? s.extraSlots.length * (size.charm * k * 1.25 + 20) : 0;
+  return Math.round(2 * (rope * 1.15 + size.charm * k + stack) + 80);
 }
 
 /** One entry per string. In stacked mode every charm shares the main string. */
@@ -123,7 +125,8 @@ function layoutSlots(prevGeometry: OverlayGeometry | null) {
     slot.left = left;
     slot.width = width;
     slot.canvas.style.left = `${left}px`;
-    slot.stage.setViewport(width, g.height, anchorGlobal - left, 0);
+    const drop = Math.round(settingsStore.get().anchorY * g.displayHeight);
+    slot.stage.setViewport(width, g.height, anchorGlobal - left, drop);
     if (hadLayout && (!prevGeometry || prevGeometry.displayId === g.displayId)) {
       const shiftX = prevLeft - left + (prevGeometry ? prevGeometry.globalLeft - g.globalLeft : 0);
       const shiftY = prevGeometry ? prevGeometry.globalTop - g.globalTop : 0;
@@ -197,6 +200,7 @@ async function main() {
       if (index !== null && slots[index]) slots[index].stage.setHover(true);
     },
   );
+  await events.poke(({ slot, body, vx, vy }) => slots[slot]?.stage.poke(body, vx, vy));
   await events.systemIdle((idle) => {
     systemIdle = idle;
     applySettings();

@@ -1,6 +1,6 @@
 use crate::displays;
 use crate::platform;
-use crate::settings::{CharmSize, HangMode};
+use crate::settings::{CharmSize, HangMode, MouseMode};
 use crate::state::{AppState, OverlayGeometry};
 use std::time::Duration;
 use tauri::{
@@ -65,7 +65,9 @@ fn layout_now(app: &AppHandle) {
         CharmSize::Medium => (78.0, 124.0),
         CharmSize::Large => (104.0, 150.0),
     };
-    let rope = rope * settings.thread_length;
+    let charm = charm * settings.charm_scale;
+    let rope = rope * settings.thread_length * settings.charm_scale.clamp(0.8, 1.25);
+    let drop = settings.anchor_y * wh;
     let stacked_extra = if settings.hang_mode == HangMode::Stacked {
         settings.extra_slots.len() as f64 * (charm * 1.25 + 20.0)
     } else {
@@ -75,7 +77,7 @@ fn layout_now(app: &AppHandle) {
     let height = if reeling {
         wh
     } else {
-        (rope * 1.3 + charm * 2.4 + 90.0 + stacked_extra * 1.2)
+        (drop + rope * 1.3 + charm * 2.4 + 90.0 + stacked_extra * 1.2)
             .max(MIN_HEIGHT)
             .min(wh)
     };
@@ -93,6 +95,7 @@ fn layout_now(app: &AppHandle) {
         height,
         global_left: wx,
         global_top: wy,
+        display_height: wh,
         display_id: displays::monitor_id(&monitor),
     };
     *state.geometry.lock().unwrap() = Some(geometry.clone());
@@ -125,6 +128,8 @@ pub fn spawn_pointer_watch(app: AppHandle) {
         .spawn(move || {
             let mut idle = false;
             let mut last_idle_check = std::time::Instant::now();
+            let mut last_cursor: Option<((f64, f64), std::time::Instant)> = None;
+            let mut last_poke = std::time::Instant::now();
             loop {
                 let state = app.state::<AppState>();
                 if last_idle_check.elapsed() >= Duration::from_secs(1) {
@@ -136,9 +141,12 @@ pub fn spawn_pointer_watch(app: AppHandle) {
                         let _ = app.emit_to(LABEL, "system-idle", idle);
                     }
                 }
-                let interactive = {
+                let (interactive, reactive) = {
                     let s = state.settings.lock().unwrap();
-                    s.onboarding_complete && !s.hidden && !s.paused
+                    (
+                        s.onboarding_complete && !s.hidden && !s.paused,
+                        s.mouse_mode == MouseMode::Reactive,
+                    )
                 };
                 let scale = state.pointer.lock().unwrap().scale;
                 let cursor = platform::cursor_position(scale);
@@ -184,9 +192,49 @@ pub fn spawn_pointer_watch(app: AppHandle) {
                 if let Some(over) = change {
                     set_over(&app, over);
                 }
+                // Reactive mode: a quick flick of the cursor past a charm nudges it.
+                if let Some((cx, cy)) = cursor {
+                    let now = std::time::Instant::now();
+                    if let Some(((lx, ly), at)) = last_cursor {
+                        let dt = now.duration_since(at).as_secs_f64().max(0.001);
+                        let (vx, vy) = ((cx - lx) / dt, (cy - ly) / dt);
+                        let speed = (vx * vx + vy * vy).sqrt();
+                        let p = state.pointer.lock().unwrap();
+                        if reactive
+                            && interactive
+                            && !p.dragging
+                            && p.over.is_none()
+                            && speed > 900.0
+                            && last_poke.elapsed() > Duration::from_millis(140)
+                        {
+                            let hit = p.hitboxes.iter().enumerate().find_map(|(slot, list)| {
+                                list.iter()
+                                    .enumerate()
+                                    .find(|(_, h)| {
+                                        let dx = cx - (p.origin.0 + h.x);
+                                        let dy = cy - (p.origin.1 + h.y);
+                                        (dx * dx + dy * dy).sqrt() < h.r + 70.0
+                                    })
+                                    .map(|(body, _)| (slot, body))
+                            });
+                            drop(p);
+                            if let Some((slot, body)) = hit {
+                                last_poke = now;
+                                let _ = app.emit_to(
+                                    LABEL,
+                                    "overlay-poke",
+                                    serde_json::json!({ "slot": slot, "body": body, "vx": vx, "vy": vy }),
+                                );
+                            }
+                        }
+                    }
+                    last_cursor = Some(((cx, cy), now));
+                }
                 let dragging = state.pointer.lock().unwrap().dragging;
                 let interval = if dragging || near {
                     12
+                } else if reactive && interactive {
+                    20
                 } else if interactive {
                     50
                 } else {

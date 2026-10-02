@@ -41,8 +41,12 @@ export interface StageConfig {
   threadLength: number;
   physics: PhysicsProfileName;
   reduceMotion: boolean;
-  /** Extra multiplier on top of the size preset, used by the create-charm preview. */
+  /** Extra multiplier on top of the size preset (fine size, or the create-charm preview). */
   scale?: number;
+  /** 0.25–1. */
+  opacity?: number;
+  glow?: "off" | "soft" | "strong";
+  elastic?: boolean;
 }
 
 export interface StageOptions {
@@ -209,6 +213,7 @@ export class CharmStage {
       this.spriteKey = "";
     }
     this.sim.setParams(params);
+    this.sim.setElastic(config.elastic ?? false);
     if (!this.reeling) this.sim.setRopeLength(this.baseRope * this.threadLength);
     if (this.sim instanceof CharmSimulation) this.sim.setTipInset(charmSide * 0.55);
     this.breezeEnabled = (this.options.breeze ?? true) && !reduce;
@@ -218,7 +223,7 @@ export class CharmStage {
         (c) =>
           `${c.id}|${c.image.length}|${c.image.slice(-32)}|${c.anchorOffset.x},${c.anchorOffset.y}|${c.defaultScale}`,
       )
-      .concat([`${charmSide}|${this.dpr}|${config.finish}`])
+      .concat([`${charmSide}|${this.dpr}|${config.finish}|${config.glow ?? "off"}`])
       .join(";");
     if (key === this.spriteKey) {
       this.requestFrame();
@@ -229,7 +234,14 @@ export class CharmStage {
     const loaded = await Promise.all(
       charms.map((c) =>
         loadImage(c.image).then(
-          (img) => buildSprite(img, size.charm * (config.scale ?? 1) * c.defaultScale, c.anchorOffset, this.dpr, config.finish),
+          (img) => buildSprite(
+            img,
+            size.charm * (config.scale ?? 1) * c.defaultScale,
+            c.anchorOffset,
+            this.dpr,
+            config.finish,
+            config.glow ?? "off",
+          ),
           (err) => {
             console.error(err);
             if (token === this.loadToken) this.options.onCharmError?.(c);
@@ -289,6 +301,15 @@ export class CharmStage {
 
   setDebug(debug: boolean) {
     this.debug = debug;
+    this.requestFrame();
+  }
+
+  /** A flick of the cursor nearby (reactive mode) pushes the charm away from it. */
+  poke(body: number, vx: number, vy: number) {
+    if (this.paused || this.isDragging) return;
+    const k = 0.22;
+    const max = 900;
+    this.sim.impulse(Math.max(-max, Math.min(max, vx * k)), Math.max(-max / 2, Math.min(max / 2, vy * k * 0.5)), body);
     this.requestFrame();
   }
 
@@ -374,7 +395,7 @@ export class CharmStage {
       shadow: this.config?.shadow ?? true,
       detailScale: this.detailScale(),
       charmScale: this.charmScale,
-      opacity: this.opacity,
+      opacity: this.opacity * (this.config?.opacity ?? 1),
       debug: this.debug ? this.debugInfo() : undefined,
     };
   }

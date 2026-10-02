@@ -5,6 +5,10 @@ export type RotateMode = "off" | "hourly" | "daily";
 /** Each charm on its own string, or all of them on one string, one below another. */
 export type HangMode = "separate" | "stacked";
 
+export type GlowLevel = "off" | "soft" | "strong";
+export type RopeType = "standard" | "elastic";
+export type MouseMode = "normal" | "reactive";
+
 export interface CharmSlot {
   charmId: string;
   anchorX: number;
@@ -57,6 +61,15 @@ export interface Settings {
   /** 0–1. */
   soundVolume: number;
   hangMode: HangMode;
+  /** How far below the top edge the string starts, as a fraction of display height (0–0.45). */
+  anchorY: number;
+  /** Fine size multiplier, 0.6–1.8. */
+  charmScale: number;
+  /** 0.25–1. */
+  opacity: number;
+  glow: GlowLevel;
+  ropeType: RopeType;
+  mouseMode: MouseMode;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -93,4 +106,10 @@ export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
   soundVolume: 0.6,
   hangMode: "separate",
+  anchorY: 0,
+  charmScale: 1,
+  opacity: 1,
+  glow: "off",
+  ropeType: "standard",
+  mouseMode: "normal",
 };

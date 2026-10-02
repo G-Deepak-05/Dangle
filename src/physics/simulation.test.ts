@@ -141,3 +141,21 @@ describe("CharmSimulation", () => {
     expect(allFinite(sim)).toBe(true);
   });
 });
+
+describe("elastic string", () => {
+  it("stretches under a pull, springs back, and stays within its limit", () => {
+    const sim = makeSim();
+    sim.setElastic(true);
+    sim.startDrag(sim.tip);
+    for (let i = 0; i < 240; i++) {
+      sim.moveDrag({ x: 320, y: 470 });
+      sim.step(FIXED_DT);
+    }
+    const stretched = Math.hypot(sim.tip.x - ANCHOR.x, sim.tip.y - ANCHOR.y);
+    expect(stretched).toBeGreaterThan(124 * 1.3);
+    expect(stretched).toBeLessThanOrEqual(124 * 2.2 + 1);
+    sim.endDrag();
+    timeToSleep(sim);
+    expect(Math.hypot(sim.tip.x - ANCHOR.x, sim.tip.y - ANCHOR.y)).toBeLessThan(124 * 1.35);
+  });
+});

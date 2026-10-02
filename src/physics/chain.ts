@@ -1,6 +1,6 @@
 import type { PhysicsParams } from "./profiles";
 import type { Rig, RopePiece } from "./rig";
-import { FIXED_DT, type Bounds, type Vec2 } from "./simulation";
+import { ELASTIC_REST_STIFFNESS, ELASTIC_STIFFNESS, FIXED_DT, MAX_ELASTIC_STRETCH, type Bounds, type Vec2 } from "./simulation";
 
 const MAX_STEPS_PER_FRAME = 10;
 const CONSTRAINT_ITERATIONS = 22;
@@ -43,6 +43,7 @@ export class ChainSimulation implements Rig {
 
   asleep = false;
   angularVelocity = 0;
+  private elastic = false;
 
   private anchor: Vec2;
   private ropeLength: number;
@@ -175,6 +176,11 @@ export class ChainSimulation implements Rig {
     this.bodies = bodies;
     if (same) return this.wake();
     this.build();
+  }
+
+  setElastic(elastic: boolean): void {
+    this.elastic = elastic;
+    this.wake();
   }
 
   setParams(params: PhysicsParams): void {
@@ -336,7 +342,8 @@ export class ChainSimulation implements Rig {
         const w2 = this.invMass[i + 1];
         const total = w1 + w2;
         if (total === 0) continue;
-        const correction = (dist - rest) / (dist * total);
+        const soft = this.elastic && !this.rigid[i] ? (this.drag ? ELASTIC_STIFFNESS : ELASTIC_REST_STIFFNESS) : 1;
+        const correction = ((dist - rest) / (dist * total)) * soft;
         this.x[i] += dx * correction * w1;
         this.y[i] += dy * correction * w1;
         this.x[i + 1] -= dx * correction * w2;
@@ -356,7 +363,7 @@ export class ChainSimulation implements Rig {
         const dx = this.x[i - 1] - this.x[i];
         const dy = this.y[i - 1] - this.y[i];
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const rest = this.rest[i - 1];
+        const rest = this.rigid[i - 1] || !this.elastic ? this.rest[i - 1] : this.rest[i - 1] * MAX_ELASTIC_STRETCH;
         if (dist > rest || (this.rigid[i - 1] && dist > 0)) {
           const k = rest / dist;
           if (i - 1 === 0) break;
@@ -370,7 +377,7 @@ export class ChainSimulation implements Rig {
       const dx = this.x[i] - this.x[i - 1];
       const dy = this.y[i] - this.y[i - 1];
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const rest = this.rest[i - 1];
+      const rest = this.rigid[i - 1] || !this.elastic ? this.rest[i - 1] : this.rest[i - 1] * MAX_ELASTIC_STRETCH;
       if (dist > rest || (this.rigid[i - 1] && dist > 0)) {
         const k = rest / dist;
         this.x[i] = this.x[i - 1] + dx * k;

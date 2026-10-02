@@ -118,5 +118,9 @@ export function stageConfigFor(settings: Settings, charm: Charm): StageConfig {
     threadLength: settings.threadLength,
     physics: settings.physics,
     reduceMotion: settings.reduceMotion,
+    scale: settings.charmScale,
+    opacity: settings.opacity,
+    glow: settings.glow,
+    elastic: settings.ropeType === "elastic",
   };
 }

@@ -87,6 +87,28 @@ pub enum RotateMode {
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
+pub enum Glow {
+    Off,
+    Soft,
+    Strong,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum RopeType {
+    Standard,
+    Elastic,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum MouseMode {
+    Normal,
+    Reactive,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
 pub enum HangMode {
     /// Each charm on its own string.
     Separate,
@@ -156,6 +178,14 @@ pub struct Settings {
     pub sound_enabled: bool,
     pub sound_volume: f64,
     pub hang_mode: HangMode,
+    /// How far below the top edge the string starts, as a fraction of display height.
+    pub anchor_y: f64,
+    /// Fine size multiplier on top of the size preset.
+    pub charm_scale: f64,
+    pub opacity: f64,
+    pub glow: Glow,
+    pub rope_type: RopeType,
+    pub mouse_mode: MouseMode,
 }
 
 impl Default for Settings {
@@ -194,6 +224,12 @@ impl Default for Settings {
             sound_enabled: true,
             sound_volume: 0.6,
             hang_mode: HangMode::Separate,
+            anchor_y: 0.0,
+            charm_scale: 1.0,
+            opacity: 1.0,
+            glow: Glow::Off,
+            rope_type: RopeType::Standard,
+            mouse_mode: MouseMode::Normal,
         }
     }
 }
@@ -257,6 +293,17 @@ impl Settings {
                 0.5
             };
         }
+
+        let clamp = |v: f64, lo: f64, hi: f64, default: f64| {
+            if v.is_finite() {
+                v.clamp(lo, hi)
+            } else {
+                default
+            }
+        };
+        self.anchor_y = clamp(self.anchor_y, 0.0, 0.45, 0.0);
+        self.charm_scale = clamp(self.charm_scale, 0.6, 1.8, 1.0);
+        self.opacity = clamp(self.opacity, 0.25, 1.0, 1.0);
 
         self.sound_volume = if self.sound_volume.is_finite() {
             self.sound_volume.clamp(0.0, 1.0)

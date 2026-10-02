@@ -21,6 +21,7 @@ pub struct OverlayGeometry {
     /// Window origin in global logical pixels.
     pub global_left: f64,
     pub global_top: f64,
+    pub display_height: f64,
     pub display_id: String,
 }
 

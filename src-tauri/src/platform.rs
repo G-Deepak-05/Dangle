@@ -32,6 +32,7 @@ mod imp {
         fn CGMainDisplayID() -> u32;
         fn CGDisplayBounds(display: u32) -> CGRect;
         fn CGEventSourceSecondsSinceLastEventType(state: i32, event_type: u32) -> f64;
+        fn CGWindowLevelForKey(key: i32) -> i32;
     }
 
     /// Seconds since the user last touched the mouse, trackpad, or keyboard.
@@ -75,13 +76,20 @@ mod imp {
     }
 
     /// Above the menu bar when on top, so the string can hang from the screen's top edge.
+    /// Otherwise just above the desktop icons: over the wallpaper, behind every app window.
     pub fn set_overlay_level(window: &WebviewWindow, on_top: bool) {
         const STATUS_WINDOW_LEVEL: isize = 25;
+        const DESKTOP_ICON_LEVEL_KEY: i32 = 18;
         let target = window.clone();
         let _ = window.run_on_main_thread(move || {
             let Ok(ptr) = target.ns_window() else { return };
             let ns_window: &NSWindow = unsafe { &*(ptr as *const NSWindow) };
-            ns_window.setLevel(if on_top { STATUS_WINDOW_LEVEL } else { 0 });
+            let level = if on_top {
+                STATUS_WINDOW_LEVEL
+            } else {
+                unsafe { CGWindowLevelForKey(DESKTOP_ICON_LEVEL_KEY) as isize + 1 }
+            };
+            ns_window.setLevel(level);
         });
     }
 
@@ -178,6 +186,7 @@ mod imp {
 
     pub fn set_overlay_level(window: &WebviewWindow, on_top: bool) {
         let _ = window.set_always_on_top(on_top);
+        let _ = window.set_always_on_bottom(!on_top);
         // Changing z-order makes Tauri rebuild the window styles, dropping our bits.
         set_click_through(window, CLICK_THROUGH.load(Ordering::Relaxed));
     }
