@@ -139,6 +139,9 @@ function rotateIfDue() {
   if (next && next.id !== settings.activeCharmId) void updateSettings({ activeCharmId: next.id });
 }
 
+// The charms are objects, not a web page: no browser context menu on right-click.
+window.addEventListener("contextmenu", (e) => e.preventDefault());
+
 async function main() {
   await events.geometry((next) => {
     const prev = geometry;
