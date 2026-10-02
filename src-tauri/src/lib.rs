@@ -187,9 +187,17 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if window.label() == control::LABEL {
-                if let WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
-                    control::hide(window.app_handle());
+                match event {
+                    WindowEvent::CloseRequested { api, .. } => {
+                        api.prevent_close();
+                        control::hide(window.app_handle());
+                    }
+                    WindowEvent::Focused(focused) => {
+                        if let Some(w) = window.app_handle().get_webview_window(control::LABEL) {
+                            platform::set_control_raised(&w, *focused);
+                        }
+                    }
+                    _ => {}
                 }
             }
             if window.label() == overlay::LABEL {

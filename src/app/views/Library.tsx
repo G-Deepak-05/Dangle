@@ -2,7 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BUILTIN_COLLECTIONS } from "../../charms/builtin";
 import { CATEGORIES, inCategory, type Charm, type CharmCategory } from "../../charms/types";
 import { backend, type Route } from "../../ipc/backend";
-import { chooseCharmForSlot, createCollection, deleteCollection, renameCollection } from "../../state/collections";
+import {
+  chooseCharmForSlot,
+  createCollection,
+  deleteCollection,
+  renameCollection,
+  validTargetSlot,
+} from "../../state/collections";
 import { toggleFavorite } from "../../state/stores";
 import { libraryFilterStore, targetSlotStore, type LibraryFilter } from "../../state/ui";
 import { CollectionMenu } from "../components/CollectionMenu";
@@ -89,8 +95,9 @@ export function Library({ go, onToast }: { go: (r: Route) => void; onToast: (msg
   }, [charms, filter, category, query, settings.favorites, userCollection]);
 
   const choose = (c: Charm) => {
-    void chooseCharmForSlot(targetSlot, c.id);
-    onToast(targetSlot === 0 ? `${c.name} is hanging now` : `${c.name} is charm ${targetSlot + 1} now`);
+    const slot = validTargetSlot();
+    void chooseCharmForSlot(slot, c.id);
+    onToast(slot === 0 ? `${c.name} is hanging now` : `${c.name} is charm ${slot + 1} now`);
   };
 
   const remove = async (c: Charm) => {

@@ -1,5 +1,6 @@
 import { MAX_EXTRA_SLOTS, type UserCollection } from "./settings";
 import { charmsStore, settingsStore, updateSettings } from "./stores";
+import { targetSlotStore } from "./ui";
 
 function newId() {
   return `uc-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -45,9 +46,10 @@ export function toggleInCollection(collectionId: string, charmId: string) {
   );
 }
 
-/** Slot 0 is the main charm; 1 and 2 are the extra charms. */
+/** Slot 0 is the main charm; the rest are extra charms. A slot that no longer exists
+ * falls back to the main charm rather than silently doing nothing. */
 export function chooseCharmForSlot(slot: number, charmId: string) {
-  if (slot === 0) return updateSettings({ activeCharmId: charmId });
+  if (slot <= 0 || slot > settingsStore.get().extraSlots.length) return updateSettings({ activeCharmId: charmId });
   const extra = settingsStore.get().extraSlots.map((s, i) => (i === slot - 1 ? { ...s, charmId } : s));
   return updateSettings({ extraSlots: extra });
 }
@@ -80,7 +82,16 @@ export function addSlot(charmId?: string) {
 
 export function removeSlot(slot: number) {
   if (slot === 0) return Promise.resolve();
+  const target = targetSlotStore.get();
+  if (target === slot) targetSlotStore.set(0);
+  else if (target > slot) targetSlotStore.set(target - 1);
   return updateSettings({ extraSlots: settingsStore.get().extraSlots.filter((_, i) => i !== slot - 1) });
+}
+
+/** The slot the library fills, kept valid as charms are added and removed elsewhere. */
+export function validTargetSlot(): number {
+  const target = targetSlotStore.get();
+  return target > settingsStore.get().extraSlots.length ? 0 : target;
 }
 
 export function canAddSlot() {
@@ -89,6 +100,7 @@ export function canAddSlot() {
 
 /** Swaps a charm with its neighbour; positions along the top stay where they were. */
 export function moveSlot(slot: number, direction: -1 | 1) {
+  if (targetSlotStore.get() === slot) targetSlotStore.set(slot + direction);
   const s = settingsStore.get();
   const ids = [s.activeCharmId, ...s.extraSlots.map((x) => x.charmId)];
   const other = slot + direction;

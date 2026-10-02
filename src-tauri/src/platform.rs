@@ -97,6 +97,18 @@ mod imp {
         let _ = window.set_ignore_cursor_events(ignore);
     }
 
+    /// While you're using the Dangle window it sits just above the charms, so a charm
+    /// hanging over it can't cover its buttons; afterwards it's an ordinary window again.
+    pub fn set_control_raised(window: &WebviewWindow, raised: bool) {
+        const ABOVE_CHARMS_LEVEL: isize = 26;
+        let target = window.clone();
+        let _ = window.run_on_main_thread(move || {
+            let Ok(ptr) = target.ns_window() else { return };
+            let ns_window: &NSWindow = unsafe { &*(ptr as *const NSWindow) };
+            ns_window.setLevel(if raised { ABOVE_CHARMS_LEVEL } else { 0 });
+        });
+    }
+
     pub fn frontmost_app_pid() -> Option<i32> {
         let workspace = NSWorkspace::sharedWorkspace();
         let app = workspace.frontmostApplication()?;
@@ -191,6 +203,10 @@ mod imp {
         set_click_through(window, CLICK_THROUGH.load(Ordering::Relaxed));
     }
 
+    pub fn set_control_raised(window: &WebviewWindow, raised: bool) {
+        let _ = window.set_always_on_top(raised);
+    }
+
     // The overlay is created non-focusable (WS_EX_NOACTIVATE), so it never steals focus
     // and there is nothing to give back.
     pub fn frontmost_app_pid() -> Option<i32> {
@@ -214,6 +230,9 @@ mod imp {
     }
     pub fn set_click_through(window: &WebviewWindow, ignore: bool) {
         let _ = window.set_ignore_cursor_events(ignore);
+    }
+    pub fn set_control_raised(window: &WebviewWindow, raised: bool) {
+        let _ = window.set_always_on_top(raised);
     }
     pub fn apply_window_behavior(window: &WebviewWindow, all_spaces: bool, _over_fullscreen: bool) {
         let _ = window.set_visible_on_all_workspaces(all_spaces);
