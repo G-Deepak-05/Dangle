@@ -17,13 +17,15 @@ import type { CharmSize, PhysicsProfileName } from "../../physics/profiles";
 import { paletteFor } from "../../render/rope";
 import {
   DEFAULT_SETTINGS,
+  type CharmLook,
   type GlowLevel,
+  type LookKey,
   type MouseMode,
   type RopeType,
   type RotateMode,
   type Settings,
 } from "../../state/settings";
-import { previewHeight, ropeFor, stackFor, stageConfigFor, updateSettings } from "../../state/stores";
+import { findCharm, previewHeight, ropeFor, stackFor, stageConfigFor, updateSettings } from "../../state/stores";
 import { CharmPreview } from "../components/CharmPreview";
 import { PageHeader, Segmented } from "../components/Controls";
 import { confirmDialog } from "../components/Dialog";
@@ -124,7 +126,35 @@ export function Appearance(_: { go: (r: Route) => void }) {
   const settings = useSettings();
   const charm = useActiveCharm();
   const charms = useCharms();
-  const rope = ropeFor(settings, charm);
+  const hanging = [settings.activeCharmId, ...settings.extraSlots.map((x) => x.charmId)].filter(
+    (id, i, all) => all.indexOf(id) === i,
+  );
+  const [target, setTarget] = useState<string>("all");
+  const editingId = target !== "all" && hanging.includes(target) ? target : null;
+  const editing = editingId ? findCharm(charms, editingId) : charm;
+  const rope = ropeFor(settings, editing);
+  const own = editingId ? settings.lookByCharm[editingId] ?? {} : {};
+
+  /** Current value for whatever is being edited: one charm's override, or the shared setting. */
+  const get = <K extends LookKey>(key: K): Required<CharmLook>[K] =>
+    (editingId ? (own[key] ?? settings[key]) : settings[key]) as Required<CharmLook>[K];
+  const mark = (key: LookKey) => (editingId && own[key] !== undefined ? " · just this charm" : "");
+  const put = (patch: CharmLook, nudgeIt = true) => {
+    if (!editingId) {
+      if (nudgeIt) set(patch);
+      else void updateSettings(patch);
+      return;
+    }
+    const next = { ...settings.lookByCharm, [editingId]: { ...own, ...patch } };
+    if (nudgeIt) set({ lookByCharm: next });
+    else void updateSettings({ lookByCharm: next });
+  };
+  const matchAll = () => {
+    if (!editingId) return;
+    const next = { ...settings.lookByCharm };
+    delete next[editingId];
+    set({ lookByCharm: next });
+  };
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
   const [nudge, setNudge] = useState(0);
 
@@ -133,6 +163,8 @@ export function Appearance(_: { go: (r: Route) => void }) {
     const unlisten = events.displaysChanged(setDisplays);
     return () => void unlisten.then((u) => u());
   }, []);
+
+  const stacked = settings.hangMode === "stacked";
 
   const set = (patch: Partial<Settings>) => {
     void updateSettings(patch);
@@ -147,7 +179,7 @@ export function Appearance(_: { go: (r: Route) => void }) {
     });
     if (!ok) return;
     const patch = Object.fromEntries(LOOK_KEYS.map((k) => [k, DEFAULT_SETTINGS[k]])) as Partial<Settings>;
-    set({ ...patch, ropeByCharm: {} });
+    set({ ...patch, ropeByCharm: {}, lookByCharm: {}, scaleByCharm: {} });
   };
 
   return (
@@ -158,17 +190,67 @@ export function Appearance(_: { go: (r: Route) => void }) {
         </button>
       </PageHeader>
 
+      {hanging.length > 1 && (
+        <div className="edit-target" role="radiogroup" aria-label="Which charm to change">
+          <span className="eyebrow">Editing</span>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={!editingId}
+            className="edit-chip"
+            onClick={() => setTarget("all")}
+          >
+            All charms
+          </button>
+          {hanging.map((id) => {
+            const c = findCharm(charms, id);
+            const custom = Boolean(settings.lookByCharm[id]);
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={editingId === id}
+                className="edit-chip"
+                onClick={() => setTarget(id)}
+                title={custom ? `${c.name} has its own look` : c.name}
+              >
+                <img src={c.thumbnail} alt="" draggable={false} />
+                {c.name}
+                {custom && <span className="edit-dot" aria-label="customised" />}
+              </button>
+            );
+          })}
+          {editingId && settings.lookByCharm[editingId] && (
+            <button type="button" className="link" onClick={matchAll}>
+              Match all
+            </button>
+          )}
+        </div>
+      )}
+      {editingId && stacked && editingId !== settings.activeCharmId && (
+        <p className="help" style={{ marginTop: -8, marginBottom: 14 }}>
+          On one string, the string itself (length, color, beads, hook) follows the top charm. Finish, glow, shadow,
+          opacity, and size apply to {editing.name} alone.
+        </p>
+      )}
+
       <div className="appearance-layout">
         <div className="appearance-preview">
           <CharmPreview
-            config={{ ...stageConfigFor(settings, charm), stack: stackFor(settings, charms) }}
+            config={
+              target === "all"
+                ? { ...stageConfigFor(settings, charm), stack: stackFor(settings, charms) }
+                : stageConfigFor(settings, editing)
+            }
             height={Math.min(640, Math.max(300, previewHeight(settings, charms)))}
-            label={`Preview of ${charm.name}`}
+            label={`Preview of ${editing.name}`}
             nudgeKey={nudge}
-            onThreadLengthCommit={(threadLength) => void updateSettings({ threadLength })}
-          >
-            <p className="stage-hint stage-hint-top">{KEYS.reelHint} and drag to pull out more string</p>
-          </CharmPreview>
+            onThreadLengthCommit={(threadLength) => put({ threadLength }, false)}
+          />
+          <p className="help" style={{ textAlign: "center" }}>
+            {KEYS.reelHint} and drag to pull out more string.
+          </p>
         </div>
 
         <div className="appearance-controls">
@@ -254,14 +336,14 @@ export function Appearance(_: { go: (r: Route) => void }) {
             />
             <Slider
               id="own-size"
-              label={`Size of ${charm.name}`}
-              value={settings.scaleByCharm[charm.id] ?? 1}
+              label={`Size of ${editing.name}`}
+              value={settings.scaleByCharm[editing.id] ?? 1}
               min={0.4}
               max={2.5}
               step={0.05}
               ends={["Smaller", "Bigger"]}
-              valueText={`${Math.round((settings.scaleByCharm[charm.id] ?? 1) * 100)}%`}
-              onChange={(v) => void updateSettings({ scaleByCharm: { ...settings.scaleByCharm, [charm.id]: v } })}
+              valueText={`${Math.round((settings.scaleByCharm[editing.id] ?? 1) * 100)}%`}
+              onChange={(v) => void updateSettings({ scaleByCharm: { ...settings.scaleByCharm, [editing.id]: v } })}
             />
             <p className="help" style={{ marginTop: -4 }}>
               Tip: scroll or pinch over any charm on your desktop to resize just that one.
@@ -269,20 +351,20 @@ export function Appearance(_: { go: (r: Route) => void }) {
             <Slider
               id="opacity"
               label="Opacity"
-              value={settings.opacity}
+              value={get("opacity")}
               min={0.25}
               max={1}
               step={0.05}
               ends={["Faint", "Solid"]}
-              valueText={`${Math.round(settings.opacity * 100)}%`}
-              onChange={(opacity) => void updateSettings({ opacity })}
+              valueText={`${Math.round(get("opacity") * 100)}%${mark("opacity")}`}
+              onChange={(opacity) => put({ opacity }, false)}
             />
             <div className="field">
               <div className="field-label">Glow</div>
               <Segmented<GlowLevel>
                 label="Glow"
-                value={settings.glow}
-                onChange={(glow) => set({ glow })}
+                value={get("glow")}
+                onChange={(glow) => put({ glow })}
                 options={[
                   { value: "off", label: "Off" },
                   { value: "soft", label: "Soft" },
@@ -294,12 +376,12 @@ export function Appearance(_: { go: (r: Route) => void }) {
               <div className="field-label">Finish</div>
               <Segmented<Finish>
                 label="Finish"
-                value={settings.finish === "glow" ? "classic" : settings.finish}
-                onChange={(finish) => set({ finish })}
+                value={get("finish") === "glow" ? "classic" : get("finish")}
+                onChange={(finish) => put({ finish })}
                 options={FINISH_OPTIONS}
               />
               <label className="checkbox-row">
-                <input type="checkbox" checked={settings.shadow} onChange={(e) => set({ shadow: e.target.checked })} />
+                <input type="checkbox" checked={get("shadow")} onChange={(e) => put({ shadow: e.target.checked })} />
                 <span>Soft shadow</span>
               </label>
             </div>
@@ -309,12 +391,12 @@ export function Appearance(_: { go: (r: Route) => void }) {
             <h2 className="panel-title">String</h2>
             <div className="field">
               <div className="field-label">
-                Style <span className="field-note">for {charm.name}</span>
+                Style <span className="field-note">for {editing.name}</span>
               </div>
               <Segmented<RopeStyle>
                 label="String style"
                 value={rope}
-                onChange={(r) => set({ ropeByCharm: { ...settings.ropeByCharm, [charm.id]: r } })}
+                onChange={(r) => set({ ropeByCharm: { ...settings.ropeByCharm, [editing.id]: r } })}
                 options={(["minimal", "thread", "cord", "chain"] as RopeStyle[]).map((r) => ({
                   value: r,
                   label: r[0].toUpperCase() + r.slice(1),
@@ -325,13 +407,13 @@ export function Appearance(_: { go: (r: Route) => void }) {
             <Slider
               id="thread-length"
               label="Length"
-              value={settings.threadLength}
+              value={get("threadLength")}
               min={MIN_THREAD_LENGTH}
               max={MAX_THREAD_LENGTH}
               step={0.05}
               ends={["Short", "Long"]}
-              valueText={`${Math.round(settings.threadLength * 100)}%`}
-              onChange={(threadLength) => void updateSettings({ threadLength })}
+              valueText={`${Math.round(get("threadLength") * 100)}%${mark("threadLength")}`}
+              onChange={(threadLength) => put({ threadLength }, false)}
             />
             <div className="field">
               <div className="field-label">Color</div>
@@ -343,12 +425,12 @@ export function Appearance(_: { go: (r: Route) => void }) {
                       key={c}
                       type="button"
                       role="radio"
-                      aria-checked={settings.threadColor === c}
+                      aria-checked={get("threadColor") === c}
                       aria-label={c === "classic" ? "Classic (matches the string style)" : c}
                       title={c[0].toUpperCase() + c.slice(1)}
                       className="swatch"
                       style={{ background: `linear-gradient(135deg, ${pal.main} 55%, ${pal.light} 55%)` }}
-                      onClick={() => set({ threadColor: c })}
+                      onClick={() => put({ threadColor: c })}
                     />
                   );
                 })}
@@ -358,8 +440,8 @@ export function Appearance(_: { go: (r: Route) => void }) {
               <div className="field-label">Beads</div>
               <Segmented<Beads>
                 label="Beads"
-                value={settings.beads}
-                onChange={(beads) => set({ beads })}
+                value={get("beads")}
+                onChange={(beads) => put({ beads })}
                 options={BEADS.map((b) => ({ value: b, label: BEAD_LABELS[b] }))}
               />
             </div>
@@ -372,8 +454,8 @@ export function Appearance(_: { go: (r: Route) => void }) {
                     type="button"
                     role="radio"
                     className="segment"
-                    aria-checked={settings.hook === h}
-                    onClick={() => set({ hook: h })}
+                    aria-checked={get("hook") === h}
+                    onClick={() => put({ hook: h })}
                   >
                     {HOOK_LABELS[h]}
                   </button>

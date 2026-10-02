@@ -21,6 +21,21 @@ export interface UserCollection {
 }
 
 export const MAX_EXTRA_SLOTS = 4;
+
+/** Per-charm overrides; anything left out follows the "All charms" setting. */
+export interface CharmLook {
+  finish?: Finish;
+  glow?: GlowLevel;
+  shadow?: boolean;
+  threadColor?: ThreadColor;
+  beads?: Beads;
+  hook?: Hook;
+  threadLength?: number;
+  opacity?: number;
+}
+
+export const LOOK_KEYS = ["finish", "glow", "shadow", "threadColor", "beads", "hook", "threadLength", "opacity"] as const;
+export type LookKey = (typeof LOOK_KEYS)[number];
 import type { CharmSize, PhysicsProfileName } from "../physics/profiles";
 
 /** Mirrors the Rust `Settings` struct; Rust owns validation and persistence. */
@@ -72,6 +87,7 @@ export interface Settings {
   mouseMode: MouseMode;
   /** Per-charm size multiplier (0.4–2.5), set by scrolling over a charm. */
   scaleByCharm: Record<string, number>;
+  lookByCharm: Record<string, CharmLook>;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -115,4 +131,5 @@ export const DEFAULT_SETTINGS: Settings = {
   ropeType: "standard",
   mouseMode: "normal",
   scaleByCharm: {},
+  lookByCharm: {},
 };

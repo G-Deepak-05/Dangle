@@ -88,8 +88,9 @@ function stageWidth(): number {
   const s = settingsStore.get();
   const size = SIZES[s.size];
   const k = s.charmScale;
-  const rope = size.rope * s.threadLength * Math.min(1.25, Math.max(0.8, k));
   const ids = [s.activeCharmId, ...s.extraSlots.map((x) => x.charmId)];
+  const longest = Math.max(s.threadLength, ...ids.map((id) => s.lookByCharm[id]?.threadLength ?? 0));
+  const rope = size.rope * longest * Math.min(1.25, Math.max(0.8, k));
   const own = Math.max(1, ...ids.map((id) => s.scaleByCharm[id] ?? 1));
   const stack = s.hangMode === "stacked" ? s.extraSlots.length * (size.charm * k * own * 1.25 + 20) : 0;
   return Math.round(2 * (rope * 1.15 + size.charm * k * own + stack) + 80);

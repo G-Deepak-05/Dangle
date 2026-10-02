@@ -116,6 +116,34 @@ pub enum HangMode {
     Stacked,
 }
 
+/// Per-charm overrides; anything left unset follows the "All charms" setting.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct CharmLook {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub finish: Option<Finish>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub glow: Option<Glow>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shadow: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thread_color: Option<ThreadColor>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub beads: Option<Beads>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hook: Option<Hook>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thread_length: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub opacity: Option<f64>,
+}
+
+impl CharmLook {
+    fn is_empty(&self) -> bool {
+        *self == CharmLook::default()
+    }
+}
+
 /// An additional charm hanging on its own string.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -188,6 +216,7 @@ pub struct Settings {
     pub mouse_mode: MouseMode,
     /// Per-charm size multiplier, set by scrolling over a charm or the size slider.
     pub scale_by_charm: BTreeMap<String, f64>,
+    pub look_by_charm: BTreeMap<String, CharmLook>,
 }
 
 impl Default for Settings {
@@ -233,6 +262,7 @@ impl Default for Settings {
             rope_type: RopeType::Standard,
             mouse_mode: MouseMode::Normal,
             scale_by_charm: BTreeMap::new(),
+            look_by_charm: BTreeMap::new(),
         }
     }
 }
@@ -311,6 +341,22 @@ impl Settings {
             .retain(|id, v| valid_id(id) && v.is_finite());
         for v in self.scale_by_charm.values_mut() {
             *v = v.clamp(0.4, 2.5);
+        }
+        self.look_by_charm.retain(|id, _| valid_id(id));
+        for look in self.look_by_charm.values_mut() {
+            look.thread_length = look
+                .thread_length
+                .filter(|v| v.is_finite())
+                .map(|v| v.clamp(MIN_THREAD_LENGTH, MAX_THREAD_LENGTH));
+            look.opacity = look
+                .opacity
+                .filter(|v| v.is_finite())
+                .map(|v| v.clamp(0.25, 1.0));
+        }
+        self.look_by_charm.retain(|_, look| !look.is_empty());
+        while self.look_by_charm.len() > 300 {
+            let first = self.look_by_charm.keys().next().cloned().unwrap();
+            self.look_by_charm.remove(&first);
         }
         while self.scale_by_charm.len() > 300 {
             let first = self.scale_by_charm.keys().next().cloned().unwrap();
@@ -464,6 +510,26 @@ mod tests {
     }
 
     #[test]
+    fn per_charm_looks_are_clamped_and_empty_ones_dropped() {
+        let patch = json!({
+            "lookByCharm": {
+                "moon": { "threadLength": 99.0, "opacity": 0.0, "glow": "strong" },
+                "star": {},
+                "bad id!": { "glow": "soft" }
+            },
+            "threadLength": 1.0
+        });
+        let s = Settings::merged_lenient(&Settings::default(), &patch);
+        let moon = &s.look_by_charm["moon"];
+        assert_eq!(moon.thread_length, Some(MAX_THREAD_LENGTH));
+        assert_eq!(moon.opacity, Some(0.25));
+        assert_eq!(moon.glow, Some(Glow::Strong));
+        assert!(!s.look_by_charm.contains_key("star"));
+        assert!(!s.look_by_charm.contains_key("bad id!"));
+        assert_eq!(s.max_thread_length(), MAX_THREAD_LENGTH);
+    }
+
+    #[test]
     fn corrupted_file_recovers_with_backup() {
         let dir = temp_dir("corrupt");
         let path = settings_path(&dir);
@@ -486,6 +552,14 @@ mod tests {
 }
 
 impl Settings {
+    /// Longest string among the charms currently hanging, for sizing the overlay.
+    pub fn max_thread_length(&self) -> f64 {
+        std::iter::once(&self.active_charm_id)
+            .chain(self.extra_slots.iter().map(|s| &s.charm_id))
+            .filter_map(|id| self.look_by_charm.get(id).and_then(|l| l.thread_length))
+            .fold(self.thread_length, f64::max)
+    }
+
     /// Largest per-charm size among the charms currently hanging, for sizing the overlay.
     pub fn max_hanging_scale(&self) -> f64 {
         std::iter::once(&self.active_charm_id)

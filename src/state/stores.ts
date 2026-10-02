@@ -4,7 +4,7 @@ import type { StageConfig } from "../engine/stage";
 import { SIZES } from "../physics/profiles";
 import type { Charm, RopeStyle } from "../charms/types";
 import { backend, events, type AppInfo, type CustomCharmRecord, type UpdateInfo } from "../ipc/backend";
-import { DEFAULT_SETTINGS, type Settings } from "./settings";
+import { DEFAULT_SETTINGS, type CharmLook, type Settings } from "./settings";
 
 type Listener = () => void;
 
@@ -117,23 +117,39 @@ export function stackFor(settings: Settings, charms: Charm[]): Charm[] {
   return settings.extraSlots.map((s) => scaledCharm(settings, findCharm(charms, s.charmId)));
 }
 
+/** The "All charms" settings with this charm's own overrides applied on top. */
+export function lookFor(settings: Settings, charmId: string): Required<CharmLook> {
+  const own = settings.lookByCharm[charmId] ?? {};
+  return {
+    finish: own.finish ?? settings.finish,
+    glow: own.glow ?? settings.glow,
+    shadow: own.shadow ?? settings.shadow,
+    threadColor: own.threadColor ?? settings.threadColor,
+    beads: own.beads ?? settings.beads,
+    hook: own.hook ?? settings.hook,
+    threadLength: own.threadLength ?? settings.threadLength,
+    opacity: own.opacity ?? settings.opacity,
+  };
+}
+
 /** Everything a CharmStage needs to show `charm` the way the user has set it up. */
 export function stageConfigFor(settings: Settings, charm: Charm): StageConfig {
+  const look = lookFor(settings, charm.id);
   return {
     charm: scaledCharm(settings, charm),
     size: settings.size,
     rope: ropeFor(settings, charm),
-    threadColor: settings.threadColor,
-    beads: settings.beads,
-    finish: settings.finish,
-    hook: settings.hook,
-    shadow: settings.shadow,
-    threadLength: settings.threadLength,
+    threadColor: look.threadColor,
+    beads: look.beads,
+    finish: look.finish,
+    hook: look.hook,
+    shadow: look.shadow,
+    threadLength: look.threadLength,
     physics: settings.physics,
     reduceMotion: settings.reduceMotion,
     scale: settings.charmScale,
-    opacity: settings.opacity,
-    glow: settings.glow,
+    opacity: look.opacity,
+    glow: look.glow,
     elastic: settings.ropeType === "elastic",
   };
 }
@@ -147,5 +163,6 @@ export function previewHeight(settings: Settings, charms: Charm[], extraScale = 
     (sum, id) => sum + size.charm * k * (settings.scaleByCharm[id] ?? 1) * findCharm(charms, id).defaultScale * 1.2 + 18,
     0,
   );
-  return Math.round(size.rope * settings.threadLength * Math.min(1.25, Math.max(0.8, k)) + bodies + 60);
+  const length = lookFor(settings, settings.activeCharmId).threadLength;
+  return Math.round(size.rope * length * Math.min(1.25, Math.max(0.8, k)) + bodies + 60);
 }

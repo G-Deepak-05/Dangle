@@ -1947,3 +1947,53 @@ kbd {
   top: 10px;
   bottom: auto;
 }
+
+.edit-target {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.edit-target .eyebrow {
+  margin-right: 4px;
+}
+
+.edit-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px 0 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.edit-chip:first-of-type {
+  padding-left: 12px;
+}
+
+.edit-chip img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.edit-chip[aria-checked="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+  color: var(--ink);
+}
+
+.edit-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
