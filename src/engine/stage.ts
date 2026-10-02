@@ -48,6 +48,8 @@ export interface StageOptions {
   onCharmError?: (charm: Charm) => void;
   /** When true the stage decides hover itself from pointer events. */
   selfHover?: boolean;
+  /** The host routes pointer events itself (several stages sharing one input layer). */
+  externalInput?: HTMLElement;
   /** Occasional gentle nudges while idle so the charm never looks frozen. */
   breeze?: boolean;
   debug?: boolean;
@@ -111,12 +113,14 @@ export class CharmStage {
     });
     this.breezeEnabled = options.breeze ?? true;
     this.debug = options.debug ?? false;
-    canvas.addEventListener("pointerdown", this.onPointerDown);
-    canvas.addEventListener("pointermove", this.onPointerMove);
-    canvas.addEventListener("pointerup", this.onPointerUp);
-    canvas.addEventListener("pointercancel", this.onPointerUp);
-    canvas.addEventListener("pointerleave", this.onPointerLeave);
-    canvas.addEventListener("lostpointercapture", this.onPointerUp);
+    if (!options.externalInput) {
+      canvas.addEventListener("pointerdown", this.onPointerDown);
+      canvas.addEventListener("pointermove", this.onPointerMove);
+      canvas.addEventListener("pointerup", this.onPointerUp);
+      canvas.addEventListener("pointercancel", this.onPointerUp);
+      canvas.addEventListener("pointerleave", this.onPointerLeave);
+      canvas.addEventListener("lostpointercapture", this.onPointerUp);
+    }
     this.scheduleBreeze();
   }
 
@@ -384,6 +388,19 @@ export class CharmStage {
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
+  /** True when a pointer event lands on this stage's charm. */
+  hits(e: PointerEvent): boolean {
+    return !this.paused && this.isOverCharm(this.localPoint(e));
+  }
+
+  get isDragging(): boolean {
+    return this.pointerId !== null;
+  }
+
+  private get captureTarget(): HTMLElement {
+    return this.options.externalInput ?? this.canvas;
+  }
+
   private isOverCharm(p: Vec2): boolean {
     const hit = hitCircle(this.sceneState());
     if (!hit) return false;
@@ -392,18 +409,18 @@ export class CharmStage {
 
   private updateCursor() {
     const clickable = Boolean(this.config?.charm.launch && this.options.onClick);
-    this.canvas.style.cursor =
+    (this.options.externalInput ?? this.canvas).style.cursor =
       this.pointerId !== null ? "grabbing" : this.hovered ? (clickable ? "pointer" : "grab") : "default";
   }
 
-  private onPointerDown = (e: PointerEvent) => {
+  readonly onPointerDown = (e: PointerEvent) => {
     if (this.paused || e.button !== 0) return;
     const p = this.localPoint(e);
     if (!this.isOverCharm(p)) return;
     e.preventDefault();
     this.pointerId = e.pointerId;
     try {
-      this.canvas.setPointerCapture(e.pointerId);
+      this.captureTarget.setPointerCapture(e.pointerId);
     } catch {
       /* capture is best-effort */
     }
@@ -423,7 +440,7 @@ export class CharmStage {
     this.requestFrame();
   };
 
-  private onPointerMove = (e: PointerEvent) => {
+  readonly onPointerMove = (e: PointerEvent) => {
     const p = this.localPoint(e);
     if (this.pointerId === e.pointerId) {
       if (this.pressed && Math.hypot(e.movementX, e.movementY) > 0.5) this.pressed = false;
@@ -441,7 +458,7 @@ export class CharmStage {
     }
   };
 
-  private onPointerUp = (e: PointerEvent) => {
+  readonly onPointerUp = (e: PointerEvent) => {
     if (this.pointerId !== e.pointerId) return;
     const wasClick = !this.reeling && this.travelled < 5 && performance.now() - this.downAt < 350;
     this.endDrag();
@@ -474,7 +491,7 @@ export class CharmStage {
   private endDrag() {
     if (this.pointerId === null) return;
     try {
-      this.canvas.releasePointerCapture(this.pointerId);
+      this.captureTarget.releasePointerCapture(this.pointerId);
     } catch {
       /* already released */
     }

@@ -21,6 +21,35 @@ interface Slot {
 }
 
 const slots: Slot[] = [];
+
+/**
+ * One transparent layer takes all pointer input and hands it to the charm under the cursor.
+ * The per-charm canvases overlap (they are wider than their charms), so letting them take
+ * events directly made the topmost canvas swallow clicks meant for its neighbours.
+ */
+const inputLayer = document.createElement("div");
+inputLayer.style.cssText = "position:fixed;inset:0;z-index:10;touch-action:none;";
+document.body.appendChild(inputLayer);
+let activeSlot: Slot | null = null;
+
+inputLayer.addEventListener("pointerdown", (e) => {
+  const hit = [...slots].reverse().find((slot) => slot.stage.hits(e));
+  if (!hit) return;
+  activeSlot = hit;
+  hit.stage.onPointerDown(e);
+});
+const forward = (e: PointerEvent) => {
+  if (activeSlot) activeSlot.stage.onPointerMove(e);
+};
+const finish = (e: PointerEvent) => {
+  if (!activeSlot) return;
+  activeSlot.stage.onPointerUp(e);
+  if (!activeSlot.stage.isDragging) activeSlot = null;
+};
+inputLayer.addEventListener("pointermove", forward);
+inputLayer.addEventListener("pointerup", finish);
+inputLayer.addEventListener("pointercancel", finish);
+inputLayer.addEventListener("lostpointercapture", finish);
 let geometry: OverlayGeometry | null = null;
 let systemIdle = false;
 let trayName = "";
@@ -42,6 +71,7 @@ function createSlot(index: number): Slot {
   const canvas = document.createElement("canvas");
   canvas.style.position = "absolute";
   canvas.style.top = "0";
+  canvas.style.pointerEvents = "none";
   document.body.appendChild(canvas);
   const slot: Slot = {
     canvas,
@@ -62,6 +92,7 @@ function createSlot(index: number): Slot {
         }
       },
       breeze: true,
+      externalInput: inputLayer,
     }),
   };
   return slot;
@@ -148,7 +179,13 @@ async function main() {
     geometry = next;
     layoutSlots(prev);
   });
-  await events.hover((index) => slots.forEach((slot, i) => slot.stage.setHover(i === index)));
+  await events.hover((index) =>
+    {
+      // Others first, so the hovered charm's cursor is the one left on the shared layer.
+      slots.forEach((slot, i) => i !== index && slot.stage.setHover(false));
+      if (index !== null && slots[index]) slots[index].stage.setHover(true);
+    },
+  );
   await events.systemIdle((idle) => {
     systemIdle = idle;
     applySettings();
