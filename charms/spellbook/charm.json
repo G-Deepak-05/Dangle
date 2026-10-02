@@ -6,6 +6,7 @@
     "retro"
   ],
   "collection": "wizard-school",
+  "sound": "paper",
   "defaultScale": 1,
   "ropeStyle": "chain",
   "anchorOffset": {

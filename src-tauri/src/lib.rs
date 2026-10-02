@@ -138,6 +138,7 @@ pub fn run() {
             commands::install_update,
             commands::export_pack,
             commands::import_pack,
+            commands::pick_images,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

@@ -18,6 +18,8 @@ pub struct PackCharm {
     pub anchor_offset: AnchorOffset,
     pub default_scale: f64,
     pub png_base64: String,
+    #[serde(default)]
+    pub sound: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -50,6 +52,7 @@ pub fn build(custom_dir: &Path, collection: &UserCollection) -> Pack {
                 rope_style: c.meta.rope_style,
                 anchor_offset: c.meta.anchor_offset,
                 default_scale: c.meta.default_scale,
+                sound: c.meta.sound,
                 png_base64: c
                     .image_data_url
                     .trim_start_matches("data:image/png;base64,")
@@ -104,6 +107,7 @@ pub fn import(
                 anchor_offset: charm.anchor_offset,
                 default_scale: charm.default_scale,
                 png_base64: charm.png_base64,
+                sound: charm.sound,
             },
         );
         match saved {

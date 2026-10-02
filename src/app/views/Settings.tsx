@@ -6,6 +6,7 @@ import { BackBar, SettingRow, ToggleRow } from "../components/Controls";
 import { ChevronIcon } from "../components/Icons";
 import { useAppInfo, useSettings, useUpdate } from "../hooks";
 import { useState } from "react";
+import { sounds } from "../../audio/sounds";
 import { UpdateBanner } from "../components/UpdateBanner";
 
 export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (msg: string) => void }) {
@@ -98,6 +99,35 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
           onChange={(v) => set({ paused: v })}
         />
         <ToggleRow id="hidden" label="Hide charm" checked={s.hidden} onChange={(v) => set({ hidden: v })} />
+      </div>
+
+      <h2 className="eyebrow group-title">Sound</h2>
+      <div className="group">
+        <ToggleRow
+          id="sound"
+          label="Sound effects"
+          description="Each charm makes its own sound when you grab and fling it."
+          checked={s.soundEnabled}
+          onChange={(v) => set({ soundEnabled: v })}
+        />
+        {s.soundEnabled && (
+          <SettingRow id="volume" label="Volume">
+            <div className="row" style={{ alignItems: "center", width: 190 }}>
+              <input
+                className="slider"
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={s.soundVolume}
+                aria-labelledby="volume-label"
+                aria-valuetext={`${Math.round(s.soundVolume * 100)} percent`}
+                onChange={(e) => set({ soundVolume: Number(e.target.value) })}
+                onPointerUp={() => sounds.play("bell", "release", 0.7)}
+              />
+            </div>
+          </SettingRow>
+        )}
       </div>
 
       <h2 className="eyebrow group-title">Keyboard</h2>

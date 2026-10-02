@@ -371,3 +371,51 @@ pub async fn import_pack(app: AppHandle) -> Result<Option<packs::ImportResult>, 
 fn is_builtin_id(id: &str) -> bool {
     crate::BUILTIN_CHARM_IDS.contains(&id)
 }
+
+const MAX_BULK_IMAGES: usize = 60;
+
+/// Several images at once for building a collection; unreadable or oversized files are skipped.
+#[tauri::command]
+pub async fn pick_images(app: AppHandle) -> Result<Vec<PickedImage>, String> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let mut dialog = app
+        .dialog()
+        .file()
+        .set_title("Choose images for your collection")
+        .add_filter("Images", &["png", "webp", "jpg", "jpeg"]);
+    if let Some(window) = app.get_webview_window(control::LABEL) {
+        dialog = dialog.set_parent(&window);
+    }
+    dialog.pick_files(move |paths| {
+        let _ = tx.send(paths);
+    });
+    let picked = tauri::async_runtime::spawn_blocking(move || rx.recv().ok().flatten())
+        .await
+        .map_err(|e| e.to_string())?
+        .unwrap_or_default();
+    if picked.len() > MAX_BULK_IMAGES {
+        return Err(format!("Pick up to {MAX_BULK_IMAGES} images at a time."));
+    }
+    let images = picked
+        .into_iter()
+        .filter_map(|p| p.into_path().ok())
+        .filter_map(|path| {
+            let size = std::fs::metadata(&path).ok()?.len();
+            if size > MAX_PICKED_BYTES {
+                return None;
+            }
+            let bytes = std::fs::read(&path).ok()?;
+            let name = path
+                .file_name()?
+                .to_string_lossy()
+                .chars()
+                .take(120)
+                .collect();
+            Some(PickedImage {
+                name,
+                base64: base64::engine::general_purpose::STANDARD.encode(bytes),
+            })
+        })
+        .collect();
+    Ok(images)
+}

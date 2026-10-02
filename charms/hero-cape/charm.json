@@ -6,6 +6,7 @@
     "minimal"
   ],
   "collection": "hero-squad",
+  "sound": "paper",
   "defaultScale": 1,
   "ropeStyle": "thread",
   "anchorOffset": {

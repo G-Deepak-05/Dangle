@@ -6,6 +6,7 @@
     "cute"
   ],
   "collection": "hero-squad",
+  "sound": "soft",
   "defaultScale": 1,
   "ropeStyle": "cord",
   "anchorOffset": {

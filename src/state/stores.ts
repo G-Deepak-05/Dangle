@@ -1,3 +1,4 @@
+import { isSoundMaterial, sounds } from "../audio/sounds";
 import { BUILTIN_CHARMS, FALLBACK_CHARM_ID } from "../charms/builtin";
 import type { StageConfig } from "../engine/stage";
 import type { Charm, RopeStyle } from "../charms/types";
@@ -38,6 +39,7 @@ export function customToCharm(c: CustomCharmRecord): Charm {
     defaultScale: c.defaultScale,
     ropeStyle: c.ropeStyle,
     anchorOffset: c.anchorOffset,
+    sound: isSoundMaterial(c.sound) ? c.sound : undefined,
     metadata: { source: "custom", createdAt: c.createdAt, author: "You" },
   };
 }
@@ -57,6 +59,10 @@ let started: Promise<void> | null = null;
 export function startStores(): Promise<void> {
   started ??= (async () => {
     await events.settings((s) => settingsStore.set(s));
+    settingsStore.subscribe(() => {
+      const s = settingsStore.get();
+      sounds.configure(s.soundEnabled, s.soundVolume);
+    });
     await events.customCharmsChanged(() => void refreshCustomCharms());
     await events.updateAvailable((u) => updateStore.set(u));
     backend.appInfo().then((i) => appInfoStore.set(i), () => undefined);

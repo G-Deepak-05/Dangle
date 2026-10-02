@@ -50,6 +50,9 @@ export interface Settings {
   /** "favorites", "all", or "collection:<id>". */
   rotateSource: string;
   userCollections: UserCollection[];
+  soundEnabled: boolean;
+  /** 0–1. */
+  soundVolume: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -83,4 +86,6 @@ export const DEFAULT_SETTINGS: Settings = {
   rotate: "off",
   rotateSource: "favorites",
   userCollections: [],
+  soundEnabled: true,
+  soundVolume: 0.6,
 };

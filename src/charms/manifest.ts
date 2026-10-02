@@ -1,3 +1,4 @@
+import { isSoundMaterial } from "../audio/sounds";
 import { CATEGORIES, ROPE_STYLES, type Charm, type CharmCategory, type RopeStyle } from "./types";
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/i;
@@ -39,6 +40,7 @@ export function parseManifest(raw: unknown, image: string | undefined): Charm | 
     tags,
     collection:
       typeof m.collection === "string" && ID_PATTERN.test(m.collection) ? m.collection : undefined,
+    sound: isSoundMaterial(m.sound) ? m.sound : undefined,
     image,
     thumbnail: image,
     defaultScale: scale,

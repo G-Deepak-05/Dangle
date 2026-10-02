@@ -6,6 +6,7 @@
     "cute"
   ],
   "collection": "retro-arcade",
+  "sound": "retro",
   "defaultScale": 1,
   "ropeStyle": "minimal",
   "anchorOffset": {

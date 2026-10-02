@@ -144,6 +144,8 @@ pub struct Settings {
     /// "favorites", "all", or "collection:<id>".
     pub rotate_source: String,
     pub user_collections: Vec<UserCollection>,
+    pub sound_enabled: bool,
+    pub sound_volume: f64,
 }
 
 impl Default for Settings {
@@ -179,6 +181,8 @@ impl Default for Settings {
             rotate: RotateMode::Off,
             rotate_source: "favorites".into(),
             user_collections: Vec::new(),
+            sound_enabled: true,
+            sound_volume: 0.6,
         }
     }
 }
@@ -242,6 +246,12 @@ impl Settings {
                 0.5
             };
         }
+
+        self.sound_volume = if self.sound_volume.is_finite() {
+            self.sound_volume.clamp(0.0, 1.0)
+        } else {
+            0.6
+        };
 
         let source_ok = self.rotate_source == "favorites"
             || self.rotate_source == "all"

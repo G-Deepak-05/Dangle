@@ -7,6 +7,7 @@
     "minimal"
   ],
   "collection": "originals",
+  "sound": "bell",
   "defaultScale": 1,
   "ropeStyle": "cord",
   "anchorOffset": {

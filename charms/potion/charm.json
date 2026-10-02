@@ -6,6 +6,7 @@
     "minimal"
   ],
   "collection": "wizard-school",
+  "sound": "glass",
   "defaultScale": 1,
   "ropeStyle": "cord",
   "anchorOffset": {

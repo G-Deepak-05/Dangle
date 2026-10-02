@@ -569,6 +569,20 @@ for v in NEW.values():
     v.setdefault("collection", "hero-squad")
 CHARMS.update(NEW)
 
+SOUNDS = {
+    "moon": "glass", "star": "magic", "planet": "glass", "rocket": "laser", "cat": "soft", "ghost": "soft",
+    "mushroom": "soft", "leaf": "paper", "clover": "paper", "cloud": "soft", "rainbow": "magic",
+    "crystal": "glass", "heart": "pop", "balloon": "pop", "sun": "magic", "cherry": "pop",
+    "strawberry": "soft", "donut": "soft", "coffee": "glass", "cactus": "wood", "pumpkin": "wood",
+    "snowflake": "glass", "bell": "bell", "coin": "metal", "key": "metal", "dice": "plastic",
+    "note": "magic", "cassette": "plastic", "camera": "plastic", "sword": "metal",
+    "hero-mask": "soft", "bolt-shield": "metal", "power-glove": "metal", "hero-cape": "paper", "pow": "punch",
+    "wand": "magic", "potion": "glass", "owl": "soft", "spellbook": "paper", "wizard-hat": "magic",
+    "space-helmet": "glass", "ufo": "laser", "droid": "retro", "ray-gun": "laser", "alien": "laser",
+    "onigiri": "soft", "ramen": "wood", "lucky-cat": "bell", "katana": "metal", "sakura": "paper",
+    "joystick": "plastic", "arcade": "retro", "pixel-heart": "retro", "cartridge": "plastic", "pixel-gem": "retro",
+}
+
 root = os.path.join(os.path.dirname(__file__), "..", "charms")
 for cid, c in CHARMS.items():
     d = os.path.join(root, cid)
@@ -581,6 +595,7 @@ for cid, c in CHARMS.items():
         "category": c["category"],
         "tags": c["tags"],
         "collection": c.get("collection", "originals"),
+        "sound": SOUNDS.get(cid, "soft"),
         "defaultScale": 1,
         "ropeStyle": c["rope"],
         "anchorOffset": {"x": c["anchor"][0], "y": c["anchor"][1]},

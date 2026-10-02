@@ -6,6 +6,7 @@
     "retro"
   ],
   "collection": "originals",
+  "sound": "laser",
   "defaultScale": 1,
   "ropeStyle": "minimal",
   "anchorOffset": {

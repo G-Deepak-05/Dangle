@@ -1431,3 +1431,28 @@ kbd {
   font-size: 0.8rem;
   color: var(--ink-3);
 }
+
+.bulk-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.bulk-card p {
+  margin: 0;
+}
+
+.bulk-card .custom-sub {
+  margin-top: 2px;
+}
+
+.bulk-card .btn {
+  flex: none;
+  white-space: nowrap;
+}

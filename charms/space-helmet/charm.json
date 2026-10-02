@@ -6,6 +6,7 @@
     "retro"
   ],
   "collection": "galaxy-rebels",
+  "sound": "glass",
   "defaultScale": 1,
   "ropeStyle": "minimal",
   "anchorOffset": {

@@ -10,6 +10,8 @@ import {
 } from "../charms/types";
 import { resolveParams, SIZES, type CharmSize, type PhysicsProfileName } from "../physics/profiles";
 import { CharmSimulation, type Vec2 } from "../physics/simulation";
+import { sounds, type SoundMaterial } from "../audio/sounds";
+import { soundFor } from "../charms/types";
 import { drawScene, hitCircle, type DebugInfo, type SceneState } from "../render/scene";
 import { buildSprite, loadImage, type Sprite } from "../render/sprite";
 
@@ -19,6 +21,8 @@ export interface StageConfig {
   rope: RopeStyle;
   threadColor: ThreadColor;
   beads: Beads;
+  /** Overrides the charm's own sound, e.g. while previewing a new custom charm. */
+  sound?: SoundMaterial;
   finish: Finish;
   hook: Hook;
   shadow: boolean;
@@ -87,6 +91,7 @@ export class CharmStage {
   private debug: boolean;
   private loadToken = 0;
   private reeling = false;
+  private lastWhoosh = 0;
   private baseRope = SIZES.medium.rope;
   private threadLength = 1;
 
@@ -399,6 +404,7 @@ export class CharmStage {
     this.hovered = true;
     this.sim.startDrag(p);
     this.options.onDragChange?.(true);
+    this.playSound("grab", 0.55);
     if (e.altKey) {
       this.reeling = true;
       this.options.onReelChange?.(true);
@@ -413,6 +419,11 @@ export class CharmStage {
       if (this.pressed && Math.hypot(e.movementX, e.movementY) > 0.5) this.pressed = false;
       if (this.reeling) this.reelTo(p);
       this.sim.moveDrag(p);
+      const now = performance.now();
+      if (this.sim.speed > 1500 && now - this.lastWhoosh > 380) {
+        this.lastWhoosh = now;
+        this.playSound("whoosh", this.sim.speed / 3500);
+      }
       this.requestFrame();
     } else if (this.options.selfHover && !this.paused) {
       this.setHover(this.isOverCharm(p));
@@ -439,6 +450,11 @@ export class CharmStage {
     this.sim.setRopeLength(this.baseRope * next);
   }
 
+  private playSound(event: "grab" | "release" | "whoosh", intensity: number) {
+    if (!this.config) return;
+    sounds.play(this.config.sound ?? soundFor(this.config.charm), event, intensity);
+  }
+
   private endDrag() {
     if (this.pointerId === null) return;
     try {
@@ -455,6 +471,7 @@ export class CharmStage {
     }
     this.sim.endDrag();
     this.options.onDragChange?.(false);
+    this.playSound("release", 0.3 + this.sim.speed / 2200);
     this.updateCursor();
     this.requestFrame();
   }

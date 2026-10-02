@@ -6,6 +6,7 @@
     "minimal"
   ],
   "collection": "anime-cafe",
+  "sound": "soft",
   "defaultScale": 1,
   "ropeStyle": "thread",
   "anchorOffset": {

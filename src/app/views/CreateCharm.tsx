@@ -15,6 +15,10 @@ import { CharmPreview } from "../components/CharmPreview";
 import { BackBar, Segmented, ToggleRow } from "../components/Controls";
 import { AlertIcon, CheckIcon, RopeSwatch, UploadIcon } from "../components/Icons";
 import { useSettings } from "../hooks";
+import { SOUND_LABELS, SOUND_MATERIALS, sounds, type SoundMaterial } from "../../audio/sounds";
+import { bulkImport, type BulkProgress } from "../../imaging/bulk";
+import { libraryFilterStore } from "../../state/ui";
+import { promptDialog } from "../components/Dialog";
 
 type Phase = "empty" | "loading" | "ready" | "saving";
 
@@ -34,6 +38,8 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
   const [name, setName] = useState("");
   const [scale, setScale] = useState(1);
   const [rope, setRope] = useState<RopeStyle>("thread");
+  const [sound, setSound] = useState<SoundMaterial>("soft");
+  const [bulk, setBulk] = useState<BulkProgress | null>(null);
   const [anchor, setAnchor] = useState({ x: 0.5, y: 0.05 });
   const [dragOver, setDragOver] = useState(false);
 
@@ -100,6 +106,35 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
     }
   };
 
+  const importMany = async () => {
+    setError(null);
+    let picked: { name: string; base64: string }[];
+    try {
+      picked = await backend.pickImages();
+    } catch (err) {
+      setError(typeof err === "string" ? err : "Those files couldn't be opened.");
+      return;
+    }
+    if (picked.length === 0) return;
+    const name = await promptDialog({ title: "Name this collection", initial: "My collection", confirmLabel: "Create" });
+    if (!name) return;
+    setBulk({ done: 0, total: picked.length });
+    try {
+      const result = await bulkImport(picked, name, setBulk);
+      if (result.imported === 0) {
+        setError("None of those images could be used. Try PNG, WebP, or JPEG files.");
+        return;
+      }
+      onToast(
+        `Made ${result.imported} charm${result.imported === 1 ? "" : "s"}${result.skipped ? ` (${result.skipped} skipped)` : ""}`,
+      );
+      libraryFilterStore.set({ kind: "user", id: result.collectionId });
+      go("library");
+    } finally {
+      setBulk(null);
+    }
+  };
+
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
     setDragOver(false);
@@ -140,6 +175,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
         ropeStyle: rope,
         anchorOffset: anchor,
         defaultScale: scale,
+        sound,
         pngBase64: dataUrlToBase64(prepared.dataUrl),
       });
       await refreshCustomCharms();
@@ -181,6 +217,20 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
           </button>
         </div>
         {errorBox}
+
+        <div className="bulk-card">
+          <div>
+            <p className="custom-title">Make a whole collection</p>
+            <p className="custom-sub">
+              {bulk
+                ? `Preparing ${Math.min(bulk.done + 1, bulk.total)} of ${bulk.total}…`
+                : "Pick up to 60 images at once. Each becomes a charm, grouped into one collection you can share as a pack."}
+            </p>
+          </div>
+          <button type="button" className="btn" onClick={() => void importMany()} disabled={!!bulk}>
+            {bulk ? <span className="spinner" aria-label="Importing" /> : "Choose images"}
+          </button>
+        </div>
         <div className="notice">
           <CheckIcon />
           <span>Your image is processed on {THIS_DEVICE} and stored only here. Nothing is uploaded.</span>
@@ -194,7 +244,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
       <BackBar title="Create a charm" onBack={() => go("home")} />
 
       <CharmPreview
-        config={{ ...stageConfigFor(settings, previewCharm), rope, scale }}
+        config={{ ...stageConfigFor(settings, previewCharm), rope, scale, sound }}
         height={280}
         label={`Preview of ${previewCharm.name}`}
       >
@@ -269,6 +319,33 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
             icon: <RopeSwatch style={r} />,
           }))}
         />
+      </div>
+
+      <div className="field">
+        <label className="field-label" htmlFor="charm-sound">
+          Sound
+        </label>
+        <div className="row">
+          <select
+            id="charm-sound"
+            className="select"
+            value={sound}
+            onChange={(e) => {
+              const next = e.target.value as SoundMaterial;
+              setSound(next);
+              sounds.play(next, "release", 0.8);
+            }}
+          >
+            {SOUND_MATERIALS.map((m) => (
+              <option key={m} value={m}>
+                {SOUND_LABELS[m]}
+              </option>
+            ))}
+          </select>
+          <button type="button" className="btn" onClick={() => sounds.play(sound, "release", 0.8)}>
+            Play
+          </button>
+        </div>
       </div>
 
       <div className="field">

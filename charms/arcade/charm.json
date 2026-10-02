@@ -4,6 +4,7 @@
   "category": "retro",
   "tags": [],
   "collection": "retro-arcade",
+  "sound": "retro",
   "defaultScale": 1,
   "ropeStyle": "chain",
   "anchorOffset": {

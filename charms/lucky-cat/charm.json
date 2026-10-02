@@ -6,6 +6,7 @@
     "seasonal"
   ],
   "collection": "anime-cafe",
+  "sound": "bell",
   "defaultScale": 1,
   "ropeStyle": "thread",
   "anchorOffset": {

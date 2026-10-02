@@ -33,6 +33,7 @@ export interface CustomCharmRecord {
   defaultScale: number;
   createdAt: number;
   imageDataUrl: string;
+  sound?: string | null;
 }
 
 export interface NewCustomCharm {
@@ -41,6 +42,7 @@ export interface NewCustomCharm {
   anchorOffset: { x: number; y: number };
   defaultScale: number;
   pngBase64: string;
+  sound?: string;
 }
 
 export type Route = "home" | "library" | "customize" | "create" | "settings" | "privacy" | "feedback" | "onboarding";
@@ -81,6 +83,7 @@ export const backend = {
   hideControl: () => invoke<void>("hide_control"),
   quit: () => invoke<void>("quit_app"),
   pickImage: () => invoke<{ name: string; base64: string } | null>("pick_image"),
+  pickImages: () => invoke<{ name: string; base64: string }[]>("pick_images"),
   appInfo: () => invoke<AppInfo>("app_info"),
   openFeedback: (kind: FeedbackKind, message: string, includeInfo: boolean) =>
     invoke<void>("open_feedback", { kind, message, includeInfo }),

@@ -6,6 +6,7 @@
     "nature"
   ],
   "collection": "wizard-school",
+  "sound": "soft",
   "defaultScale": 1,
   "ropeStyle": "thread",
   "anchorOffset": {

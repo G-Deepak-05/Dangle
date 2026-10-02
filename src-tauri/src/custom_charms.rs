@@ -12,6 +12,15 @@ const MAX_DIMENSION: u32 = 1024;
 const MIN_DIMENSION: u32 = 16;
 const MAX_NAME_CHARS: usize = 40;
 const MAX_CUSTOM_CHARMS: usize = 200;
+const SOUNDS: [&str; 13] = [
+    "metal", "bell", "glass", "wood", "soft", "paper", "plastic", "magic", "laser", "retro", "pop",
+    "punch", "none",
+];
+
+pub fn clean_sound(sound: Option<String>) -> Option<String> {
+    sound.filter(|s| SOUNDS.contains(&s.as_str()))
+}
+
 const PNG_SIGNATURE: [u8; 8] = [0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A];
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
@@ -29,6 +38,8 @@ pub struct CustomCharmMeta {
     pub anchor_offset: AnchorOffset,
     pub default_scale: f64,
     pub created_at: u64,
+    #[serde(default)]
+    pub sound: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -39,6 +50,8 @@ pub struct NewCustomCharm {
     pub anchor_offset: AnchorOffset,
     pub default_scale: f64,
     pub png_base64: String,
+    #[serde(default)]
+    pub sound: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -165,6 +178,7 @@ pub fn save(root: &Path, input: NewCustomCharm) -> Result<CustomCharm, String> {
             1.0
         },
         created_at: now_millis(),
+        sound: clean_sound(input.sound),
     };
     let dir = charm_dir(root, &meta.id)?;
     fs::create_dir_all(&dir).map_err(|e| format!("Could not save charm: {e}"))?;
@@ -241,12 +255,14 @@ mod tests {
                 rope_style: RopeStyle::Cord,
                 anchor_offset: AnchorOffset { x: 2.0, y: 0.1 },
                 default_scale: 9.0,
+                sound: Some("tuba".into()),
                 png_base64: base64::engine::general_purpose::STANDARD.encode(&png),
             },
         )
         .unwrap();
         assert_eq!(saved.meta.anchor_offset.x, 1.0);
         assert_eq!(saved.meta.default_scale, 1.6);
+        assert_eq!(saved.meta.sound, None);
         assert_eq!(list(&root).len(), 1);
         delete(&root, &saved.meta.id).unwrap();
         assert!(list(&root).is_empty());

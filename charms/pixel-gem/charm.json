@@ -6,6 +6,7 @@
     "minimal"
   ],
   "collection": "retro-arcade",
+  "sound": "retro",
   "defaultScale": 1,
   "ropeStyle": "chain",
   "anchorOffset": {

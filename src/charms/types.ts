@@ -1,3 +1,4 @@
+import type { SoundMaterial } from "../audio/sounds";
 import type { PhysicsParams } from "../physics/profiles";
 
 export type RopeStyle = "minimal" | "thread" | "cord" | "chain";
@@ -55,6 +56,8 @@ export interface Charm {
   tags: CharmCategory[];
   /** Built-in collection this charm belongs to, if any. */
   collection?: string;
+  /** What the charm sounds like when grabbed and let go. */
+  sound?: SoundMaterial;
   image: string;
   thumbnail: string;
   defaultScale: number;
@@ -71,4 +74,18 @@ export interface Charm {
 
 export function inCategory(charm: Charm, category: CharmCategory | "all"): boolean {
   return category === "all" || charm.category === category || charm.tags.includes(category);
+}
+
+const CATEGORY_SOUNDS: Record<CharmCategory, SoundMaterial> = {
+  cute: "soft",
+  nature: "paper",
+  space: "glass",
+  retro: "plastic",
+  minimal: "metal",
+  seasonal: "soft",
+  custom: "soft",
+};
+
+export function soundFor(charm: Charm): SoundMaterial {
+  return charm.sound ?? CATEGORY_SOUNDS[charm.category];
 }

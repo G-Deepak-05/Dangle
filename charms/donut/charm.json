@@ -6,6 +6,7 @@
     "retro"
   ],
   "collection": "originals",
+  "sound": "soft",
   "defaultScale": 1,
   "ropeStyle": "cord",
   "anchorOffset": {
