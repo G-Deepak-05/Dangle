@@ -31,6 +31,12 @@ export function Privacy({ go, embedded }: { go?: (r: Route) => void; embedded?: 
           they install. You can turn this off in Settings › Updates.
         </p>
 
+        <h2>Image links</h2>
+        <p>
+          If you paste an image link in Create, Dangle downloads that one image so you can make a charm from it. It only
+          happens when you ask, and links to your own computer or local network are refused.
+        </p>
+
         <h2>Feedback</h2>
         <p>
           The Feedback screen never sends anything by itself. It opens a pre-filled GitHub issue in your browser for

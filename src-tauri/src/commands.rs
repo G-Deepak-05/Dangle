@@ -2,7 +2,9 @@ use crate::custom_charms::{self, CustomCharm, NewCustomCharm};
 use crate::displays::{self, DisplayInfo};
 use crate::settings::{self, Settings};
 use crate::state::{AppState, Hitbox, OverlayGeometry};
-use crate::{apply_patch, apps, control, feedback, overlay, packs, platform, tray, updates};
+use crate::{
+    apply_patch, apps, control, feedback, link_import, overlay, packs, platform, tray, updates,
+};
 use base64::Engine;
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -505,4 +507,14 @@ pub fn launch_charm(state: State<AppState>, id: String) -> Result<(), String> {
         .launch
         .ok_or_else(|| "That charm doesn't open an app.".to_string())?;
     apps::launch(&target)
+}
+
+/// Downloads an image from a link the user pasted, for making a charm.
+#[tauri::command]
+pub async fn fetch_image(url: String) -> Result<PickedImage, String> {
+    let downloaded = link_import::download(&url).await?;
+    Ok(PickedImage {
+        name: downloaded.name,
+        base64: base64::engine::general_purpose::STANDARD.encode(downloaded.bytes),
+    })
 }

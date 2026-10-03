@@ -1997,3 +1997,14 @@ kbd {
   border-radius: 50%;
   background: var(--accent);
 }
+
+.link-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.link-row .btn {
+  flex: none;
+  height: 34px;
+}

@@ -100,6 +100,7 @@ export const backend = {
   hideControl: () => invoke<void>("hide_control"),
   quit: () => invoke<void>("quit_app"),
   pickImage: () => invoke<{ name: string; base64: string } | null>("pick_image"),
+  fetchImage: (url: string) => invoke<{ name: string; base64: string }>("fetch_image", { url }),
   pickImages: () => invoke<{ name: string; base64: string }[]>("pick_images"),
   listApps: () => invoke<InstalledApp[]>("list_apps"),
   appIcon: (path: string) => invoke<string | null>("app_icon", { path }),

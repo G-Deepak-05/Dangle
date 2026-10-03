@@ -4,6 +4,7 @@ mod control;
 mod custom_charms;
 mod displays;
 mod feedback;
+mod link_import;
 mod overlay;
 mod packs;
 mod platform;
@@ -145,6 +146,7 @@ pub fn run() {
             commands::app_icon,
             commands::create_app_charm,
             commands::launch_charm,
+            commands::fetch_image,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

@@ -40,6 +40,7 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
   const [rope, setRope] = useState<RopeStyle>("thread");
   const [sound, setSound] = useState<SoundMaterial>("soft");
   const [bulk, setBulk] = useState<BulkProgress | null>(null);
+  const [link, setLink] = useState("");
   const [anchor, setAnchor] = useState({ x: 0.5, y: 0.05 });
   const [dragOver, setDragOver] = useState(false);
 
@@ -71,7 +72,11 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/"));
-      if (file) void load(file);
+      if (file) return void load(file);
+      // A pasted link (outside a text field) is fetched like the link box.
+      const text = e.clipboardData?.getData("text")?.trim() ?? "";
+      const inField = (e.target as HTMLElement | null)?.closest("input, textarea");
+      if (!inField && /^https?:\/\//i.test(text)) void fromLink(text);
     };
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
@@ -103,6 +108,22 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
       await load(new File([bytes], picked.name));
     } catch (err) {
       setError(typeof err === "string" ? err : "That file couldn't be opened.");
+    }
+  };
+
+  const fromLink = async (raw: string) => {
+    const url = raw.trim();
+    if (!url) return;
+    setError(null);
+    setPhase("loading");
+    try {
+      const picked = await backend.fetchImage(url);
+      const bytes = Uint8Array.from(atob(picked.base64), (c) => c.charCodeAt(0));
+      setLink("");
+      await load(new File([bytes], picked.name));
+    } catch (err) {
+      setError(typeof err === "string" ? err : "Couldn't get an image from that link.");
+      setPhase(source ? "ready" : "empty");
     }
   };
 
@@ -217,6 +238,28 @@ export function CreateCharm({ go, onToast }: { go: (r: Route) => void; onToast: 
           </button>
         </div>
         {errorBox}
+
+        <form
+          className="link-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void fromLink(link);
+          }}
+        >
+          <input
+            className="input"
+            type="url"
+            inputMode="url"
+            placeholder="…or paste an image link (https://…)"
+            aria-label="Image link"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            spellCheck={false}
+          />
+          <button type="submit" className="btn" disabled={!link.trim() || phase === "loading"}>
+            Get image
+          </button>
+        </form>
 
         <div className="bulk-card">
           <div>
