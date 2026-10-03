@@ -1,8 +1,8 @@
-import { KEYS } from "../platform";
+import { KEYCAPS } from "../platform";
 import { backend, type Route } from "../../ipc/backend";
 import { updateSettings } from "../../state/stores";
 import type { Settings as SettingsShape } from "../../state/settings";
-import { PageHeader, Segmented, SettingRow, ToggleRow } from "../components/Controls";
+import { Keys, PageHeader, Segmented, SettingRow, ToggleRow } from "../components/Controls";
 import { ChevronIcon } from "../components/Icons";
 import { useAppInfo, useSettings, useUpdate } from "../hooks";
 import { useState } from "react";
@@ -144,13 +144,13 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
       <h2 className="eyebrow group-title">Keyboard</h2>
       <div className="group">
         <SettingRow id="kb-toggle" label="Show or hide charm">
-          <kbd>{KEYS.toggle}</kbd>
+          <Keys keys={KEYCAPS.toggle} />
         </SettingRow>
         <SettingRow id="kb-settings" label="Open settings">
-          <kbd>{KEYS.settings}</kbd>
+          <Keys keys={KEYCAPS.settings} />
         </SettingRow>
         <SettingRow id="kb-reel" label="Lengthen or shorten the string">
-          <kbd>{KEYS.reel}</kbd>
+          <Keys keys={KEYCAPS.reel} />
         </SettingRow>
       </div>
 

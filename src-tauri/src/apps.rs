@@ -171,7 +171,90 @@ pub fn icon_png(path: &str, size: u32) -> Option<Vec<u8>> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+/// The app's own icon as a PNG, asked of the Windows shell the way Explorer draws it. For a
+/// Start-menu shortcut that is the target app's icon, at the size requested.
+#[cfg(target_os = "windows")]
+pub fn icon_png(path: &str, size: u32) -> Option<Vec<u8>> {
+    use windows::core::HSTRING;
+    use windows::Win32::Foundation::SIZE;
+    use windows::Win32::Graphics::Gdi::{
+        CreateCompatibleDC, DeleteDC, DeleteObject, GetDIBits, BITMAPINFO, BITMAPINFOHEADER,
+        BI_RGB, DIB_RGB_COLORS,
+    };
+    use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
+    use windows::Win32::UI::Shell::{
+        IShellItemImageFactory, SHCreateItemFromParsingName, SIIGBF_BIGGERSIZEOK, SIIGBF_ICONONLY,
+    };
+
+    let side = size as i32;
+    // The main thread already runs COM; this is a no-op there and keeps other callers safe.
+    let com = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) };
+    let pixels = (|| unsafe {
+        let factory: IShellItemImageFactory =
+            SHCreateItemFromParsingName(&HSTRING::from(path), None).ok()?;
+        let bitmap = factory
+            .GetImage(SIZE { cx: side, cy: side }, SIIGBF_ICONONLY | SIIGBF_BIGGERSIZEOK)
+            .ok()?;
+        let mut info = BITMAPINFO {
+            bmiHeader: BITMAPINFOHEADER {
+                biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
+                biWidth: side,
+                biHeight: -side, // top-down rows
+                biPlanes: 1,
+                biBitCount: 32,
+                biCompression: BI_RGB.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let mut bgra = vec![0u8; (side * side * 4) as usize];
+        let dc = CreateCompatibleDC(None);
+        let rows = GetDIBits(
+            dc,
+            bitmap,
+            0,
+            side as u32,
+            Some(bgra.as_mut_ptr().cast()),
+            &mut info,
+            DIB_RGB_COLORS,
+        );
+        let _ = DeleteDC(dc);
+        let _ = DeleteObject(bitmap.into());
+        (rows == side).then_some(bgra)
+    })();
+    if com.is_ok() {
+        unsafe { CoUninitialize() };
+    }
+    encode_shell_bitmap(pixels?, size)
+}
+
+/// Shell bitmaps are premultiplied BGRA; PNG wants straight RGBA.
+#[cfg(target_os = "windows")]
+fn encode_shell_bitmap(mut px: Vec<u8>, size: u32) -> Option<Vec<u8>> {
+    if px.chunks_exact(4).all(|p| p[3] == 0) {
+        // Old icons without an alpha channel: treat every pixel as opaque.
+        px.chunks_exact_mut(4).for_each(|p| p[3] = 255);
+    }
+    for p in px.chunks_exact_mut(4) {
+        let a = p[3] as u32;
+        let (b, g, r) = (p[0] as u32, p[1] as u32, p[2] as u32);
+        let unpremultiply = |c: u32| if a == 0 { 0 } else { ((c * 255 + a / 2) / a).min(255) as u8 };
+        p[0] = unpremultiply(r);
+        p[1] = unpremultiply(g);
+        p[2] = unpremultiply(b);
+    }
+    let mut out = Vec::new();
+    {
+        let mut encoder = png::Encoder::new(&mut out, size, size);
+        encoder.set_color(png::ColorType::Rgba);
+        encoder.set_depth(png::BitDepth::Eight);
+        let mut writer = encoder.write_header().ok()?;
+        writer.write_image_data(&px).ok()?;
+    }
+    Some(out)
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 pub fn icon_png(_path: &str, _size: u32) -> Option<Vec<u8>> {
     None
 }

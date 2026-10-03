@@ -205,6 +205,11 @@ pub fn run() {
                         api.prevent_close();
                         control::hide(window.app_handle());
                     }
+                    WindowEvent::ThemeChanged(theme) => {
+                        if let Some(w) = window.app_handle().get_webview_window(control::LABEL) {
+                            platform::style_control_window(&w, *theme == tauri::Theme::Dark);
+                        }
+                    }
                     WindowEvent::Focused(true) => {
                         if let Some(w) = window.app_handle().get_webview_window(control::LABEL) {
                             platform::set_control_raised(&w, true);

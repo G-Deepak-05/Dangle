@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import { startStores } from "../state/stores";
 import { App } from "./App";
 import { IS_MAC } from "./platform";
+// Bundled for systems without Apple's New York (Windows); Macs never download it.
+import "@fontsource-variable/source-serif-4/opsz.css";
 import "./styles/app.css";
 
 document.documentElement.classList.add(IS_MAC ? "platform-mac" : "platform-other");

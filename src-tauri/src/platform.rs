@@ -123,6 +123,9 @@ mod imp {
         });
     }
 
+    /// macOS draws the title bar over the content already (see control.rs).
+    pub fn style_control_window(_window: &WebviewWindow, _dark: bool) {}
+
     pub fn frontmost_app_pid() -> Option<i32> {
         let workspace = NSWorkspace::sharedWorkspace();
         let app = workspace.frontmostApplication()?;
@@ -223,6 +226,39 @@ mod imp {
 
     pub fn follow_active_space(_window: &WebviewWindow) {}
 
+    /// Paints the native title bar in Dangle's own paper colour, light or dark, so the
+    /// window reads as one surface. Caption buttons, snap layouts and resizing stay native.
+    /// Windows 10 honours the dark flag; the exact colours need Windows 11 (others ignore them).
+    pub fn style_control_window(window: &WebviewWindow, dark: bool) {
+        use windows_sys::Win32::Graphics::Dwm::{
+            DwmSetWindowAttribute, DWMWA_BORDER_COLOR, DWMWA_CAPTION_COLOR, DWMWA_TEXT_COLOR,
+            DWMWA_USE_IMMERSIVE_DARK_MODE,
+        };
+        // COLORREF is 0x00BBGGRR. These match --paper and --ink in app.css.
+        const fn rgb(r: u32, g: u32, b: u32) -> u32 {
+            r | (g << 8) | (b << 16)
+        }
+        let (caption, text) = if dark {
+            (rgb(0x16, 0x13, 0x0f), rgb(0xf3, 0xec, 0xe2))
+        } else {
+            (rgb(0xf7, 0xf3, 0xec), rgb(0x1f, 0x1b, 0x17))
+        };
+        let Ok(hwnd) = window.hwnd() else { return };
+        let hwnd = hwnd.0 as windows_sys::Win32::Foundation::HWND;
+        let set = |attribute, value: u32| unsafe {
+            DwmSetWindowAttribute(
+                hwnd,
+                attribute as _,
+                &value as *const u32 as *const core::ffi::c_void,
+                std::mem::size_of::<u32>() as u32,
+            );
+        };
+        set(DWMWA_USE_IMMERSIVE_DARK_MODE, dark as u32);
+        set(DWMWA_CAPTION_COLOR, caption);
+        set(DWMWA_BORDER_COLOR, caption);
+        set(DWMWA_TEXT_COLOR, text);
+    }
+
     // The overlay is created non-focusable (WS_EX_NOACTIVATE), so it never steals focus
     // and there is nothing to give back.
     pub fn frontmost_app_pid() -> Option<i32> {
@@ -251,6 +287,7 @@ mod imp {
         let _ = window.set_always_on_top(raised);
     }
     pub fn follow_active_space(_window: &WebviewWindow) {}
+    pub fn style_control_window(_window: &WebviewWindow, _dark: bool) {}
     pub fn apply_window_behavior(window: &WebviewWindow, all_spaces: bool, _over_fullscreen: bool) {
         let _ = window.set_visible_on_all_workspaces(all_spaces);
     }

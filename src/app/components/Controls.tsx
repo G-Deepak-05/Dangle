@@ -163,3 +163,17 @@ export function PageHeader({
     </header>
   );
 }
+
+/** A shortcut drawn as keycaps; words like "drag" read as an action, not a key. */
+export function Keys({ keys }: { keys: string[] }) {
+  return (
+    <span className="keys" aria-label={keys.join(" ")}>
+      {keys.map((k, i) => (
+        <span key={`${k}-${i}`} className="keys-part" aria-hidden>
+          {i > 0 && <span className="keys-plus">+</span>}
+          {/^[a-z]{3,}$/.test(k) ? <span className="keys-action">{k}</span> : <kbd>{k}</kbd>}
+        </span>
+      ))}
+    </span>
+  );
+}

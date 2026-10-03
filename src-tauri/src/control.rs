@@ -17,6 +17,8 @@ pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
         .hidden_title(true);
     let window = builder.build()?;
     crate::platform::follow_active_space(&window);
+    let dark = window.theme().map(|t| t == tauri::Theme::Dark).unwrap_or(true);
+    crate::platform::style_control_window(&window, dark);
     Ok(window)
 }
 
