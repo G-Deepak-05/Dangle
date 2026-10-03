@@ -369,7 +369,8 @@ export class CharmStage {
     this.render();
     this.reportHitbox(now, !this.sim.asleep || animating);
 
-    const keepGoing = !this.paused && (!this.sim.asleep || animating);
+    // Pausing freezes the swing, not a charm swap that's already under way.
+    const keepGoing = animating || (!this.paused && !this.sim.asleep);
     if (keepGoing) {
       this.frame = requestAnimationFrame(this.tick);
     } else {
