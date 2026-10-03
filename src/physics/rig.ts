@@ -22,6 +22,8 @@ export interface Rig {
   setRopeLength(length: number): void;
   setElastic(elastic: boolean): void;
   setAnchor(anchor: Vec2): void;
+  /** Hangs everything straight down from the anchor, at rest. */
+  reset(): void;
   translate(dx: number, dy: number): void;
   impulse(vx: number, vy: number, body?: number): void;
   startDrag(grab: Vec2, body: number): void;

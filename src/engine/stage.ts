@@ -170,6 +170,7 @@ export class CharmStage {
     this.sim.setBounds(this.bounds);
     this.anchor = { x: anchorX, y: anchorY };
     this.sim.setAnchor(this.anchor);
+    this.restIfPaused();
     if (dpr !== this.dpr) {
       this.dpr = dpr;
       this.spriteKey = "";
@@ -216,6 +217,7 @@ export class CharmStage {
     this.sim.setElastic(config.elastic ?? false);
     if (!this.reeling) this.sim.setRopeLength(this.baseRope * this.threadLength);
     if (this.sim instanceof CharmSimulation) this.sim.setTipInset(charmSide * 0.55);
+    this.restIfPaused();
     this.breezeEnabled = (this.options.breeze ?? true) && !reduce;
 
     const key = charms
@@ -257,6 +259,7 @@ export class CharmStage {
       this.sim.setBodies(
         loaded.map((sp) => ({ length: sp ? charmBodyLength(sp, detail, 1) : charmSide })),
       );
+      this.restIfPaused();
     }
 
     const sameCharm = previous?.charm.id === config.charm.id && charms.length === this.sprites.length;
@@ -283,10 +286,25 @@ export class CharmStage {
     this.requestFrame();
   }
 
+  /**
+   * A paused charm never steps its physics, so anything that moves its anchor or
+   * reshapes its string would leave it frozen out of place. Re-hang it instead.
+   */
+  private restIfPaused() {
+    if (this.paused && !this.reeling) this.sim.reset();
+  }
+
   setPaused(paused: boolean) {
+    const wasPaused = this.paused;
     this.paused = paused;
     if (paused) {
       this.endDrag();
+      // Freeze a pending entrance at its end state rather than half-way through.
+      if (!wasPaused && this.charmScale !== 1) {
+        this.charmScale = 1;
+        this.scaleVelocity = 0;
+        this.sim.reset();
+      }
       this.options.onHitbox?.([]);
     } else {
       this.sim.wake();
@@ -320,9 +338,14 @@ export class CharmStage {
   }
 
   private dropIn(reduce: boolean) {
-    this.charmScale = reduce ? 1 : 0.6;
+    // Nothing animates while paused, so a paused charm just appears where it rests.
+    const still = reduce || this.paused;
+    this.charmScale = still ? 1 : 0.6;
     this.scaleVelocity = 0;
-    if (reduce) return;
+    if (still) {
+      this.restIfPaused();
+      return;
+    }
     const top = this.sim.poses()[0];
     this.sim.translate(0, this.anchor.y + 8 - top.y);
     this.sim.impulse((Math.random() - 0.5) * 120, 0);
