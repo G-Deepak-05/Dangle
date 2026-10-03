@@ -1,0 +1,20 @@
+{
+  "id": "cat-ear-student",
+  "name": "Cat-Ear Student",
+  "category": "cute",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "anime-friends",
+  "sound": "soft",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Top of the class at napping.",
+    "author": "Dangle"
+  }
+}

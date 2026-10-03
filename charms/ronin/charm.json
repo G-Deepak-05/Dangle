@@ -1,0 +1,20 @@
+{
+  "id": "ronin",
+  "name": "Wandering Ronin",
+  "category": "retro",
+  "tags": [
+    "minimal"
+  ],
+  "collection": "anime-friends",
+  "sound": "wood",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.14
+  },
+  "metadata": {
+    "description": "Walks the long road. Stops for snacks.",
+    "author": "Dangle"
+  }
+}

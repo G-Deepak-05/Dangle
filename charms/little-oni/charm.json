@@ -1,0 +1,20 @@
+{
+  "id": "little-oni",
+  "name": "Little Oni",
+  "category": "cute",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "anime-friends",
+  "sound": "punch",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Fierce on the outside, soft on the inside.",
+    "author": "Dangle"
+  }
+}

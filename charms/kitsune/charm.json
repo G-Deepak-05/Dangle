@@ -1,0 +1,21 @@
+{
+  "id": "kitsune",
+  "name": "Kitsune",
+  "category": "nature",
+  "tags": [
+    "cute",
+    "seasonal"
+  ],
+  "collection": "anime-friends",
+  "sound": "magic",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.45,
+    "y": 0.12
+  },
+  "metadata": {
+    "description": "A fox spirit with a lantern-bright tail.",
+    "author": "Dangle"
+  }
+}

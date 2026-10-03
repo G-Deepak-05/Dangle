@@ -1,0 +1,20 @@
+{
+  "id": "ninja-kid",
+  "name": "Ninja Kid",
+  "category": "cute",
+  "tags": [
+    "retro"
+  ],
+  "collection": "anime-friends",
+  "sound": "metal",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.08
+  },
+  "metadata": {
+    "description": "Sneaky. Mostly sneaky.",
+    "author": "Dangle"
+  }
+}

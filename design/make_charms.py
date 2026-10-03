@@ -792,6 +792,159 @@ SOUNDS.update({
     "diya": "glass", "lotus": "paper", "tassel": "soft",
 })
 
+def anime_eye(cx, cy, iris, w=10, h=14):
+    return (f'<ellipse cx="{cx}" cy="{cy}" rx="{w}" ry="{h}" fill="{INK}"/>'
+            f'<ellipse cx="{cx}" cy="{cy + 3}" rx="{w - 3}" ry="{h - 5}" fill="{iris}"/>'
+            f'<ellipse cx="{cx}" cy="{cy + 6}" rx="{w - 5}" ry="{h - 9}" fill="{INK}" opacity="0.35"/>'
+            f'<circle cx="{cx - 3}" cy="{cy - 5}" r="4" fill="#FFFFFF"/>'
+            f'<circle cx="{cx + 3.5}" cy="{cy + 6}" r="1.8" fill="#FFFFFF"/>')
+
+def chibi_face(cy=88, iris="#4A6FD0", dx=20, mouth="smile", blush_color="#F7A7B5"):
+    m = {
+        "smile": f'<path d="M93 {cy + 22} q 7 6 14 0" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>',
+        "grin": f'<path d="M91 {cy + 20} q 9 12 18 0 Z" fill="#B03A28" stroke="{INK}" stroke-width="3" stroke-linejoin="round"/>',
+        "o": f'<ellipse cx="100" cy="{cy + 23}" rx="4" ry="5" fill="#B03A28" stroke="{INK}" stroke-width="2.5"/>',
+        "cat": f'<path d="M92 {cy + 20} q 4 5 8 0 q 4 5 8 0" fill="none" stroke="{INK}" stroke-width="3" stroke-linecap="round"/>',
+    }[mouth]
+    return (anime_eye(100 - dx, cy, iris) + anime_eye(100 + dx, cy, iris) + m
+            + f'<ellipse cx="{100 - dx - 10}" cy="{cy + 16}" rx="8" ry="4.5" fill="{blush_color}" opacity="0.75"/>'
+            + f'<ellipse cx="{100 + dx + 10}" cy="{cy + 16}" rx="8" ry="4.5" fill="{blush_color}" opacity="0.75"/>')
+
+SKIN = "#FCE3CF"
+
+ANIME = {
+"ninja-kid": dict(name="Ninja Kid", category="cute", tags=["retro"], rope="cord",
+  desc="Sneaky. Mostly sneaky.", anchor=(0.5, 0.08), svg=svg(f"""
+<rect x="62" y="134" width="76" height="52" rx="20" fill="#3B5F4A" {W}/>
+<rect x="62" y="150" width="76" height="10" fill="#D9503B" stroke="{INK}" stroke-width="4"/>
+<circle cx="100" cy="86" r="62" fill="#3B5F4A" {W}/>
+<path d="M50 74 C 60 64, 140 64, 150 74 L 150 102 C 140 108, 60 108, 50 102 Z" fill="{SKIN}" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+{anime_eye(80, 88, "#5CA87A", 9, 12)}{anime_eye(120, 88, "#5CA87A", 9, 12)}
+<path d="M70 72 L 90 78 M130 72 L 110 78" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+<path d="M150 70 C 168 60, 182 70, 188 86 C 176 82, 164 82, 152 86" fill="#D9503B" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<g transform="translate(150 168) rotate(20)"><path d="M0 -14 L 4 -4 L 14 0 L 4 4 L 0 14 L -4 4 L -14 0 L -4 -4 Z" fill="#B8BFC8" stroke="{INK}" stroke-width="3.5" stroke-linejoin="round"/><circle r="3" fill="{INK}"/></g>
+<path d="M58 54 C 66 40, 80 32, 96 28" {GLOSS}/>
+""")),
+"magical-girl": dict(name="Magical Girl", category="cute", tags=["seasonal"], rope="thread",
+  desc="Transforms only on very special occasions.", anchor=(0.5, 0.06), svg=svg(f"""
+<path d="M72 136 L 128 136 L 150 188 L 50 188 Z" fill="#F7B8C8" {W}/>
+<path d="M78 136 L 100 156 L 122 136" fill="#FFFFFF" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="100" cy="160" r="9" fill="#F6D365" stroke="{INK}" stroke-width="3.5"/>
+<path d="M38 96 C 34 54, 62 28, 100 28 C 138 28, 166 54, 162 96 C 166 120, 158 138, 146 142 L 54 142 C 42 138, 34 120, 38 96 Z" fill="#B9A3E8" {W}/>
+<circle cx="100" cy="90" r="46" fill="{SKIN}" stroke="{INK}" stroke-width="5"/>
+<path d="M56 76 C 64 52, 84 46, 100 50 C 116 46, 136 52, 144 76 C 128 66, 114 64, 100 72 C 86 64, 72 66, 56 76 Z" fill="#B9A3E8" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+{chibi_face(94, "#8E5BD6", 18)}
+<path d="M100 26 C 84 10, 66 14, 70 28 C 74 38, 92 34, 100 26 C 108 34, 126 38, 130 28 C 134 14, 116 10, 100 26 Z" fill="#F28CA6" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="100" cy="27" r="6" fill="#F6D365" stroke="{INK}" stroke-width="3"/>
+<path d="M164 120 L 150 176" stroke="{INK}" stroke-width="7" stroke-linecap="round"/><path d="M164 120 L 150 176" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+<path d="M166 104 l 4 9 l 10 1 l -7 7 l 2 10 l -9 -5 l -9 5 l 2 -10 l -7 -7 l 10 -1 Z" fill="#F6D365" stroke="{INK}" stroke-width="3.5" stroke-linejoin="round"/>
+""")),
+"ronin": dict(name="Wandering Ronin", category="retro", tags=["minimal"], rope="cord",
+  desc="Walks the long road. Stops for snacks.", anchor=(0.5, 0.14), svg=svg(f"""
+<path d="M136 120 L 176 186" stroke="{INK}" stroke-width="10" stroke-linecap="round"/><path d="M136 120 L 176 186" stroke="#7A2A20" stroke-width="5" stroke-linecap="round"/>
+<rect x="64" y="136" width="72" height="50" rx="16" fill="#3A4E7A" {W}/>
+<path d="M82 136 L 100 158 L 118 136" fill="#F2E6CF" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="100" cy="102" r="40" fill="{SKIN}" stroke="{INK}" stroke-width="5"/>
+<path d="M62 92 C 70 84, 130 84, 138 92 L 138 80 L 62 80 Z" fill="{INK}"/>
+<g>{anime_eye(84, 106, "#7A5236", 8, 10)}{anime_eye(116, 106, "#7A5236", 8, 10)}</g>
+<path d="M92 124 h 16" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M100 24 L 182 84 Q 100 98 18 84 Z" fill="#D8B25C" {W}/>
+<path d="M100 24 L 60 86 M100 24 L 140 86 M100 24 L 100 92" stroke="#B9852E" stroke-width="3"/>
+""")),
+"kitsune": dict(name="Kitsune", category="nature", tags=["cute", "seasonal"], rope="thread",
+  desc="A fox spirit with a lantern-bright tail.", anchor=(0.45, 0.12), svg=svg(f"""
+<path d="M128 150 C 160 156, 184 132, 178 100 C 176 88, 168 82, 160 86 C 166 104, 156 128, 128 132 Z" fill="#EE9B45" {W}/>
+<path d="M178 100 C 186 84, 182 68, 168 60 C 172 72, 166 82, 160 86 C 168 82, 176 88, 178 100 Z" fill="#7EC8F0" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<rect x="56" y="132" width="76" height="54" rx="22" fill="#EE9B45" {W}/>
+<path d="M70 150 C 80 160, 108 160, 118 150 L 118 186 L 70 186 Z" fill="#FFF6E4"/>
+<rect x="56" y="132" width="76" height="54" rx="22" fill="none" {W}/>
+<path d="M38 72 L 46 18 L 80 50 Z M150 72 L 142 18 L 108 50 Z" fill="#EE9B45" {W}/>
+<path d="M48 58 L 52 32 L 70 50 Z M140 58 L 136 32 L 118 50 Z" fill="#F7A7A0"/>
+<ellipse cx="94" cy="88" rx="58" ry="52" fill="#EE9B45" {W}/>
+<path d="M60 104 C 70 132, 118 132, 128 104 C 118 112, 70 112, 60 104 Z" fill="#FFF6E4"/>
+<path d="M70 82 q 8 -8 16 0 M102 82 q 8 -8 16 0" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="94" cy="106" rx="5" ry="4" fill="{INK}"/>
+<path d="M88 114 q 6 6 12 0" fill="none" stroke="{INK}" stroke-width="3" stroke-linecap="round"/>
+<path d="M66 132 C 80 140, 108 140, 122 132" fill="none" stroke="#D9503B" stroke-width="7" stroke-linecap="round"/>
+<circle cx="94" cy="142" r="7" fill="#F6D365" stroke="{INK}" stroke-width="3"/>
+<path d="M62 66 C 66 56, 74 50, 84 48" {GLOSS}/>
+""")),
+"mecha-pilot": dict(name="Mecha Pilot", category="space", tags=["retro"], rope="minimal",
+  desc="Licensed to drive very large robots.", anchor=(0.5, 0.06), svg=svg(f"""
+<path d="M100 12 V 26" stroke="{INK}" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="12" r="6" fill="#D9503B" stroke="{INK}" stroke-width="3.5"/>
+<rect x="60" y="136" width="80" height="50" rx="18" fill="#EE9B45" {W}/>
+<path d="M100 136 V 186" stroke="{INK}" stroke-width="4"/>
+<rect x="84" y="146" width="10" height="14" rx="2" fill="#FFFFFF" stroke="{INK}" stroke-width="3"/>
+<circle cx="100" cy="86" r="60" fill="#F2F4F7" {W}/>
+<path d="M44 74 L 26 62 L 30 96 L 44 98 M156 74 L 174 62 L 170 96 L 156 98" fill="#D9503B" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<path d="M56 70 C 60 56, 140 56, 144 70 L 144 108 C 138 120, 62 120, 56 108 Z" fill="#2C3B5E" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<path d="M60 74 C 72 66, 128 66, 140 74 L 140 104 C 128 112, 72 112, 60 104 Z" fill="{SKIN}"/>
+{anime_eye(82, 90, "#2FA9C9", 9, 12)}{anime_eye(118, 90, "#2FA9C9", 9, 12)}
+<path d="M58 70 C 70 62, 90 60, 106 60 L 76 112 L 58 106 Z" fill="#7EC8F0" opacity="0.35"/>
+<path d="M56 70 C 60 56, 140 56, 144 70 L 144 108 C 138 120, 62 120, 56 108 Z" fill="none" stroke="{INK}" stroke-width="5" stroke-linejoin="round"/>
+<path d="M62 46 C 74 34, 90 30, 104 30" {GLOSS}/>
+""")),
+"cat-ear-student": dict(name="Cat-Ear Student", category="cute", tags=["seasonal"], rope="thread",
+  desc="Top of the class at napping.", anchor=(0.5, 0.06), svg=svg(f"""
+<rect x="62" y="134" width="76" height="52" rx="18" fill="#2C3B5E" {W}/>
+<path d="M80 134 L 100 158 L 120 134" fill="#FFFFFF" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<path d="M94 152 L 106 152 L 102 176 L 98 176 Z" fill="#D9503B" stroke="{INK}" stroke-width="3" stroke-linejoin="round"/>
+<path d="M40 64 L 44 14 L 84 42 Z M160 64 L 156 14 L 116 42 Z" fill="#8A5A3B" {W}/>
+<path d="M50 54 L 52 30 L 72 44 Z M150 54 L 148 30 L 128 44 Z" fill="#F7A7A0"/>
+<path d="M38 96 C 34 54, 62 32, 100 32 C 138 32, 166 54, 162 96 C 166 118, 158 134, 148 138 L 52 138 C 42 134, 34 118, 38 96 Z" fill="#8A5A3B" {W}/>
+<circle cx="100" cy="92" r="44" fill="{SKIN}" stroke="{INK}" stroke-width="5"/>
+<path d="M56 82 C 62 56, 86 50, 100 56 C 112 48, 138 54, 144 82 C 132 70, 120 70, 110 74 L 104 62 L 96 76 C 84 68, 68 70, 56 82 Z" fill="#8A5A3B" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+{chibi_face(96, "#D9A23B", 17, "cat")}
+""")),
+"lantern-ghost": dict(name="Lantern Ghost", category="seasonal", tags=["cute", "retro"], rope="cord",
+  desc="An old paper lantern that woke up cheeky.", anchor=(0.5, 0.06), svg=svg(f"""
+<rect x="72" y="14" width="56" height="16" rx="4" fill="{INK}"/>
+<path d="M60 30 C 40 70, 40 134, 60 172 L 140 172 C 160 134, 160 70, 140 30 Z" fill="#F2E6CF" {W}/>
+<path d="M50 60 H 150 M45 90 H 155 M45 120 H 155 M50 148 H 150" stroke="#C9A97A" stroke-width="4"/>
+<path d="M60 30 C 40 70, 40 134, 60 172 L 140 172 C 160 134, 160 70, 140 30 Z" fill="none" {W}/>
+<rect x="72" y="170" width="56" height="16" rx="4" fill="{INK}"/>
+<path d="M96 56 C 88 76, 70 66, 82 54 C 90 46, 104 48, 96 56 Z" fill="#D9503B" opacity="0.6"/>
+{anime_eye(100, 94, "#D9503B", 16, 20)}
+<path d="M84 134 C 92 150, 108 150, 116 134 Z" fill="#B03A28" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<path d="M98 140 C 96 160, 112 168, 116 156 C 114 148, 106 142, 98 140 Z" fill="#F28CA6" stroke="{INK}" stroke-width="3.5" stroke-linejoin="round"/>
+""")),
+"little-oni": dict(name="Little Oni", category="cute", tags=["seasonal"], rope="cord",
+  desc="Fierce on the outside, soft on the inside.", anchor=(0.5, 0.06), svg=svg(f"""
+<rect x="64" y="136" width="72" height="50" rx="20" fill="#E35D6A" {W}/>
+<path d="M64 160 H 136 V 186 H 64 Z" fill="#F6D365" stroke="{INK}" stroke-width="4"/>
+<path d="M78 162 l 6 22 M98 162 l 4 22 M118 162 l 6 22" stroke="{INK}" stroke-width="4" stroke-linecap="round"/>
+<path d="M70 50 L 62 14 L 88 40 Z M130 50 L 138 14 L 112 40 Z" fill="#FFF6E4" {W}/>
+<circle cx="100" cy="88" r="58" fill="#E35D6A" {W}/>
+<path d="M50 70 C 58 40, 86 30, 100 40 C 114 30, 142 40, 150 70 C 136 56, 118 54, 100 62 C 82 54, 64 56, 50 70 Z" fill="#2C3B5E" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+{chibi_face(94, "#F6D365", 20, "grin", "#F7B8C8")}
+<path d="M92 114 L 95 120 L 98 114" fill="#FFFFFF" stroke="{INK}" stroke-width="2"/><path d="M102 114 L 105 120 L 108 114" fill="#FFFFFF" stroke="{INK}" stroke-width="2"/>
+<path d="M146 110 L 176 168" stroke="{INK}" stroke-width="16" stroke-linecap="round"/><path d="M146 110 L 176 168" stroke="#A46E45" stroke-width="10" stroke-linecap="round"/>
+<g fill="#E6B450" stroke="{INK}" stroke-width="2.5"><circle cx="160" cy="138" r="3.5"/><circle cx="168" cy="154" r="3.5"/></g>
+<path d="M58 66 C 64 52, 74 46, 86 42" {GLOSS}/>
+""")),
+"shonen-hero": dict(name="Spirit Hero", category="retro", tags=["cute"], rope="chain",
+  desc="Never gives up. Especially at snack time.", anchor=(0.5, 0.06), svg=svg(f"""
+<path d="M100 18 C 70 28, 34 56, 30 104 C 26 150, 60 180, 100 186 C 140 180, 174 150, 170 104 C 166 56, 130 28, 100 18 Z" fill="#F6D365" opacity="0.55"/>
+<path d="M100 26 C 76 36, 46 60, 44 104 C 42 140, 68 168, 100 172 C 132 168, 158 140, 156 104 C 154 60, 124 36, 100 26 Z" fill="#EE9B45" opacity="0.45"/>
+<rect x="64" y="138" width="72" height="48" rx="18" fill="#2C3B5E" {W}/>
+<path d="M60 136 C 80 150, 120 150, 140 136 L 152 150 C 144 156, 132 152, 128 146" fill="#D9503B" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<path d="M44 92 L 30 60 L 56 70 L 52 34 L 78 56 L 88 22 L 102 52 L 118 20 L 124 54 L 150 34 L 146 68 L 172 58 L 156 92 Z" fill="#3BB3A6" {W}/>
+<circle cx="100" cy="98" r="44" fill="{SKIN}" stroke="{INK}" stroke-width="5"/>
+<path d="M56 86 L 70 64 L 82 78 L 96 58 L 104 76 L 120 60 L 128 78 L 144 66 L 144 86 C 126 78, 74 78, 56 86 Z" fill="#3BB3A6" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>
+<path d="M68 90 L 88 96 M132 90 L 112 96" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+{anime_eye(80, 104, "#D9503B", 9, 12)}{anime_eye(120, 104, "#D9503B", 9, 12)}
+<path d="M90 124 q 10 8 20 0" fill="none" stroke="{INK}" stroke-width="3.5" stroke-linecap="round"/>
+<rect x="124" y="112" width="18" height="9" rx="3" fill="#FFF6E4" stroke="{INK}" stroke-width="2.5" transform="rotate(-15 133 116)"/>
+""")),
+}
+CHARMS.update({k: {**v, "collection": "anime-friends"} for k, v in ANIME.items()})
+COLLECTIONS.append({"id": "anime-friends", "name": "Anime Friends",
+    "description": "Original chibi characters with a big anime heart. All new, all ours."})
+SOUNDS.update({
+    "ninja-kid": "metal", "magical-girl": "magic", "ronin": "wood", "kitsune": "magic", "mecha-pilot": "laser",
+    "cat-ear-student": "soft", "lantern-ghost": "paper", "little-oni": "punch", "shonen-hero": "punch",
+})
+
 root = os.path.join(os.path.dirname(__file__), "..", "charms")
 for cid, c in CHARMS.items():
     d = os.path.join(root, cid)

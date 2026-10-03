@@ -1,0 +1,20 @@
+{
+  "id": "shonen-hero",
+  "name": "Spirit Hero",
+  "category": "retro",
+  "tags": [
+    "cute"
+  ],
+  "collection": "anime-friends",
+  "sound": "punch",
+  "defaultScale": 1,
+  "ropeStyle": "chain",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Never gives up. Especially at snack time.",
+    "author": "Dangle"
+  }
+}

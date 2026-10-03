@@ -1,0 +1,20 @@
+{
+  "id": "magical-girl",
+  "name": "Magical Girl",
+  "category": "cute",
+  "tags": [
+    "seasonal"
+  ],
+  "collection": "anime-friends",
+  "sound": "magic",
+  "defaultScale": 1,
+  "ropeStyle": "thread",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "Transforms only on very special occasions.",
+    "author": "Dangle"
+  }
+}

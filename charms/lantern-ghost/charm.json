@@ -1,0 +1,21 @@
+{
+  "id": "lantern-ghost",
+  "name": "Lantern Ghost",
+  "category": "seasonal",
+  "tags": [
+    "cute",
+    "retro"
+  ],
+  "collection": "anime-friends",
+  "sound": "paper",
+  "defaultScale": 1,
+  "ropeStyle": "cord",
+  "anchorOffset": {
+    "x": 0.5,
+    "y": 0.06
+  },
+  "metadata": {
+    "description": "An old paper lantern that woke up cheeky.",
+    "author": "Dangle"
+  }
+}

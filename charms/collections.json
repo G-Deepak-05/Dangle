@@ -43,5 +43,10 @@
     "id": "ritual-home",
     "name": "Ritual & Home",
     "description": "Bells, lamps, and things that make a place feel kept."
+  },
+  {
+    "id": "anime-friends",
+    "name": "Anime Friends",
+    "description": "Original chibi characters with a big anime heart. All new, all ours."
   }
 ]
