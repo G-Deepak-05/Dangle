@@ -10,6 +10,7 @@ import { Sidebar, sectionFor } from "./components/Sidebar";
 import { Feedback } from "./views/Feedback";
 import { Library } from "./views/Library";
 import { Onboarding } from "./views/Onboarding";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { Settings } from "./views/Settings";
 
 const UI_SCALES = [12, 13, 14, 15, 16];
@@ -126,6 +127,7 @@ export function App() {
       <Sidebar active={sectionFor(route)} go={go} />
       <main className="main" key={route}>
         <div className="main-titlebar" data-tauri-drag-region />
+        <UpdateBanner />
         {view}
       </main>
       <DialogHost />

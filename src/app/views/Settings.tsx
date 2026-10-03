@@ -7,7 +7,6 @@ import { ChevronIcon } from "../components/Icons";
 import { useAppInfo, useSettings, useUpdate } from "../hooks";
 import { useState } from "react";
 import { sounds } from "../../audio/sounds";
-import { UpdateBanner } from "../components/UpdateBanner";
 
 export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (msg: string) => void }) {
   const s = useSettings();
@@ -172,11 +171,6 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
           </button>
         </SettingRow>
       </div>
-      {update && (
-        <div style={{ marginTop: 10 }}>
-          <UpdateBanner />
-        </div>
-      )}
 
       {import.meta.env.DEV && (
         <>

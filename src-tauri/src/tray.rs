@@ -20,6 +20,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
     let create = MenuItem::with_id(app, "create", "Create Charm…", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
     let feedback = MenuItem::with_id(app, "feedback", "Send Feedback…", true, None::<&str>)?;
+    let update = MenuItem::with_id(app, "update", "Check for Updates…", true, None::<&str>)?;
     let pause = MenuItem::with_id(app, "pause", "Pause", true, None::<&str>)?;
     let visibility = MenuItem::with_id(
         app,
@@ -41,6 +42,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
             &create,
             &settings,
             &feedback,
+            &update,
             &PredefinedMenuItem::separator(app)?,
             &pause,
             &visibility,
@@ -65,6 +67,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
                 apply_patch(app, patch_from_pairs(&[("paused", json!(!paused))]));
             }
             "visibility" => toggle_hidden(app),
+            "update" => on_update_clicked(app),
             "quit" => app.exit(0),
             _ => {}
         })
@@ -74,6 +77,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
         current,
         pause,
         visibility,
+        update,
     });
     refresh(app);
     Ok(())
@@ -106,5 +110,33 @@ pub fn set_current_charm_name(app: &AppHandle, name: &str) {
     let guard = state.tray.lock().unwrap();
     if let Some(tray) = guard.as_ref() {
         let _ = tray.current.set_text(format!("Current charm: {label}"));
+    }
+}
+
+/// Install straight away when an update is waiting; otherwise open About and look.
+fn on_update_clicked(app: &AppHandle) {
+    let app = app.clone();
+    if crate::updates::pending_version(&app).is_some() {
+        tauri::async_runtime::spawn(async move {
+            if crate::updates::install(&app).await.is_err() {
+                control::show(&app, Some("settings"));
+            }
+        });
+    } else {
+        control::show(&app, Some("settings"));
+        tauri::async_runtime::spawn(async move {
+            let _ = crate::updates::check(&app).await;
+        });
+    }
+}
+
+pub fn set_update(app: &AppHandle, version: Option<&str>) {
+    let state = app.state::<AppState>();
+    let guard = state.tray.lock().unwrap();
+    if let Some(tray) = guard.as_ref() {
+        let _ = tray.update.set_text(match version {
+            Some(v) => format!("Restart to Update to {v}"),
+            None => "Check for Updates…".to_string(),
+        });
     }
 }

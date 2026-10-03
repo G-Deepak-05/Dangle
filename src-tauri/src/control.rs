@@ -32,6 +32,7 @@ pub fn show(app: &AppHandle, route: Option<&str>) {
             let _ = app.emit_to(LABEL, "navigate", route);
         }
     }
+    crate::updates::check_if_stale(app);
 }
 
 pub fn hide(app: &AppHandle) {

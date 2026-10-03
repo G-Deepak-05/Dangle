@@ -5,12 +5,18 @@
 use crate::state::AppState;
 use serde::Serialize;
 use std::sync::Mutex;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 const FIRST_CHECK_DELAY: Duration = Duration::from_secs(20);
-const CHECK_INTERVAL: Duration = Duration::from_secs(6 * 60 * 60);
+const CHECK_INTERVAL: Duration = Duration::from_secs(60 * 60);
+/// Opening Dangle checks again if the last look is older than this.
+const RECHECK_ON_OPEN: Duration = Duration::from_secs(10 * 60);
+/// Split across every address a host resolves to, so one unreachable GitHub server
+/// costs a couple of seconds instead of the system's ~30 s default.
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(8);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Clone, Serialize)]
 pub struct UpdateInfo {
@@ -21,12 +27,46 @@ pub struct UpdateInfo {
 #[derive(Default)]
 pub struct UpdateState {
     pending: Mutex<Option<Update>>,
+    last_check: Mutex<Option<Instant>>,
+}
+
+fn updater(app: &AppHandle) -> Result<tauri_plugin_updater::Updater, String> {
+    app.updater_builder()
+        .timeout(REQUEST_TIMEOUT)
+        .configure_client(|c| c.connect_timeout(CONNECT_TIMEOUT))
+        .build()
+        .map_err(|e| e.to_string())
+}
+
+/// The version waiting to install, if a check has found one.
+pub fn pending_version(app: &AppHandle) -> Option<String> {
+    let state = app.state::<UpdateState>();
+    let guard = state.pending.lock().unwrap();
+    guard.as_ref().map(|u| u.version.clone())
+}
+
+/// Called when the window opens: look again unless we looked recently.
+pub fn check_if_stale(app: &AppHandle) {
+    if cfg!(debug_assertions) || !app.state::<AppState>().settings.lock().unwrap().check_for_updates {
+        return;
+    }
+    let fresh = app
+        .state::<UpdateState>()
+        .last_check
+        .lock()
+        .unwrap()
+        .is_some_and(|t| t.elapsed() < RECHECK_ON_OPEN);
+    if !fresh {
+        let app = app.clone();
+        tauri::async_runtime::spawn(async move {
+            let _ = check(&app).await;
+        });
+    }
 }
 
 pub async fn check(app: &AppHandle) -> Result<Option<UpdateInfo>, String> {
-    let update = app
-        .updater()
-        .map_err(|e| e.to_string())?
+    *app.state::<UpdateState>().last_check.lock().unwrap() = Some(Instant::now());
+    let update = updater(app)?
         .check()
         .await
         .map_err(|_| "Couldn't reach GitHub. Check your connection and try again.".to_string())?;
@@ -38,6 +78,7 @@ pub async fn check(app: &AppHandle) -> Result<Option<UpdateInfo>, String> {
     if let Some(info) = &info {
         let _ = app.emit("update-available", info);
     }
+    crate::tray::set_update(app, info.as_ref().map(|i| i.version.as_str()));
     Ok(info)
 }
 
@@ -45,9 +86,7 @@ pub async fn install(app: &AppHandle) -> Result<(), String> {
     let pending = app.state::<UpdateState>().pending.lock().unwrap().clone();
     let update = match pending {
         Some(u) => u,
-        None => app
-            .updater()
-            .map_err(|e| e.to_string())?
+        None => updater(app)?
             .check()
             .await
             .map_err(|e| e.to_string())?

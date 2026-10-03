@@ -3,13 +3,11 @@ import { backend, type Route } from "../../ipc/backend";
 import { updateSettings } from "../../state/stores";
 import { PageHeader } from "../components/Controls";
 import { ChevronIcon } from "../components/Icons";
-import { UpdateBanner } from "../components/UpdateBanner";
-import { useAppInfo, useUpdate } from "../hooks";
+import { useAppInfo } from "../hooks";
 import { Privacy } from "./Privacy";
 
 export function About({ go }: { go: (r: Route) => void }) {
   const info = useAppInfo();
-  const update = useUpdate();
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
@@ -44,11 +42,6 @@ export function About({ go }: { go: (r: Route) => void }) {
           {checking ? "Checking…" : "Check for updates"}
         </button>
       </section>
-      {update && (
-        <div style={{ marginTop: 12 }}>
-          <UpdateBanner />
-        </div>
-      )}
 
       <div className="group" style={{ marginTop: 18 }}>
         {[

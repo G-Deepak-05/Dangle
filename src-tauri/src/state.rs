@@ -45,6 +45,7 @@ pub struct TrayHandles {
     pub current: MenuItem<Wry>,
     pub pause: MenuItem<Wry>,
     pub visibility: MenuItem<Wry>,
+    pub update: MenuItem<Wry>,
 }
 
 pub struct AppState {
