@@ -4,11 +4,13 @@ import { updateSettings } from "../../state/stores";
 import { PageHeader } from "../components/Controls";
 import { ChevronIcon } from "../components/Icons";
 import { useAppInfo } from "../hooks";
+import { useElapsed } from "../components/UpdateBanner";
 import { Privacy } from "./Privacy";
 
 export function About({ go }: { go: (r: Route) => void }) {
   const info = useAppInfo();
   const [checking, setChecking] = useState(false);
+  const elapsed = useElapsed(checking);
   const [result, setResult] = useState<string | null>(null);
 
   const check = async () => {
@@ -39,7 +41,7 @@ export function About({ go }: { go: (r: Route) => void }) {
           {result && <p className="help">{result}</p>}
         </div>
         <button type="button" className="btn" onClick={() => void check()} disabled={checking}>
-          {checking ? "Checking…" : "Check for updates"}
+          {checking ? `Checking…${elapsed > 0 ? ` ${elapsed} s` : ""}` : "Check for updates"}
         </button>
       </section>
 

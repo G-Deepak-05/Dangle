@@ -24,6 +24,20 @@ pub struct UpdateInfo {
     pub notes: Option<String>,
 }
 
+/// Sent as `update-progress` so the window can show what's happening.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Progress {
+    /// "checking", "downloading", "installing", "idle" or "failed".
+    pub phase: &'static str,
+    pub downloaded: u64,
+    pub total: Option<u64>,
+}
+
+fn report(app: &AppHandle, phase: &'static str, downloaded: u64, total: Option<u64>) {
+    let _ = app.emit("update-progress", Progress { phase, downloaded, total });
+}
+
 #[derive(Default)]
 pub struct UpdateState {
     pending: Mutex<Option<Update>>,
@@ -82,6 +96,14 @@ pub async fn check(app: &AppHandle) -> Result<Option<UpdateInfo>, String> {
     Ok(info)
 }
 
+/// A check someone asked for: shows "Checking…" in the window while it runs.
+pub async fn check_visibly(app: &AppHandle) -> Result<Option<UpdateInfo>, String> {
+    report(app, "checking", 0, None);
+    let result = check(app).await;
+    report(app, if result.is_ok() { "idle" } else { "failed" }, 0, None);
+    result
+}
+
 pub async fn install(app: &AppHandle) -> Result<(), String> {
     let pending = app.state::<UpdateState>().pending.lock().unwrap().clone();
     let update = match pending {
@@ -92,10 +114,27 @@ pub async fn install(app: &AppHandle) -> Result<(), String> {
             .map_err(|e| e.to_string())?
             .ok_or_else(|| "You're already on the latest version.".to_string())?,
     };
-    update
-        .download_and_install(|_, _| {}, || {})
-        .await
-        .map_err(|_| "The update couldn't be installed. Please try again later.".to_string())?;
+    report(app, "downloading", 0, None);
+    let mut downloaded = 0u64;
+    let mut last_sent = 0u64;
+    let result = update
+        .download_and_install(
+            |chunk, total| {
+                downloaded += chunk as u64;
+                // Roughly every 64 KB is plenty for a smooth bar.
+                if downloaded - last_sent >= 64 * 1024 || Some(downloaded) == total {
+                    last_sent = downloaded;
+                    report(app, "downloading", downloaded, total);
+                }
+            },
+            || report(app, "installing", 0, None),
+        )
+        .await;
+    if result.is_err() {
+        report(app, "failed", 0, None);
+        return Err("The update couldn't be installed. Please try again later.".to_string());
+    }
+    report(app, "installing", 0, None);
     app.restart();
 }
 

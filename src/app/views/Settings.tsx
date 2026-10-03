@@ -6,6 +6,7 @@ import { PageHeader, Segmented, SettingRow, ToggleRow } from "../components/Cont
 import { ChevronIcon } from "../components/Icons";
 import { useAppInfo, useSettings, useUpdate } from "../hooks";
 import { useState } from "react";
+import { useElapsed } from "../components/UpdateBanner";
 import { sounds } from "../../audio/sounds";
 
 export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (msg: string) => void }) {
@@ -13,6 +14,7 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
   const info = useAppInfo();
   const update = useUpdate();
   const [checking, setChecking] = useState(false);
+  const elapsed = useElapsed(checking);
   const [checkResult, setCheckResult] = useState<string | null>(null);
 
   const checkNow = async () => {
@@ -157,7 +159,7 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
         <ToggleRow
           id="updates"
           label="Check for updates automatically"
-          description="Looks for a newer version on GitHub every few hours. Nothing about you is sent."
+          description="Looks for a newer version on GitHub every hour. Nothing about you is sent."
           checked={s.checkForUpdates}
           onChange={(v) => set({ checkForUpdates: v })}
         />
@@ -167,7 +169,7 @@ export function Settings({ go, onToast }: { go: (r: Route) => void; onToast: (ms
           description={checkResult ?? (update ? `Dangle ${update.version} is available.` : undefined)}
         >
           <button type="button" className="btn" onClick={() => void checkNow()} disabled={checking}>
-            {checking ? "Checking…" : "Check now"}
+            {checking ? `Checking…${elapsed > 0 ? ` ${elapsed} s` : ""}` : "Check now"}
           </button>
         </SettingRow>
       </div>

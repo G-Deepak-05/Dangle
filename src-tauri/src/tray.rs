@@ -125,7 +125,7 @@ fn on_update_clicked(app: &AppHandle) {
     } else {
         control::show(&app, Some("settings"));
         tauri::async_runtime::spawn(async move {
-            let _ = crate::updates::check(&app).await;
+            let _ = crate::updates::check_visibly(&app).await;
         });
     }
 }

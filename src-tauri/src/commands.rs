@@ -244,7 +244,7 @@ pub fn open_releases(app: AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn check_for_updates(app: AppHandle) -> Result<Option<updates::UpdateInfo>, String> {
-    updates::check(&app).await
+    updates::check_visibly(&app).await
 }
 
 #[tauri::command]

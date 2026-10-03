@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { appInfoStore, charmsStore, findCharm, settingsReady, settingsStore, updateStore } from "../state/stores";
+import { appInfoStore, charmsStore, findCharm, settingsReady, settingsStore, updateProgressStore, updateStore } from "../state/stores";
 
 export function useSettings() {
   return useSyncExternalStore(settingsStore.subscribe, settingsStore.get);
@@ -29,4 +29,8 @@ export function useUpdate() {
 
 export function useStore<T>(store: { subscribe: (l: () => void) => () => void; get: () => T }): T {
   return useSyncExternalStore(store.subscribe, store.get);
+}
+
+export function useUpdateProgress() {
+  return useSyncExternalStore(updateProgressStore.subscribe, updateProgressStore.get);
 }
