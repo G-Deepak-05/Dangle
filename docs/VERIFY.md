@@ -42,7 +42,7 @@ gpg --verify SHA256SUMS.asc SHA256SUMS
 Look for `Good signature from "Dangle Release Signing"`. Key fingerprint:
 
 ```
-(added when the release key is created)
+C1F0 D833 63B3 8357 F02B 291E 5432 333B ED44 D3FD
 ```
 
 ## What this doesn't change
