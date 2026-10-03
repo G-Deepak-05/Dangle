@@ -109,6 +109,20 @@ mod imp {
         });
     }
 
+    /// The Dangle window opens on whichever Space you're on, including next to a
+    /// full-screen app, instead of yanking you back to the desktop or hiding there.
+    pub fn follow_active_space(window: &WebviewWindow) {
+        let target = window.clone();
+        let _ = window.run_on_main_thread(move || {
+            let Ok(ptr) = target.ns_window() else { return };
+            let ns_window: &NSWindow = unsafe { &*(ptr as *const NSWindow) };
+            ns_window.setCollectionBehavior(
+                NSWindowCollectionBehavior::MoveToActiveSpace
+                    | NSWindowCollectionBehavior::FullScreenAuxiliary,
+            );
+        });
+    }
+
     pub fn frontmost_app_pid() -> Option<i32> {
         let workspace = NSWorkspace::sharedWorkspace();
         let app = workspace.frontmostApplication()?;
@@ -207,6 +221,8 @@ mod imp {
         let _ = window.set_always_on_top(raised);
     }
 
+    pub fn follow_active_space(_window: &WebviewWindow) {}
+
     // The overlay is created non-focusable (WS_EX_NOACTIVATE), so it never steals focus
     // and there is nothing to give back.
     pub fn frontmost_app_pid() -> Option<i32> {
@@ -234,6 +250,7 @@ mod imp {
     pub fn set_control_raised(window: &WebviewWindow, raised: bool) {
         let _ = window.set_always_on_top(raised);
     }
+    pub fn follow_active_space(_window: &WebviewWindow) {}
     pub fn apply_window_behavior(window: &WebviewWindow, all_spaces: bool, _over_fullscreen: bool) {
         let _ = window.set_visible_on_all_workspaces(all_spaces);
     }

@@ -15,7 +15,9 @@ pub fn create(app: &AppHandle) -> tauri::Result<WebviewWindow> {
     let builder = builder
         .title_bar_style(tauri::TitleBarStyle::Overlay)
         .hidden_title(true);
-    builder.build()
+    let window = builder.build()?;
+    crate::platform::follow_active_space(&window);
+    Ok(window)
 }
 
 /// Shows the control window, optionally jumping to a route like "library" or "settings".

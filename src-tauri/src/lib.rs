@@ -205,10 +205,24 @@ pub fn run() {
                         api.prevent_close();
                         control::hide(window.app_handle());
                     }
-                    WindowEvent::Focused(focused) => {
+                    WindowEvent::Focused(true) => {
                         if let Some(w) = window.app_handle().get_webview_window(control::LABEL) {
-                            platform::set_control_raised(&w, *focused);
+                            platform::set_control_raised(&w, true);
                         }
+                    }
+                    WindowEvent::Focused(false) => {
+                        // A file picker or other Dangle panel also takes focus from this
+                        // window; only drop back once you've actually moved to another app.
+                        let app = window.app_handle().clone();
+                        std::thread::spawn(move || {
+                            std::thread::sleep(std::time::Duration::from_millis(250));
+                            if platform::frontmost_app_pid() == Some(platform::own_pid()) {
+                                return;
+                            }
+                            if let Some(w) = app.get_webview_window(control::LABEL) {
+                                platform::set_control_raised(&w, false);
+                            }
+                        });
                     }
                     _ => {}
                 }
