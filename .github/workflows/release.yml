@@ -38,7 +38,10 @@ jobs:
               '',
               'Already have Dangle 0.1.2 or later? It updates itself. You\'ll see a "Restart to update" note in the app.',
               '',
-              'Dangle isn\'t signed by Apple or Microsoft yet, so your system asks you to confirm once. It needs no account and makes no network requests.',
+              'Dangle isn\'t signed by Apple or Microsoft yet, so your system asks you to confirm once. It needs no account and collects nothing about you.',
+              '',
+              '## Verify your download (optional)',
+              'Every file is listed in **SHA256SUMS**, signed with the Dangle release key, and carries a GitHub build attestation. Check one with `gh attestation verify <file> -R G-Deepak-05/Dangle`. Full steps: [docs/VERIFY.md](https://github.com/G-Deepak-05/Dangle/blob/main/docs/VERIFY.md).',
             ].join('\n');
             const { data } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
@@ -100,3 +103,52 @@ jobs:
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
           args: ${{ matrix.args }}
+
+  # Runs once both installers are attached: lists a checksum for every file, has GitHub
+  # attest that each one was built here from this commit, and GPG-signs the list when
+  # the GPG_PRIVATE_KEY / GPG_PASSPHRASE secrets are set. See docs/VERIFY.md.
+  provenance:
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
+    steps:
+      - name: Download release files
+        run: |
+          mkdir dist && cd dist
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets" --paginate \
+            --jq '.[] | select(.name | test("^SHA256SUMS") | not) | "\(.id) \(.name)"' |
+          while read -r id name; do
+            gh api -H "Accept: application/octet-stream" "repos/$GITHUB_REPOSITORY/releases/assets/$id" > "$name"
+          done
+          sha256sum -- * > ../SHA256SUMS
+          cat ../SHA256SUMS
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: SHA256SUMS
+
+      - name: Sign checksums
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          if [ -z "$GPG_PRIVATE_KEY" ]; then
+            echo "::notice::GPG_PRIVATE_KEY isn't set; publishing unsigned checksums."
+            exit 0
+          fi
+          printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" \
+            --armor --detach-sign --output SHA256SUMS.asc SHA256SUMS
+          gpg --verify SHA256SUMS.asc SHA256SUMS
+
+      - name: Attach to the release
+        run: |
+          tag=$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" --jq .tag_name)
+          gh release upload "$tag" SHA256SUMS $(ls SHA256SUMS.asc 2>/dev/null) --clobber -R "$GITHUB_REPOSITORY"
